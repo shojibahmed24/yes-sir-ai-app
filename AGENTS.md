@@ -3,7 +3,9 @@
 Save this file as `AGENTS.md` in the project root on the user's Windows PC
 (OpenCode reads it automatically at startup). Or paste the whole thing into
 OpenCode. The user speaks Bangla; answer the user in Bangla, write code
-comments in English. Recommended model for heavy work: **DeepSeek V4 Pro**.
+comments in English. Model: **DeepSeek V4 Pro** for heavy work (this
+lesson-mapping task — strongest reasoning); **DeepSeek V4.1 Flash 1017**
+for small daily edits (cheapest, fastest). Switch anytime with `/models`.
 
 ## SETUP FIRST — do this before anything else
 
