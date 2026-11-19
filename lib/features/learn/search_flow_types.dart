@@ -7,6 +7,7 @@
 //   boxed_kaj, other) plus verbatim lowercased values and NULL.
 // - Chapter/lesson titles come ONLY from class9_10_math_chapters
 //   (NCTB TOC + guide pilot banners, step 2).
+import '../../core/data/class9_10_bgs_lessons.dart';
 import '../../core/data/class9_10_biology_lessons.dart';
 import '../../core/data/class9_10_economics_lessons.dart';
 import '../../core/data/class9_10_math_chapters.dart';
@@ -161,6 +162,9 @@ Map<String, String> lessonsForChapter(
   }
   if (subject == 'biology' && (schoolClass == 9 || schoolClass == 10)) {
     return class9BiologyLessons[chapter] ?? const {};
+  }
+  if (subject == 'bgs' && (schoolClass == 9 || schoolClass == 10)) {
+    return class9BgsLessons[chapter] ?? const {};
   }
   if (subject == 'economics' && (schoolClass == 9 || schoolClass == 10)) {
     return class9EconomicsLessons[chapter] ?? const {};
