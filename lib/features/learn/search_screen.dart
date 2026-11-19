@@ -14,14 +14,13 @@ import '../../core/services/explanation_service.dart';
 import '../../core/services/profile_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/search_strings.dart';
-import '../../l10n/pages/home_strings.dart';
-import '../home/widgets/home_bottom_nav.dart';
 import 'learn_store.dart';
 import 'lesson_selection.dart';
 import 'widgets/search_guide_section.dart';
 import 'widgets/search_recents.dart';
 import 'widgets/search_stepper.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
+
 // Phase 16 (M1): [initialQuery] is the text typed on Home (?q=).
 // The stepper cannot resolve free text, so it is shown honestly
 // above the stepper instead of being silently dropped.
@@ -47,7 +46,11 @@ class _SearchScreenState extends State<SearchScreen> {
     _sel = LessonSelectionHolder.touched
         ? cur
         : LessonSelection(
-            subject: cur.subject, chapter: cur.chapter, page: 1, problem: 1);
+            subject: cur.subject,
+            chapter: cur.chapter,
+            page: 1,
+            problem: 1,
+          );
     _loadClass();
   }
 
@@ -66,8 +69,7 @@ class _SearchScreenState extends State<SearchScreen> {
           .replaceAll('{problem}', '${_sel.problem}');
 
   void _goChapterList({int? bannerPage}) {
-    ChapterListHolder.set(
-        schoolClass: _schoolClass, bannerPage: bannerPage);
+    ChapterListHolder.set(schoolClass: _schoolClass, bannerPage: bannerPage);
     context.go('/chapter-questions/${_sel.subject}/${_sel.chapter}');
   }
 
@@ -86,8 +88,7 @@ class _SearchScreenState extends State<SearchScreen> {
       page: _sel.page,
       problem: _sel.problem,
       bangla: bn,
-    ))
-        .found;
+    )).found;
     if (!context.mounted) return;
     setState(() => _resolving = false);
     if (found) {
@@ -99,15 +100,20 @@ class _SearchScreenState extends State<SearchScreen> {
     List<dynamic>? chapters;
     try {
       chapters = await booksService.chaptersForSubjectAsync(
-          _schoolClass, _sel.subject, bn);
+        _schoolClass,
+        _sel.subject,
+        bn,
+      );
     } catch (_) {
       chapters = null;
     }
     if (!context.mounted) return;
-    final chapterExists = chapters == null ||
-        chapters.any((c) => c.number == _sel.chapter);
+    final chapterExists =
+        chapters == null || chapters.any((c) => c.number == _sel.chapter);
     switch (decideSearchShortcut(
-        exactFound: found, chapterExists: chapterExists)) {
+      exactFound: found,
+      chapterExists: chapterExists,
+    )) {
       case SearchShortcut.lesson:
         context.go('/lesson');
         break;
@@ -115,14 +121,16 @@ class _SearchScreenState extends State<SearchScreen> {
         _goChapterList(bannerPage: _sel.page);
         break;
       case SearchShortcut.noMatch:
-        LessonSelectionHolder.set(LessonSelection(
-          subject: _sel.subject,
-          chapter: _sel.chapter,
-          page: _sel.page,
-          problem: _sel.problem,
-          queryText: _label(bn),
-          schoolClass: _schoolClass,
-        ));
+        LessonSelectionHolder.set(
+          LessonSelection(
+            subject: _sel.subject,
+            chapter: _sel.chapter,
+            page: _sel.page,
+            problem: _sel.problem,
+            queryText: _label(bn),
+            schoolClass: _schoolClass,
+          ),
+        );
         context.go('/lesson/no-match');
         break;
     }
@@ -135,7 +143,6 @@ class _SearchScreenState extends State<SearchScreen> {
       builder: (context, locale, _) {
         final bn = locale.languageCode == 'bn';
         final s = bn ? searchStringsBn : searchStringsEn;
-        final nav = bn ? homeStringsBn : homeStringsEn;
         final classItems = {6, 7, _schoolClass}.toList()..sort();
         return ThemedScaffold(
           appBar: AppBar(
@@ -150,7 +157,10 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(s['subtitle']!, style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  s['subtitle']!,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
                 if (widget.initialQuery.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Card(
@@ -171,8 +181,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         DropdownButton<int>(
                           value: _schoolClass,
                           items: classItems
-                              .map((c) => DropdownMenuItem(
-                                  value: c, child: Text('$c')))
+                              .map(
+                                (c) => DropdownMenuItem(
+                                  value: c,
+                                  child: Text('$c'),
+                                ),
+                              )
                               .toList(),
                           onChanged: (v) {
                             if (v == null) return;
@@ -207,8 +221,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   onPressed: (_locked || _resolving)
                       ? null
                       : () => _showSolution(context),
-                  child: Text(
-                      _resolving ? s['checking']! : s['showSolution']!),
+                  child: Text(_resolving ? s['checking']! : s['showSolution']!),
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton(
@@ -216,7 +229,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: Text(s['bookLookup']!),
                 ),
                 SearchGuideSection(
-                  subject: _sel.subject, schoolClass: _schoolClass,
+                  subject: _sel.subject,
+                  schoolClass: _schoolClass,
                   locked: _locked,
                   note: s['textbookOnlyNote']!,
                   linkLabel: s['guideBankLink']!,
@@ -232,16 +246,6 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ],
             ),
-          ),
-          bottomNavigationBar: HomeBottomNav(
-            current: 1,
-            labels: [
-              nav['home']!,
-              nav['search']!,
-              nav['practice']!,
-              nav['progress']!,
-              nav['profile']!
-            ],
           ),
         );
       },

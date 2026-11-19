@@ -9,9 +9,16 @@ class HomeBottomNav extends StatelessWidget {
   final List<String> labels; // home, search, practice, progress, profile
 
   void _go(BuildContext context, int index) {
-    // Step 7: the Search tab lands on the NEW search flow
-    // (defaults: saved class + math), never a deleted route.
-    const routes = ['/home', '/search-flow', '/practice', '/progress', '/profile'];
+    // Phase 2 IA: the second tab is the learning hub (subjects),
+    // not a bare search page — search lives in the Home field and
+    // the hub's app-bar icon. Never points at a deleted route.
+    const routes = [
+      '/home',
+      '/home/subjects',
+      '/practice',
+      '/progress',
+      '/profile',
+    ];
     context.go(routes[index]);
   }
 
@@ -19,7 +26,7 @@ class HomeBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     const icons = [
       Icons.home_outlined,
-      Icons.search_outlined,
+      Icons.menu_book_outlined,
       Icons.edit_note_outlined,
       Icons.trending_up_outlined,
       Icons.account_circle_outlined,

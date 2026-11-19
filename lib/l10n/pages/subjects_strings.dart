@@ -2,6 +2,7 @@
 const Map<String, String> subjectsStringsBn = {
   'title': 'বিষয়সমূহ',
   'subtitle': 'অষ্টম শ্রেণি · এনসিটিবি',
+  'classLabel': 'শ্রেণি',
   'overall': 'সামগ্রিক প্রস্তুতি',
   'activeSubjects': 'টির মধ্যে ৬টি বিষয় সক্রিয়',
   'allSubjects': 'সব বিষয়',
@@ -17,6 +18,7 @@ const Map<String, String> subjectsStringsBn = {
 const Map<String, String> subjectsStringsEn = {
   'title': 'Subjects',
   'subtitle': 'Class 8 · NCTB',
+  'classLabel': 'Class',
   'overall': 'Overall preparation',
   'activeSubjects': 'of 7 subjects active',
   'allSubjects': 'All subjects',

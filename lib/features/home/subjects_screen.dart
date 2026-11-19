@@ -16,7 +16,9 @@ import '../../l10n/language_provider.dart';
 import '../../l10n/pages/subjects_strings.dart';
 import '../../l10n/pages/guide_bank_strings.dart';
 import '../../l10n/pages/home_strings.dart';
+import '../../theme/app_tokens.dart';
 import '../../theme/themed_scaffold.dart';
+import '../../theme/widgets/app_chip.dart';
 import '../learn/learn_store.dart';
 import '../learn/widgets/digits.dart';
 import '../learn/widgets/subject_guide_card.dart';
@@ -39,13 +41,15 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   Future<List<dynamic>>? _future;
   bool? _futureBn;
   int? _schoolClass;
+  int? _selectedClass;
 
   // M5: class comes from the saved profile via resolveSchoolClass
   // (same helper ChaptersScreen uses) — never hardcoded 6. The
   // documented fallback 6 applies only when no profile class
-  // is known yet (fresh install / deep link).
+  // is known yet (fresh install / deep link). A class picked in
+  // the Phase-2 selector overrides the saved class for this screen.
   Future<List<dynamic>> _loadFuture(bool bn) async {
-    final cls = await resolveSchoolClass();
+    final cls = _selectedClass ?? await resolveSchoolClass();
     _schoolClass = cls;
     return Future.wait([
       LearnStore.summary(),
@@ -53,6 +57,16 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       booksService.subjectsAsync(cls, bn),
       booksService.classBooksAsync(cls, bn),
     ]);
+  }
+
+  void _onClassSelected(int cls) {
+    if (cls == _selectedClass) return;
+    _selectedClass = cls;
+    booksService.invalidateSubjectsCache(
+      cls,
+      languageNotifier.value.languageCode == 'bn',
+    );
+    setState(() => _future = null);
   }
 
   @override
@@ -77,13 +91,15 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             title: Text(s['title']!),
             actions: [
               IconButton(
+                icon: const Icon(Icons.search),
+                tooltip: nav['findQuestions'],
+                onPressed: () => context.go('/search-flow'),
+              ),
+              IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: nav['refreshSubjects'],
                 onPressed: () {
-                  booksService.invalidateSubjectsCache(
-                    _schoolClass ?? 6,
-                    bn,
-                  );
+                  booksService.invalidateSubjectsCache(_schoolClass ?? 6, bn);
                   setState(() => _future = null);
                 },
               ),
@@ -110,10 +126,27 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   Text(
-                    s['subtitle']!,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    s['classLabel']!,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 10,
+                      separatorBuilder: (_, __) => const SizedBox(width: Sp.sm),
+                      itemBuilder: (context, i) {
+                        final cls = i + 1;
+                        return AppChip(
+                          label: numStr(cls, bn),
+                          selected: cls == (_selectedClass ?? _schoolClass),
+                          onTap: () => _onClassSelected(cls),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -192,7 +225,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             current: 0,
             labels: [
               nav['home']!,
-              nav['search']!,
+              nav['subjectsTab']!,
               nav['practice']!,
               nav['progress']!,
               nav['profile']!,
