@@ -10,6 +10,7 @@
 import '../../core/data/class9_10_accounting_lessons.dart';
 import '../../core/data/class9_10_bgs_lessons.dart';
 import '../../core/data/class9_10_biology_lessons.dart';
+import '../../core/data/class9_10_business_lessons.dart';
 import '../../core/data/class9_10_economics_lessons.dart';
 import '../../core/data/class9_10_math_chapters.dart';
 import '../../core/data/class9_10_science_lessons.dart';
@@ -169,6 +170,10 @@ Map<String, String> lessonsForChapter(
   }
   if (subject == 'bgs' && (schoolClass == 9 || schoolClass == 10)) {
     return class9BgsLessons[chapter] ?? const {};
+  }
+  if (subject == 'business-entrepreneurship' &&
+      (schoolClass == 9 || schoolClass == 10)) {
+    return class9BusinessLessons[chapter] ?? const {};
   }
   if (subject == 'economics' && (schoolClass == 9 || schoolClass == 10)) {
     return class9EconomicsLessons[chapter] ?? const {};
