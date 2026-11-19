@@ -27,6 +27,26 @@ class Rad {
   static const double pill = 28;
 }
 
+/// Elevation scale. Cards/sheets use [low]; the bottom nav and
+/// dialogs use [mid]; nothing in the warm paper theme goes above
+/// [high] — a soft, layered look, never a hard material shadow.
+class Elev {
+  static const double none = 0;
+  static const double low = 1;
+  static const double mid = 4;
+  static const double high = 8;
+}
+
+/// Icon size scale (logical px). Keeps leading/trailing icons and
+/// empty-state glyphs the same size across screens.
+class IconSize {
+  static const double xs = 16;
+  static const double sm = 20;
+  static const double md = 24;
+  static const double lg = 32;
+  static const double xl = 48;
+}
+
 /// Warm dark palette. Contrast (WCAG, computed): onSurface on
 /// surface 13.4:1, onSurfaceMuted on surface 9.7:1, inputOutline on
 /// surface 4.2:1 (needs 3:1 for UI borders).
