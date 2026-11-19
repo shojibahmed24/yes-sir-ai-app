@@ -11,6 +11,7 @@ import 'bangla_second_routes.dart';
 import 'practice_routes.dart';
 import 'profile_routes.dart';
 import 'design_routes.dart';
+import 'lesson_hub_routes.dart';
 
 // Full route table, assembled from the per-group route files above.
 // Keep this file small: new routes go in their group file, not here.
@@ -48,6 +49,7 @@ final GoRouter appRouter = GoRouter(
     ...banglaSecondRoutes,
     ...practiceRoutes,
     ...profileRoutes,
+    ...lessonHubRoutes,
     ...designRoutes,
   ],
 );

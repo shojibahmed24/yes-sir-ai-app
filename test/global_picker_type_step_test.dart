@@ -16,7 +16,10 @@ import 'package:yes_sir_ai/l10n/pages/search_flow_strings.dart';
 
 SearchFlowController _c(String subject, String source) =>
     SearchFlowController(
-        initialSubjectId: subject, initialSchoolClass: 9, onChanged: () {})
+        initialSubjectId: subject,
+        initialSchoolClass: 9,
+        onChanged: () {},
+      )
       ..subjectId = subject
       ..source = source
       ..schoolClass = 9
@@ -34,33 +37,31 @@ void main() {
     expect(globalPickerParseScope('lesson:__all:x'), isNull);
   });
 
-  test('math lesson row drills into all five types, pick carries them', () {
+  test('math lesson row opens the lesson hub (no type step)', () {
     final c = _c('math', 'guide');
     final e = SearchFlowBrowseExtras(onChanged: () {});
     final tree = _tree(c, e);
     final ch2 = tree.rootNodes.firstWhere((n) => n.id == 'chapter:2');
-    final lesson =
-        tree.childrenOf(ch2)!.firstWhere((n) => n.id == 'lesson:2:2.1');
-    expect(lesson.hasChildren, isTrue);
-    final types = tree.childrenOf(lesson)!;
-    expect(types.length, searchFlowBaseTypes.length);
-    expect(types.first.id, 'type:2:2.1:${SearchFlowType.values.first.name}');
-    expect(types.first.pick?.kind, GlobalPickerPickKind.chapterType);
-    expect(types.first.pick?.chapter, 2);
-    expect(types.first.pick?.lesson, '2.1');
-    expect(types.first.pick?.type, SearchFlowType.values.first);
-    // No count known yet: nothing is guessed.
-    expect(types.every((n) => n.subtitle == null), isTrue);
+    final lesson = tree
+        .childrenOf(ch2)!
+        .firstWhere((n) => n.id == 'lesson:2:2.1');
+    expect(lesson.hasChildren, isFalse);
+    expect(lesson.pick?.kind, GlobalPickerPickKind.route);
+    expect(lesson.pick?.route, contains('/lesson-hub'));
+    expect(lesson.pick?.route, contains('subject=math'));
+    expect(lesson.pick?.route, contains('chapter=2'));
+    expect(lesson.pick?.route, contains('lesson=2.1'));
   });
 
-  test('"all lessons" row gives types with a null lesson', () {
+  test('"all lessons" row opens the hub without a lesson', () {
     final c = _c('math', 'guide');
     final tree = _tree(c, SearchFlowBrowseExtras(onChanged: () {}));
     final ch2 = tree.rootNodes.firstWhere((n) => n.id == 'chapter:2');
     final all = tree.childrenOf(ch2)!.first;
-    final types = tree.childrenOf(all)!;
-    expect(types.first.id, startsWith('type:2:all:'));
-    expect(types.first.pick?.lesson, isNull);
+    expect(all.hasChildren, isFalse);
+    expect(all.pick?.kind, GlobalPickerPickKind.route);
+    expect(all.pick?.route, contains('/lesson-hub'));
+    expect(all.pick?.route, isNot(contains('lesson=')));
   });
 
   test('a chapter without lessons goes straight to the types', () {
@@ -84,12 +85,16 @@ void main() {
     final c = _c('math', 'guide');
     final extras = SearchFlowBrowseExtras(onChanged: () {})..setId = 'model-1';
     late BuildContext ctx;
-    await tester.pumpWidget(MaterialApp(
-      home: Builder(builder: (context) {
-        ctx = context;
-        return const SizedBox();
-      }),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            ctx = context;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
     applyGlobalPickerPick(
       context: ctx,
       c: c,
@@ -101,22 +106,30 @@ void main() {
     expect(c.lesson, '2.2');
     expect(c.type, SearchFlowType.creative);
     expect(extras.setId, isNull);
-    expect(globalPickerSelectedId(c, extras),
-        globalPickerTypeId(2, '2.2', SearchFlowType.creative));
+    expect(
+      globalPickerSelectedId(c, extras),
+      globalPickerTypeId(2, '2.2', SearchFlowType.creative),
+    );
   });
 
   Future<SearchFlowLessonCounts> loaded(int Function(String section) n) async {
     final lc = SearchFlowLessonCounts(
       onChanged: () {},
-      service: GuideFlowCountService(post: (b, {endpoint}) async => {
-            'found': true,
-            'total': n(b['section'] as String),
-            'lesson': b['lesson'],
-            'section': b['section'],
-          }),
+      service: GuideFlowCountService(
+        post: (b, {endpoint}) async => {
+          'found': true,
+          'total': n(b['section'] as String),
+          'lesson': b['lesson'],
+          'section': b['section'],
+        },
+      ),
     );
     await lc.load(
-        subject: 'chemistry', schoolClass: 9, chapter: 3, lessons: const []);
+      subject: 'chemistry',
+      schoolClass: 9,
+      chapter: 3,
+      lessons: const [],
+    );
     return lc;
   }
 
@@ -130,8 +143,9 @@ void main() {
       );
 
   test('types with a known zero count are hidden', () async {
-    final lc = await loaded((sec) =>
-        const {'mcq_bank': 350, 'short': 72, 'creative': 48}[sec] ?? 0);
+    final lc = await loaded(
+      (sec) => const {'mcq_bank': 350, 'short': 72, 'creative': 48}[sec] ?? 0,
+    );
     final names = typeNodes(lc).map((n) => n.pick!.type).toSet();
     expect(names, {
       SearchFlowType.mcq,

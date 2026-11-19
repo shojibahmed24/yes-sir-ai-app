@@ -16,7 +16,6 @@ import '../features/learn/lesson_screen.dart';
 import '../features/learn/chat_screen.dart';
 import '../features/learn/no_match_screen.dart';
 import '../features/learn/guide_answer_screen.dart';
-import '../features/learn/search_flow_board_sections.dart';
 import '../features/learn/search_flow_list_screen.dart';
 import '../features/learn/search_flow_screen.dart';
 import '../features/learn/english_search_flow_list_screen.dart';
@@ -31,16 +30,26 @@ final List<GoRoute> learnRoutes = [
   GoRoute(path: '/home', builder: (c, s) => const HomeScreen()),
   // Home stat detail screens: system back returns to /home,
   // same BackScope pattern as /search above.
-  GoRoute(path: '/home/today-lessons', builder: (c, s) => BackScope(parent: '/home', child: const TodayLessonsScreen())),
-  GoRoute(path: '/home/opened-chapters', builder: (c, s) => BackScope(parent: '/home', child: const OpenedChaptersScreen())),
-  GoRoute(path: '/home/subjects', builder: (c, s) => BackScope(parent: '/home', child: const SubjectsScreen())),
+  GoRoute(
+    path: '/home/today-lessons',
+    builder: (c, s) =>
+        BackScope(parent: '/home', child: const TodayLessonsScreen()),
+  ),
+  GoRoute(
+    path: '/home/opened-chapters',
+    builder: (c, s) =>
+        BackScope(parent: '/home', child: const OpenedChaptersScreen()),
+  ),
+  GoRoute(
+    path: '/home/subjects',
+    builder: (c, s) =>
+        BackScope(parent: '/home', child: const SubjectsScreen()),
+  ),
   GoRoute(
     path: '/home/subjects/:subjectId/chapters',
     builder: (c, s) => BackScope(
       parent: '/home/subjects',
-      child: ChaptersScreen(
-        subjectId: s.pathParameters['subjectId'] ?? 'math',
-      ),
+      child: ChaptersScreen(subjectId: s.pathParameters['subjectId'] ?? 'math'),
     ),
   ),
   // Step 6 group contract (Step 7: the old /guide-bank and
@@ -65,12 +74,13 @@ final List<GoRoute> learnRoutes = [
           final rt = extra['returnTo'];
           GuideAnswerHolder.setGroup(
             parts: parts,
-            subject: extra['subjectId'] as String? ??
-                GuideAnswerHolder.subjectId,
-            chapter: extra['chapterNumber'] as int? ??
+            subject:
+                extra['subjectId'] as String? ?? GuideAnswerHolder.subjectId,
+            chapter:
+                extra['chapterNumber'] as int? ??
                 GuideAnswerHolder.chapterNumber,
-            schoolClass: extra['schoolClass'] as int? ??
-                GuideAnswerHolder.schoolClass,
+            schoolClass:
+                extra['schoolClass'] as int? ?? GuideAnswerHolder.schoolClass,
             stimulusText: stim is String
                 ? stim
                 : (parts.first.stimulusText ?? ''),
@@ -86,10 +96,8 @@ final List<GoRoute> learnRoutes = [
   ),
   GoRoute(
     path: '/guide-model-tests',
-    builder: (c, s) => BackScope(
-      parent: '/practice',
-      child: const GuideModelTestListScreen(),
-    ),
+    builder: (c, s) =>
+        BackScope(parent: '/practice', child: const GuideModelTestListScreen()),
   ),
   // New search flow (Steps 3+5): home tiles land here, never on
   // the old chapters/guide-chapters screens. Query params carry
@@ -101,8 +109,7 @@ final List<GoRoute> learnRoutes = [
       parent: '/home',
       child: SearchFlowScreen(
         initialSubjectId: s.uri.queryParameters['subject'] ?? 'math',
-        initialSchoolClass:
-            int.tryParse(s.uri.queryParameters['class'] ?? ''),
+        initialSchoolClass: int.tryParse(s.uri.queryParameters['class'] ?? ''),
       ),
     ),
   ),
@@ -115,7 +122,7 @@ final List<GoRoute> learnRoutes = [
         if (t.name == q['type']) type = t;
       }
       return BackScope(
-        parent: '/search-flow',
+        parent: q['returnTo'] ?? '/search-flow',
         child: SearchFlowListScreen(
           subjectId: q['subject'] ?? 'math',
           schoolClass: int.tryParse(q['class'] ?? '') ?? 6,
@@ -132,22 +139,8 @@ final List<GoRoute> learnRoutes = [
       );
     },
   ),
-  // Board sub-sections (Board revision 2026-11-02): the Board
-  // tile lands here, never straight on a mixed list. The
-  // screen re-fetches Board counts and hides zero sections.
-  GoRoute(
-    path: '/search-flow-board',
-    builder: (c, s) {
-      final q = s.uri.queryParameters;
-      return BackScope(
-        parent: '/search-flow',
-        child: SearchFlowBoardSectionsScreen(
-          subjectId: q['subject'] ?? 'math',
-          schoolClass: int.tryParse(q['class'] ?? '') ?? 6,
-        ),
-      );
-    },
-  ),
+  // Board + lesson-hub routes live in router/lesson_hub_routes.dart
+  // (split out to keep this file under the 250-line cap).
   // No separate English picker (2026-11-05): English guide goes
   // through the main /search-flow global picker (subject=english);
   // the old /english-search-flow route was removed. The list and
@@ -193,7 +186,13 @@ final List<GoRoute> learnRoutes = [
     },
   ),
   // shows it instead of discarding it (see SearchScreen).
-  GoRoute(path: '/search', builder: (c, s) => BackScope(parent: '/home', child: SearchScreen(initialQuery: s.uri.queryParameters['q'] ?? ''))),
+  GoRoute(
+    path: '/search',
+    builder: (c, s) => BackScope(
+      parent: '/home',
+      child: SearchScreen(initialQuery: s.uri.queryParameters['q'] ?? ''),
+    ),
+  ),
   // Second step: textbook chapter list. schoolClass/bannerPage
   // come from ChapterListHolder (set by Search); a direct route
   // entry passes null, and the screen loads the saved class.
@@ -207,16 +206,23 @@ final List<GoRoute> learnRoutes = [
         parent: '/search',
         child: ChapterQuestionsScreen(
           subjectId: s.pathParameters['subjectId'] ?? 'math',
-          chapterNumber:
-              int.tryParse(s.pathParameters['chapter'] ?? '') ?? 1,
+          chapterNumber: int.tryParse(s.pathParameters['chapter'] ?? '') ?? 1,
           schoolClass: schoolClass,
           bannerPage: bannerPage,
         ),
       );
     },
   ),
-  GoRoute(path: '/book-lookup', builder: (c, s) => BackScope(parent: '/search', child: const BookLookupScreen())),
-  GoRoute(path: '/lesson', builder: (c, s) => BackScope(parent: '/search', child: const LessonScreen())),
+  GoRoute(
+    path: '/book-lookup',
+    builder: (c, s) =>
+        BackScope(parent: '/search', child: const BookLookupScreen()),
+  ),
+  GoRoute(
+    path: '/lesson',
+    builder: (c, s) =>
+        BackScope(parent: '/search', child: const LessonScreen()),
+  ),
   // Chat back destination follows the selection: textbook flows
   // return to /lesson (default); guide flows return to the guide
   // answer route set by the guide screen before navigating here.
@@ -227,5 +233,9 @@ final List<GoRoute> learnRoutes = [
       child: const ChatScreen(),
     ),
   ),
-  GoRoute(path: '/lesson/no-match', builder: (c, s) => BackScope(parent: '/search', child: const NoMatchScreen())),
+  GoRoute(
+    path: '/lesson/no-match',
+    builder: (c, s) =>
+        BackScope(parent: '/search', child: const NoMatchScreen()),
+  ),
 ];

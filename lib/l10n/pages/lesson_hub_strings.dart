@@ -1,0 +1,36 @@
+// Lesson hub page strings (page-wise Bn+En).
+const Map<String, String> lessonHubStringsBn = {
+  'title': 'লেসন',
+  'chooseContent': 'কী পড়তে চাও?',
+  'chapterLabel': 'অধ্যায়',
+  'allLessons': 'সব লেসন',
+  'mcq': 'বহুনির্বাচনী (MCQ)',
+  'mcqSub': 'এক নম্বরের বহুনির্বাচনী ব্যাংক',
+  'creative': 'সৃজনশীল',
+  'creativeSub': 'উদ্দীপক + ক/খ/গ/ঘ, বোর্ডের মতো',
+  'short': 'সংক্ষিপ্ত উত্তর',
+  'shortSub': 'সংক্ষিপ্ত প্রশ্ন ও উত্তর',
+  'model': 'মডেল টেস্ট',
+  'modelSub': 'পূর্ণাঙ্গ সেট, সময়সহ',
+  'board': 'বোর্ড প্রশ্ন',
+  'boardSub': 'বোর্ডের বছরভিত্তিক প্রশ্ন',
+  'note': 'সব প্রশ্ন গাইড বই থেকেই — বাইরের কিছু নয়।',
+};
+
+const Map<String, String> lessonHubStringsEn = {
+  'title': 'Lesson',
+  'chooseContent': 'What do you want to study?',
+  'chapterLabel': 'Chapter',
+  'allLessons': 'All lessons',
+  'mcq': 'Multiple choice (MCQ)',
+  'mcqSub': 'One-mark MCQ bank',
+  'creative': 'Creative',
+  'creativeSub': 'Stimulus + ka/kha/ga/gha, board style',
+  'short': 'Short answer',
+  'shortSub': 'Short questions and answers',
+  'model': 'Model test',
+  'modelSub': 'Full set, timed',
+  'board': 'Board questions',
+  'boardSub': 'Board questions by year',
+  'note': 'Every question comes from the guide book — nothing outside it.',
+};

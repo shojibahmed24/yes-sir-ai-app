@@ -12,23 +12,18 @@ import 'package:yes_sir_ai/features/learn/search_flow_controller.dart';
 import 'package:yes_sir_ai/l10n/pages/search_flow_strings.dart';
 
 SearchFlowController _controller() => SearchFlowController(
-      initialSubjectId: 'math',
-      initialSchoolClass: 9,
-      onChanged: () {},
-    );
+  initialSubjectId: 'math',
+  initialSchoolClass: 9,
+  onChanged: () {},
+);
 
-SearchFlowBrowseExtras _extras() =>
-    SearchFlowBrowseExtras(onChanged: () {});
+SearchFlowBrowseExtras _extras() => SearchFlowBrowseExtras(onChanged: () {});
 
-GlobalPickerTree _tree(
-  SearchFlowController c,
-  SearchFlowBrowseExtras e,
-) =>
-    buildGlobalPickerTree(
-        c: c, extras: e, s: searchFlowStringsBn, bn: true);
+GlobalPickerTree _tree(SearchFlowController c, SearchFlowBrowseExtras e) =>
+    buildGlobalPickerTree(c: c, extras: e, s: searchFlowStringsBn, bn: true);
 
 void main() {
-  test('math guide: chapters root, lessons drill under a chapter', () {
+  test('math guide: chapters root, lessons open the lesson hub', () {
     final c = _controller()
       ..subjectId = 'math'
       ..source = 'guide'
@@ -37,18 +32,19 @@ void main() {
       ..chaptersLoading = false;
     final tree = _tree(c, _extras());
     expect(tree.loading, isFalse);
-    final chapter2 =
-        tree.rootNodes.firstWhere((n) => n.id == 'chapter:2');
+    final chapter2 = tree.rootNodes.firstWhere((n) => n.id == 'chapter:2');
     expect(chapter2.hasChildren, isTrue);
     expect(chapter2.pick?.kind, GlobalPickerPickKind.chapter);
     final kids = tree.childrenOf(chapter2)!;
     expect(kids.first.id, 'lesson:2:all');
-    expect(kids.first.pick?.kind, GlobalPickerPickKind.chapterLesson);
-    expect(kids.first.pick?.chapter, 2);
-    expect(kids.first.pick?.lesson, isNull);
+    expect(kids.first.pick?.kind, GlobalPickerPickKind.route);
+    expect(kids.first.pick?.route, contains('/lesson-hub'));
+    expect(kids.first.pick?.route, isNot(contains('lesson=')));
     // Every static lesson of chapter 2 appears exactly once.
     expect(kids.length - 1, 2);
-    expect(kids.any((n) => n.id == 'lesson:2:2.1'), isTrue);
+    final first = kids.firstWhere((n) => n.id == 'lesson:2:2.1');
+    expect(first.pick?.route, contains('lesson=2.1'));
+    expect(first.hasChildren, isFalse);
   });
 
   test('math textbook: chapters are leaves, no sets group', () {
@@ -73,12 +69,14 @@ void main() {
     final e = _extras()
       ..sets = [
         const GuideModelSetInfo(
-            setId: 'model-1', totalCount: 30, keyedCount: 30),
+          setId: 'model-1',
+          totalCount: 30,
+          keyedCount: 30,
+        ),
       ];
     final tree = _tree(c, e);
     expect(tree.rootNodes.map((n) => n.id), ['chapter:1', 'sets-group']);
-    final group =
-        tree.rootNodes.firstWhere((n) => n.id == 'sets-group');
+    final group = tree.rootNodes.firstWhere((n) => n.id == 'sets-group');
     expect(group.hasChildren, isTrue);
     expect(group.pick, isNull);
     final setKids = tree.childrenOf(group)!;
@@ -97,7 +95,10 @@ void main() {
     final e = _extras()
       ..sets = [
         const GuideModelSetInfo(
-            setId: 'civics-ch1-mcq', totalCount: 223, keyedCount: 223),
+          setId: 'civics-ch1-mcq',
+          totalCount: 223,
+          keyedCount: 223,
+        ),
       ];
     final tree = _tree(c, e);
     expect(tree.rootNodes.map((n) => n.id), [
@@ -107,8 +108,7 @@ void main() {
       'chapter:8',
       'sets-group',
     ]);
-    final note =
-        tree.rootNodes.firstWhere((n) => n.id == 'set-only-note');
+    final note = tree.rootNodes.firstWhere((n) => n.id == 'set-only-note');
     expect(note.kind, GlobalPickerNodeKind.setsGroup);
     expect(note.hasChildren, isTrue);
     expect(note.pick, isNull);
@@ -119,13 +119,14 @@ void main() {
     // Without sets, no note (and no sets group either).
     final bare = _tree(c, _extras());
     expect(bare.rootNodes.any((n) => n.id == 'set-only-note'), isFalse);
-    expect(
-        bare.rootNodes.map((n) => n.id),
-        ['chapter:6', 'chapter:7', 'chapter:8']);
+    expect(bare.rootNodes.map((n) => n.id), [
+      'chapter:6',
+      'chapter:7',
+      'chapter:8',
+    ]);
   });
 
-  test('bangla 1st guide: sections root, lessons filter by section',
-      () {
+  test('bangla 1st guide: sections root, lessons filter by section', () {
     final c = _controller()
       ..subjectId = 'bangla-1st'
       ..source = 'guide'
@@ -136,18 +137,17 @@ void main() {
       ..serverLessons = {firstLesson.title: 4, 'অজানা-লেসন': 2}
       ..serverLessonsLoading = false;
     final tree = _tree(c, e);
-    final sectionNode = tree.rootNodes
-        .firstWhere((n) => n.id == 'section:${firstLesson.section}');
+    final sectionNode = tree.rootNodes.firstWhere(
+      (n) => n.id == 'section:${firstLesson.section}',
+    );
     expect(sectionNode.hasChildren, isTrue);
     final kids = tree.childrenOf(sectionNode)!;
     expect(kids.first.id, 'lesson:${firstLesson.section}:all');
-    expect(
-        kids.any((n) => n.title == firstLesson.title), isTrue);
+    expect(kids.any((n) => n.title == firstLesson.title), isTrue);
     // The unmapped title belongs to no section: hidden here.
     expect(kids.any((n) => n.title == 'অজানা-লেসন'), isFalse);
     // ...but reachable through the all-lessons branch.
-    final allNode =
-        tree.rootNodes.firstWhere((n) => n.id == 'section:__all');
+    final allNode = tree.rootNodes.firstWhere((n) => n.id == 'section:__all');
     final allKids = tree.childrenOf(allNode)!;
     expect(allKids.any((n) => n.title == 'অজানা-লেসন'), isTrue);
     final unmappedPick = allKids
@@ -158,8 +158,7 @@ void main() {
     expect(unmappedPick.lesson, 'অজানা-লেসন');
   });
 
-  test('bangla 1st guide: section children load while server lags',
-      () {
+  test('bangla 1st guide: section children load while server lags', () {
     final c = _controller()
       ..subjectId = 'bangla-1st'
       ..source = 'guide'
@@ -167,8 +166,9 @@ void main() {
       ..chaptersLoading = false;
     final e = _extras()..serverLessonsLoading = true;
     final tree = _tree(c, e);
-    final sectionNode =
-        tree.rootNodes.firstWhere((n) => n.id == 'section:goddo');
+    final sectionNode = tree.rootNodes.firstWhere(
+      (n) => n.id == 'section:goddo',
+    );
     expect(tree.childrenOf(sectionNode), isNull);
   });
 
@@ -182,8 +182,7 @@ void main() {
     expect(tree.rootNodes.length, 15);
     expect(tree.rootNodes.first.pick?.kind, GlobalPickerPickKind.paper2);
     expect(tree.rootNodes.first.pick?.paper2Section, 'gapbox');
-    expect(tree.rootNodes.last.pick?.paper2Section,
-        'writing-composition');
+    expect(tree.rootNodes.last.pick?.paper2Section, 'writing-composition');
   });
 
   test('bangla 2nd guide: 11 type nodes, each a route pick', () {
