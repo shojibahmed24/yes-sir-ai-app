@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/guide_bank_model.dart';
+import '../set_display_labels.dart';
 import 'guide_stimulus_block.dart';
 
 class GuideQuestionHeader extends StatelessWidget {
@@ -19,6 +20,7 @@ class GuideQuestionHeader extends StatelessWidget {
     required this.fontSize,
     required this.s,
     required this.color,
+    required this.bn,
     this.showStimulus = true,
   });
   final GuideBankQuestion question;
@@ -26,6 +28,7 @@ class GuideQuestionHeader extends StatelessWidget {
   final double fontSize;
   final Map<String, String> s;
   final Color color;
+  final bool bn;
 
   /// False in the grouped creative view, where the stimulus is
   /// already pinned above the part tabs (never shown twice).
@@ -60,11 +63,15 @@ class GuideQuestionHeader extends StatelessWidget {
     }
     final setId = question.setId;
     if (setId != null && setId.isNotEmpty) {
-      parts.add(
-        setId.startsWith('model-test-')
-            ? '${s['modelTestWord']!} ${setId.substring('model-test-'.length)}'
-            : setId,
-      );
+      if (setId.startsWith('model-test-')) {
+        parts.add(
+          '${s['modelTestWord']!} ${setId.substring('model-test-'.length)}',
+        );
+      } else if (setId.split('-').contains('board')) {
+        parts.add(setDisplayTitle(setId, bn, 1));
+      } else {
+        parts.add(setId);
+      }
     }
     final stimText = question.stimulusText;
     final stimRef = question.stimulusRef;

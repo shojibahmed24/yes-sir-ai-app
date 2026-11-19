@@ -11,7 +11,10 @@ import 'package:flutter/material.dart';
 import '../../../core/models/guide_bank_model.dart';
 import '../../../core/services/app_config.dart';
 import '../../../core/services/guide_bank_service.dart';
+import '../board_creative_parse.dart';
 import '../search_flow_types.dart';
+import '../set_display_labels.dart';
+import 'board_creative_card.dart';
 import 'digits.dart';
 import 'guide_creative_groups.dart';
 import 'guide_question_row.dart';
@@ -67,6 +70,50 @@ class SearchFlowGuideListView extends StatelessWidget {
   onOpenGroup;
   final VoidCallback onLoadMore;
 
+  String? _boardLabel(GroupedRows g) {
+    final q = g.parts.first.$2;
+    if (q.section?.startsWith('board') != true || q.setId == null) return null;
+    return setDisplayTitle(q.setId!, bn, g.parts.first.$1 + 1);
+  }
+
+  Widget _row(GroupedRows g, bool locked) {
+    final first = g.parts.first;
+    final q = first.$2;
+    final boardLabel = _boardLabel(g);
+    void open() {
+      final openGroup = onOpenGroup;
+      if (type == SearchFlowType.creative &&
+          g.stimulusId != null &&
+          openGroup != null) {
+        openGroup(first.$1, [
+          for (final p in g.parts) p.$2,
+        ], q.stimulusText ?? '');
+      } else {
+        onOpen(first.$1, q);
+      }
+    }
+
+    if (q.section == 'board-creative' &&
+        parseBoardCreative(q.questionText) != null) {
+      return BoardCreativeCard(
+        question: q,
+        locked: locked,
+        s: gs,
+        boardLabel: boardLabel,
+        onTap: open,
+      );
+    }
+    return GuideQuestionRow(
+      question: q,
+      locked: locked,
+      s: gs,
+      subjectId: subjectId,
+      chapterNumber: chapterNumber,
+      boardLabel: boardLabel,
+      onTap: open,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final entries = [for (var i = 0; i < rows.length; i++) (i, rows[i])];
@@ -113,28 +160,13 @@ class SearchFlowGuideListView extends StatelessWidget {
           // only that half — groups are never merged across
           // rows that have not been loaded, so no wrong
           // group can be assembled.
-          GuideQuestionRow(
-            question: g.parts.first.$2,
-            locked: !guideBankService.isUnlocked(
+          _row(
+            g,
+            !guideBankService.isUnlocked(
               isPremium: isPremium,
               index: g.parts.first.$1,
               freeLimit: AppConfig.freeGuideLimit,
             ),
-            s: gs,
-            subjectId: subjectId,
-            chapterNumber: chapterNumber,
-            onTap: () {
-              final openGroup = onOpenGroup;
-              if (type == SearchFlowType.creative &&
-                  g.stimulusId != null &&
-                  openGroup != null) {
-                openGroup(g.parts.first.$1, [
-                  for (final p in g.parts) p.$2,
-                ], g.parts.first.$2.stimulusText ?? '');
-              } else {
-                onOpen(g.parts.first.$1, g.parts.first.$2);
-              }
-            },
           ),
         ],
         if (hasMore) ...[
