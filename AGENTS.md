@@ -3,9 +3,12 @@
 Save this file as `AGENTS.md` in the project root on the user's Windows PC
 (OpenCode reads it automatically at startup). Or paste the whole thing into
 OpenCode. The user speaks Bangla; answer the user in Bangla, write code
-comments in English. Model: **DeepSeek V4 Pro** for heavy work (this
-lesson-mapping task — strongest reasoning); **DeepSeek V4.1 Flash 1017**
-for small daily edits (cheapest, fastest). Switch anytime with `/models`.
+comments in English. Model on OpenCode Go: default to **DeepSeek V4.1 Flash
+1017** for everything, including heavy work — its Go allowance is
+$100/month ($20 per 5 hours), so it can run long tasks without stopping.
+DeepSeek V4 Pro is stronger but its Go allowance is only $15/month
+($3 per 5 hours) — use it only for a short, high-value reasoning burst,
+never as the main model for a long task. Switch anytime with `/models`.
 
 ## SETUP FIRST — do this before anything else
 
