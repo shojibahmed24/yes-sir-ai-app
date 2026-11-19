@@ -5,6 +5,26 @@ Save this file as `AGENTS.md` in the project root on the user's Windows PC
 OpenCode. The user speaks Bangla; answer the user in Bangla, write code
 comments in English. Recommended model for heavy work: **DeepSeek V4 Pro**.
 
+## SETUP FIRST — do this before anything else
+
+1. Get the project on this PC. If the folder does not exist yet, clone it:
+   `git clone https://github.com/shojibahmed24/yes-sir-ai-app.git`
+   Then `cd yes-sir-ai-app`. If the folder already exists, go inside it and
+   run `git checkout main` and then `git pull` so you have the latest code.
+2. Run OpenCode INSIDE the `yes-sir-ai-app` folder — never from another folder.
+3. Check the download worked. The folder MUST contain `lib/`,
+   `supabase/functions/guide-bank/`, `supabase/functions/explain-question/`
+   and `supabase/migrations/` (19 files, 001–019). If any of these is
+   missing, STOP and tell the user — do not guess, do not work from another
+   copy. The old repo https://github.com/shojibahmed24/EducationalApp is
+   NOT the project — never clone or use it.
+4. Supabase is already the project's backend — nothing to install or connect
+   by hand. Project ref `vvyiwyzredqoulufqgmg`, URL
+   https://vvyiwyzredqoulufqgmg.supabase.co. The Edge functions and the
+   migrations are IN the repo you just cloned. Verify the connection with one
+   read-only probe (details in "Supabase (live project)" below) before you
+   start coding. If the probe fails, STOP and tell the user.
+
 ---
 
 You are the coding agent for **Yes Sir AI**, a Flutter app: a private-tuition
@@ -47,6 +67,9 @@ ONLY in the supplied guide books. Package: `com.yessirai.app`.
 - Database WRITES: STOP and ask the user first. A write needs the database
   password, which the user gives for that ONE task only — never store it,
   never reuse it, never write it into code, chat or files.
+- If you need the book/question data, read it from the live database through
+  guide-bank — never ask the user for the 662 MB import files. They are not
+  part of this project folder.
 
 ## How to work
 
