@@ -13,16 +13,20 @@ import 'guide_flow_models.dart';
 
 class GuideFlowCountService {
   GuideFlowCountService({GuideFlowPost? post})
-      : _post = post ?? edgePost,
-        _customPost = post != null;
+    : _post = post ?? edgePost,
+      _customPost = post != null;
   final GuideFlowPost _post;
   final bool _customPost;
   final _cache = <String, int>{};
   final _inFlight = <String, Future<int?>>{};
 
-  static String keyOf(String subject, int schoolClass, int chapter,
-          SearchFlowType type, String? lesson) =>
-      '$schoolClass|$subject|$chapter|${type.name}|${lesson ?? ''}';
+  static String keyOf(
+    String subject,
+    int schoolClass,
+    int chapter,
+    SearchFlowType type,
+    String? lesson,
+  ) => '$schoolClass|$subject|$chapter|${type.name}|${lesson ?? ''}';
 
   /// Exact question count, or null when it cannot be known.
   Future<int?> count({
@@ -37,11 +41,12 @@ class GuideFlowCountService {
     if (hit != null) return Future.value(hit);
     // Block body on purpose: remove() returns this very future,
     // and whenComplete would wait on it forever.
-    return _inFlight[key] ??= _fetch(
-      key, subject, schoolClass, chapter, type, lesson,
-    ).whenComplete(() {
-      _inFlight.remove(key);
-    });
+    return _inFlight[key] ??=
+        _fetch(key, subject, schoolClass, chapter, type, lesson).whenComplete(
+          () {
+            _inFlight.remove(key);
+          },
+        );
   }
 
   /// Counts for every type of one chapter (+ lesson), in parallel.
@@ -65,8 +70,73 @@ class GuideFlowCountService {
     return {for (var i = 0; i < types.length; i++) types[i]: out[i]};
   }
 
-  Future<int?> _fetch(String key, String subject, int schoolClass,
-      int chapter, SearchFlowType type, String? lesson) async {
+  /// Exact chapterless count for one Paper-II section
+  /// (english-2nd). Null when the server cannot answer (old
+  /// server without the section echo, error): the picker then
+  /// keeps that section visible instead of hiding it on a guess.
+  Future<int?> countPaperTwoSection({
+    required String subject,
+    required int schoolClass,
+    required String section,
+  }) {
+    final key = paperTwoSectionKey(subject, schoolClass, section);
+    final hit = _cache[key];
+    if (hit != null) return Future.value(hit);
+    return _inFlight[key] ??=
+        _fetchPaperTwoSection(key, subject, schoolClass, section).whenComplete(
+          () {
+            _inFlight.remove(key);
+          },
+        );
+  }
+
+  static String paperTwoSectionKey(
+    String subject,
+    int schoolClass,
+    String section,
+  ) => '$schoolClass|$subject|paper2|$section';
+
+  Future<int?> _fetchPaperTwoSection(
+    String key,
+    String subject,
+    int schoolClass,
+    String section,
+  ) async {
+    if (!_customPost && AppConfig.guideBankEndpoint.isEmpty) return null;
+    try {
+      final res = await _post({
+        'action': 'list',
+        'classId': schoolClass,
+        'subject': subject,
+        // Chapterless book: no chapter is sent (the Edge list
+        // rejects a chapterless list that also carries one).
+        'chapterless': true,
+        'section': section,
+        'offset': 0,
+        'limit': 1,
+        'slim': true,
+      }, endpoint: AppConfig.guideBankEndpoint);
+      if (res == null || res['found'] != true) return null;
+      if (!res.containsKey('section')) {
+        return null; // old server ignored the filter: total not trusted
+      }
+      final total = (res['total'] as num?)?.toInt();
+      if (total == null || total < 0) return null;
+      _cache[key] = total;
+      return total;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<int?> _fetch(
+    String key,
+    String subject,
+    int schoolClass,
+    int chapter,
+    SearchFlowType type,
+    String? lesson,
+  ) async {
     if (!_customPost && AppConfig.guideBankEndpoint.isEmpty) return null;
     try {
       final res = await _post({

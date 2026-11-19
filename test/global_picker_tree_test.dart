@@ -3,6 +3,7 @@
 // set fields directly and assert nodes + picks, no I/O.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yes_sir_ai/core/data/bangla_first_lessons.dart';
+import 'package:yes_sir_ai/core/data/paper2_sections.dart';
 import 'package:yes_sir_ai/core/models/guide_bank_model.dart';
 import 'package:yes_sir_ai/features/learn/bangla_second_types.dart';
 import 'package:yes_sir_ai/features/learn/global_picker_model.dart';
@@ -183,6 +184,67 @@ void main() {
     expect(tree.rootNodes.first.pick?.kind, GlobalPickerPickKind.paper2);
     expect(tree.rootNodes.first.pick?.paper2Section, 'gapbox');
     expect(tree.rootNodes.last.pick?.paper2Section, 'writing-composition');
+  });
+
+  test('paper2 guide: sections with zero rows are hidden, order kept', () {
+    final c = _controller()
+      ..subjectId = 'english-2nd'
+      ..source = 'guide'
+      ..schoolClass = 9
+      ..chaptersLoading = false;
+    final e = _extras()
+      ..paper2Sections.counts = {
+        for (final v in paperTwoSections) v: 0,
+        'writing-paragraph': 41,
+        'writing-email': 18,
+        'writing-letter': 59,
+        'writing-composition': 40,
+      };
+    final tree = _tree(c, e);
+    expect(tree.rootNodes.map((n) => n.pick?.paper2Section).toList(), [
+      'writing-paragraph',
+      'writing-email',
+      'writing-letter',
+      'writing-composition',
+    ]);
+    expect(
+      tree.rootNodes.first.title,
+      searchFlowStringsBn['paper2SectionWritingParagraph'],
+    );
+    // The exact server total rides on the row, never a guess.
+    expect(tree.rootNodes.first.subtitle, '৪১');
+  });
+
+  test('paper2 guide: an unknown count never hides a section', () {
+    final c = _controller()
+      ..subjectId = 'english-2nd'
+      ..source = 'guide'
+      ..schoolClass = 9
+      ..chaptersLoading = false;
+    final e = _extras()
+      ..paper2Sections.counts = {
+        for (final v in paperTwoSections) v: 0,
+        'verbs': null,
+        'writing-email': 18,
+      };
+    final tree = _tree(c, e);
+    expect(tree.rootNodes.map((n) => n.pick?.paper2Section).toList(), [
+      'verbs',
+      'writing-email',
+    ]);
+    expect(tree.rootNodes.first.subtitle, isNull);
+  });
+
+  test('paper2 guide: all-zero data falls back to every section', () {
+    final c = _controller()
+      ..subjectId = 'english-2nd'
+      ..source = 'guide'
+      ..schoolClass = 9
+      ..chaptersLoading = false;
+    final e = _extras()
+      ..paper2Sections.counts = {for (final v in paperTwoSections) v: 0};
+    final tree = _tree(c, e);
+    expect(tree.rootNodes.length, 15);
   });
 
   test('bangla 2nd guide: 11 type nodes, each a route pick', () {

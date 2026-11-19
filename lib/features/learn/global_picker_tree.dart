@@ -95,11 +95,23 @@ GlobalPickerTree buildGlobalPickerTree({
     if (extras.sets.isNotEmpty) roots.add(setsGroupNode());
     loading = false;
   } else if (paper2Mode) {
+    // Only sections the live paper really has. Zero is a server
+    // fact (hidden); an unknown count stays visible, never a guess.
+    // All-zero data keeps the full list so the picker is never blank.
+    final known = extras.paper2SectionCounts;
+    final offered = known.isEmpty
+        ? paperTwoSections
+        : paperTwoSections.where((v) {
+            final n = known[v];
+            return n == null || n > 0;
+          }).toList();
+    final list = offered.isEmpty ? paperTwoSections : offered;
     roots = [
-      for (final v in paperTwoSections)
+      for (final v in list)
         GlobalPickerNode(
           id: 'paper2:$v',
           title: s[paperTwoSectionStringKey(v)]!,
+          subtitle: (known[v] ?? 0) > 0 ? numStr(known[v]!, bn) : null,
           kind: GlobalPickerNodeKind.section,
           pick: GlobalPickerPick.paper2(v),
         ),

@@ -15,6 +15,7 @@ import '../../core/services/edge_post.dart';
 import '../../core/services/model_test_set_service.dart';
 import '../../core/services/picker_cache_service.dart';
 import 'search_flow_lesson_counts.dart';
+import 'search_flow_paper2_counts.dart';
 
 class SearchFlowBrowseExtras {
   SearchFlowBrowseExtras({required this.onChanged});
@@ -44,6 +45,12 @@ class SearchFlowBrowseExtras {
   /// Lazy per-lesson question counts (picker lesson rows).
   late final lessonCounts = SearchFlowLessonCounts(onChanged: _notify);
 
+  /// Paper-II sections that actually carry rows (english-2nd only).
+  /// Empty = unknown: the picker keeps all 15 static sections.
+  late final paper2Sections = Paper2SectionCounts(onChanged: _notify);
+
+  Map<String, int?> get paper2SectionCounts => paper2Sections.counts;
+
   int _generation = 0;
 
   void _notify() => onChanged();
@@ -64,15 +71,29 @@ class SearchFlowBrowseExtras {
     final gen = ++_generation;
     setId = null;
     paper2Section = null;
+    paper2Sections.clear();
     sets = const [];
     serverLessons = const {};
     setsLoading = true;
     serverLessonsLoading = subjectId == 'bangla';
     _notify();
+    // Paper-II sections are independent of sets/lessons; each one
+    // reports through onChanged as soon as its exact total lands.
+    if (subjectId == 'english-2nd') {
+      paper2Sections.load(schoolClass: schoolClass);
+    }
     final setsKey = pickerCacheKey(
-        schoolClass, subjectId, 'all', pickerCacheKindSets);
+      schoolClass,
+      subjectId,
+      'all',
+      pickerCacheKindSets,
+    );
     final lessonsKey = pickerCacheKey(
-        schoolClass, subjectId, 'bn', pickerCacheKindServerLessons);
+      schoolClass,
+      subjectId,
+      'bn',
+      pickerCacheKindServerLessons,
+    );
     var showedSetsCache = false;
     var showedLessonsCache = false;
     final cachedSets = await pickerCacheService.read(setsKey);
@@ -125,8 +146,7 @@ class SearchFlowBrowseExtras {
     setsLoading = false;
     if (lessons != null) {
       serverLessons = lessons;
-      await pickerCacheService.write(
-          lessonsKey, encodeServerLessons(lessons));
+      await pickerCacheService.write(lessonsKey, encodeServerLessons(lessons));
     } else if (!showedLessonsCache && subjectId == 'bangla') {
       serverLessons = const {};
     }
@@ -141,25 +161,31 @@ class SearchFlowBrowseExtras {
   Future<void> warmGuideCache(String subjectId, int schoolClass) async {
     try {
       final setsKey = pickerCacheKey(
-          schoolClass, subjectId, 'all', pickerCacheKindSets);
+        schoolClass,
+        subjectId,
+        'all',
+        pickerCacheKindSets,
+      );
       if (!await pickerCacheService.isFresh(setsKey)) {
         final freshSets = await pickerCacheService
             .dedupe(
               'fetch:$setsKey',
               () => modelTestSetService
-                  .fetchSetsFromServer(subjectId,
-                      schoolClass: schoolClass)
+                  .fetchSetsFromServer(subjectId, schoolClass: schoolClass)
                   .catchError((_) => null),
             )
             .catchError((_) => null);
         if (freshSets != null) {
-          await pickerCacheService.write(
-              setsKey, encodeModelSets(freshSets));
+          await pickerCacheService.write(setsKey, encodeModelSets(freshSets));
         }
       }
       if (subjectId == 'bangla') {
         final lessonsKey = pickerCacheKey(
-            schoolClass, subjectId, 'bn', pickerCacheKindServerLessons);
+          schoolClass,
+          subjectId,
+          'bn',
+          pickerCacheKindServerLessons,
+        );
         if (!await pickerCacheService.isFresh(lessonsKey)) {
           final freshLessons = await pickerCacheService
               .dedupe(
@@ -169,7 +195,9 @@ class SearchFlowBrowseExtras {
               .catchError((_) => null);
           if (freshLessons != null) {
             await pickerCacheService.write(
-                lessonsKey, encodeServerLessons(freshLessons));
+              lessonsKey,
+              encodeServerLessons(freshLessons),
+            );
           }
         }
       }
@@ -181,6 +209,7 @@ class SearchFlowBrowseExtras {
     _generation++;
     setId = null;
     paper2Section = null;
+    paper2Sections.clear();
     sets = const [];
     serverLessons = const {};
     setsLoading = false;
@@ -193,7 +222,9 @@ class SearchFlowBrowseExtras {
   /// predates the lesson column (found:false) — the lesson
   /// picker hides and lesson stays optional either way.
   Future<Map<String, int>?> _fetchServerLessons(
-      String subjectId, int schoolClass) async {
+    String subjectId,
+    int schoolClass,
+  ) async {
     if (AppConfig.guideBankEndpoint.isEmpty) return null;
     final res = await edgePost({
       'action': 'guideLessons',
