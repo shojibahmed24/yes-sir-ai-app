@@ -16,14 +16,16 @@ import '../../l10n/language_provider.dart';
 import '../../l10n/pages/subjects_strings.dart';
 import '../../l10n/pages/guide_bank_strings.dart';
 import '../../l10n/pages/home_strings.dart';
-import '../../theme/app_tokens.dart';
 import '../../theme/themed_scaffold.dart';
-import '../../theme/widgets/app_chip.dart';
+import '../../theme/widgets/app_state_view.dart';
+import '../../theme/widgets/section_header.dart';
 import '../learn/learn_store.dart';
 import '../learn/widgets/digits.dart';
 import '../learn/widgets/subject_guide_card.dart';
+import 'widgets/class_selector.dart';
 import 'widgets/subject_card.dart';
 import 'widgets/home_bottom_nav.dart';
+import 'widgets/home_empty_state.dart';
 
 /// Subjects screen with a manual refresh: the cache-once home
 /// grid never refetches on mount, so new server subjects appear
@@ -108,6 +110,22 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           body: FutureBuilder<List<dynamic>>(
             future: _future,
             builder: (context, snap) {
+              // Phase 0: one honest state before the list — a raw
+              // zero-filled list while loading looked like real data.
+              if (!snap.hasData) {
+                if (snap.hasError) {
+                  return AppStateView(
+                    kind: AppStateKind.error,
+                    title: nav['subjectsLoadFailed']!,
+                    actionLabel: nav['subjectsRetry']!,
+                    onAction: () => setState(() => _future = null),
+                  );
+                }
+                return AppStateView(
+                  kind: AppStateKind.loading,
+                  title: nav['loadingSubjects']!,
+                );
+              }
               final lessons = snap.data == null
                   ? 0
                   : (snap.data![0] as LearnSummary).lessonsOpened;
@@ -125,26 +143,11 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               return ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Text(
-                    s['classLabel']!,
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 40,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 10,
-                      separatorBuilder: (_, __) => const SizedBox(width: Sp.sm),
-                      itemBuilder: (context, i) {
-                        final cls = i + 1;
-                        return AppChip(
-                          label: numStr(cls, bn),
-                          selected: cls == (_selectedClass ?? _schoolClass),
-                          onTap: () => _onClassSelected(cls),
-                        );
-                      },
-                    ),
+                  ClassSelector(
+                    selected: _selectedClass ?? _schoolClass,
+                    onSelected: _onClassSelected,
+                    bn: bn,
+                    s: s,
                   ),
                   const SizedBox(height: 16),
                   Card(
@@ -166,41 +169,46 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    s['allSubjects']!,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
+                  SectionHeader(title: s['allSubjects']!),
                   const SizedBox(height: 8),
-                  ...subjects.map(
-                    (subj) => Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: SubjectCard(
-                            name: subj.name(bn),
-                            chapters: subj.chapterCount,
-                            done: opened
-                                .where((c) => c.startsWith('${subj.id}|'))
-                                .length,
-                            locked: subj.locked,
-                            subjectId: subj.id,
-                            chaptersLabel: s['chapters']!,
-                            lockedLabel:
-                                '${s['locked']!} — ${s['lockedHint']!}',
-                          ),
-                        ),
-                        // Renders nothing for guide-less subjects.
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: SubjectGuideCard(
-                            subjectId: subj.id,
-                            bn: bn,
-                            s: gs,
-                          ),
-                        ),
-                      ],
+                  if (subjects.isEmpty) ...[
+                    HomeEmptyState(
+                      message: nav['noSubjects']!,
+                      actionLabel: nav['subjectsRetry']!,
+                      onAction: () => setState(() => _future = null),
                     ),
-                  ),
+                  ] else ...[
+                    ...subjects.map(
+                      (subj) => Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: SubjectCard(
+                              name: subj.name(bn),
+                              chapters: subj.chapterCount,
+                              done: opened
+                                  .where((c) => c.startsWith('${subj.id}|'))
+                                  .length,
+                              locked: subj.locked,
+                              subjectId: subj.id,
+                              chaptersLabel: s['chapters']!,
+                              lockedLabel:
+                                  '${s['locked']!} — ${s['lockedHint']!}',
+                            ),
+                          ),
+                          // Renders nothing for guide-less subjects.
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: SubjectGuideCard(
+                              subjectId: subj.id,
+                              bn: bn,
+                              s: gs,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Card(
                     child: Padding(

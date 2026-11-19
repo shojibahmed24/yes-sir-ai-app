@@ -19,6 +19,9 @@ import '../../l10n/pages/chapters_strings.dart';
 import '../../l10n/pages/guide_bank_strings.dart';
 import '../../l10n/pages/home_strings.dart';
 import '../home/widgets/home_bottom_nav.dart';
+import '../home/widgets/home_empty_state.dart';
+import '../../theme/widgets/app_state_view.dart';
+import '../../theme/widgets/section_header.dart';
 import 'learn_store.dart';
 import 'widgets/chapter_card.dart';
 import 'widgets/digits.dart';
@@ -89,16 +92,17 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
             future: _future,
             builder: (context, snap) {
               if (!snap.hasData) {
-                if (snap.hasError) return _error(s);
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 12),
-                      Text(s['loading']!),
-                    ],
-                  ),
+                if (snap.hasError) {
+                  return AppStateView(
+                    kind: AppStateKind.error,
+                    title: s['loadFailed']!,
+                    actionLabel: s['retry']!,
+                    onAction: () => setState(() => _future = _load()),
+                  );
+                }
+                return AppStateView(
+                  kind: AppStateKind.loading,
+                  title: s['loading']!,
                 );
               }
               final dbChapters = snap.data![0] as List<ChapterInfo>?;
@@ -110,7 +114,12 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
               // demo: error state + retry. Unconfigured (null
               // here) = demo list WITH the demo label below.
               if (AppConfig.supabaseConfigured && dbChapters == null) {
-                return _error(s);
+                return AppStateView(
+                  kind: AppStateKind.error,
+                  title: s['loadFailed']!,
+                  actionLabel: s['retry']!,
+                  onAction: () => setState(() => _future = _load()),
+                );
               }
               // Configured empty -> honest empty state, no rows.
               // Configured non-empty -> rows grouped by book.
@@ -152,13 +161,14 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    s['all']!,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
+                  SectionHeader(title: s['all']!),
                   const SizedBox(height: 8),
                   if (dbChapters != null && dbChapters.isEmpty)
-                    Text(s['noChapters']!),
+                    HomeEmptyState(
+                      message: s['noChapters']!,
+                      actionLabel: s['retry']!,
+                      onAction: () => setState(() => _future = _load()),
+                    ),
                   if (demo != null)
                     ...demo.asMap().entries.map((e) {
                       final n = e.key + 1;
@@ -234,24 +244,6 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _error(Map<String, String> s) {
-    return SingleChildScrollView(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(s['loadFailed']!),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => setState(() => _future = _load()),
-              child: Text(s['retry']!),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
