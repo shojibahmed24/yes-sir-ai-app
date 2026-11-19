@@ -77,6 +77,10 @@ ONLY in the supplied guide books. Package: `com.yessirai.app`.
 
 1. Before changing anything: run `git status` and `git log --oneline -5`.
    Tell the user which branch you are on and what is uncommitted.
+2. Stay in Build mode (the default — full agentic access: read, edit, run
+   commands, run tests, fix failures, repeat). Tab switches to Plan mode,
+   which is read-only and cannot edit — do NOT do the task in Plan mode.
+   If a command asks for permission, allow the test/build commands.
 2. Work on a feature branch, never directly on `main`. Commit with a clear
    message. Push to the branch and tell the user the commit hash.
 3. After every change run `flutter analyze` and `flutter test` and report
