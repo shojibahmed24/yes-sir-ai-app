@@ -129,18 +129,24 @@ void main() {
     expect(lessonsForChapter('math', 9, 17), isEmpty);
     // appendix is its own row since 11/10/2026, after 3.1-3.5
     final ch3 = lessonsForChapter('math', 9, 3);
-    expect(ch3.keys.toList(),
-        ['3.1', '3.2', '3.3', '3.4', '3.5', 'পরিশিষ্ট']);
+    expect(ch3.keys.toList(), ['3.1', '3.2', '3.3', '3.4', '3.5', 'পরিশিষ্ট']);
     expect(lessonsForChapter('math', 9, 7).containsKey('পরিশিষ্ট'), isFalse);
     // Other subjects, classes and chapters skip the lesson step.
-    expect(lessonsForChapter('science', 9, 2), isEmpty);
+    expect(lessonsForChapter('chemistry', 9, 2), isEmpty);
     expect(lessonsForChapter('math', 6, 2), isEmpty);
     expect(lessonsForChapter('math', 9, 99), isEmpty);
   });
 
   test('class 9 physics lessons: codes only, from the live DB', () {
-    expect(lessonsForChapter('physics', 9, 1).keys,
-        ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7']);
+    expect(lessonsForChapter('physics', 9, 1).keys, [
+      '1.1',
+      '1.2',
+      '1.3',
+      '1.4',
+      '1.5',
+      '1.6',
+      '1.7',
+    ]);
     expect(lessonsForChapter('physics', 9, 7).keys, ['7.1', '7.2', '7.3']);
     // Title = code: no lesson title is invented.
     expect(lessonsForChapter('physics', 9, 3)['3.4'], '3.4');
