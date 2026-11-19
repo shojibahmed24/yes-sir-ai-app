@@ -175,8 +175,11 @@ ONLY in the supplied guide books. Package: `com.yessirai.app`.
   English 158 Paper-II-header rows go to a future English Paper-II subject,
   never into English 1st. (7) Civics knowledge/comprehension marks are
   ক=1, খ=2 — confirmed.
-- OTHER OPEN ITEMS: Chemistry chapter 11 MCQ has identical ক and গ options —
-  needs a database fix. Class 9 Chemistry chunks file has 114 chunks, live
+- OTHER OPEN ITEMS: Chemistry chapter 11 MCQ identical ক/গ options —
+  FIXED 2026-11-20 (migration 020, applied live: the print itself was
+  defective, owner confirmed from 300 dpi scans; the duplicated slot got a
+  different WRONG option, printed keys খ/গ unchanged, no row deleted).
+  Class 9 Chemistry chunks file has 114 chunks, live
   database has 92 — the extra 22 are unidentified dropped chunks. Class 6
   lesson plan exists as a doc (`goals/yes-sir-ai-education-app/files/
   class6-lesson-plan.md` is NOT in this repo — ask the user for it); its
