@@ -4,13 +4,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yes_sir_ai/core/models/guide_bank_model.dart';
 import 'package:yes_sir_ai/core/services/guide_bank_service.dart';
-import 'package:yes_sir_ai/core/services/guide_quiz_service.dart';
+import 'package:yes_sir_ai/core/services/guide_quiz_pool.dart';
 
 GuideBankQuestion _row({
   required String id,
   String type = 'mcq',
   bool hasKey = true,
   List<String> options = const ['A', 'B', 'C', 'D'],
+  String? setId,
 }) =>
     GuideBankQuestion(
       id: id,
@@ -18,6 +19,7 @@ GuideBankQuestion _row({
       questionType: type,
       options: options,
       serverHasKey: hasKey,
+      setId: setId,
     );
 
 void main() {
@@ -50,6 +52,12 @@ void main() {
     });
     test('rows without options never enter the pool', () {
       expect(isScorableGuideMcq(_row(id: 'e-1', options: [])), isFalse);
+    });
+    test('model-test set rows never enter the daily/practice pool', () {
+      expect(
+          isScorableGuideMcq(
+              _row(id: 'pilot0-mcq-1', setId: 'model-test-01')),
+          isFalse);
     });
     test('all 18 known guide-error ids are excluded', () {
       expect(knownGuideErrorIds.length, 18);

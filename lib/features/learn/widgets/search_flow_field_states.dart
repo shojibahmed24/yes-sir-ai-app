@@ -1,8 +1,13 @@
 // Search-flow field companions (plan §5): group headings, the
 // chapter loading shimmer and the friendly empty-state card.
 // Colours come from the theme colour scheme only (light/dark
-// parity); Bangla text uses Hind Siliguri.
+// parity), except the group heading: it uses AppTheme.primaryDark
+// (#1E4FBF, 6.66:1 on paper) because cs.primary (#2F6FED,
+// 4.22:1) fails WCAG AA for 14sp bold text (D3, 2026-11-08).
+// Bangla text uses Hind Siliguri.
 import 'package:flutter/material.dart';
+
+import '../../../theme/app_theme.dart';
 
 /// Small group heading above a set of fields.
 class SearchFlowGroupLabel extends StatelessWidget {
@@ -11,12 +16,11 @@ class SearchFlowGroupLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Text(text,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontFamily: 'HindSiliguri',
             fontWeight: FontWeight.w700,
-            color: cs.primary));
+            color: AppTheme.primaryDark));
   }
 }
 

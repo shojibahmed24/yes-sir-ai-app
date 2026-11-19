@@ -1,13 +1,12 @@
 // Route: /settings — ONLY place where class can be changed.
-// Language, font size, theme, notification toggles and profile
-// edits persist here (language_provider, theme_mode,
-// profile_service, SharedPreferences) and apply LIVE app-wide.
-// Sepia has no ThemeData, so it falls back to light (stated in UI).
+// Language, font, theme, notifications and profile edits persist
+// here and apply LIVE app-wide. Sepia falls back to light.
 // No bKash anywhere: premium is Google Play Billing only.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/profile_service.dart';
+import 'widgets/ai_provider_settings_section.dart';
 import 'widgets/demo_premium_toggle.dart';
 import 'widgets/settings_profile_header.dart';
 import '../../l10n/language_provider.dart';
@@ -32,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late final _name = TextEditingController();
   late final _school = TextEditingController();
   late final _goal = TextEditingController();
+  late final _guardianName = TextEditingController(), _guardianPhone = TextEditingController();
   bool _loaded = false;
 
   @override
@@ -54,6 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (profile != null) {
         _name.text = (profile['full_name'] as String?) ?? '';
         _school.text = (profile['school_name'] as String?) ?? '';
+        _guardianName.text = (profile['guardian_name'] as String?) ?? ''; _guardianPhone.text = (profile['guardian_phone'] as String?) ?? '';
         final goal = profile['daily_goal_minutes'];
         if (goal != null) _goal.text = '$goal';
         // Batch 2, item 3: shared class parser — the same source
@@ -86,6 +87,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       schoolName: _school.text.trim(),
       dailyGoalMinutes: goal,
       schoolClass: _cls == null ? null : int.tryParse(_cls!),
+      guardianName: _guardianName.text.trim(),
+      guardianPhone: _guardianPhone.text.trim(),
     );
     if (!mounted) return;
     // Local copy is always saved; ok=false only means the Supabase
@@ -102,6 +105,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _name.dispose();
     _school.dispose();
     _goal.dispose();
+    _guardianName.dispose(); _guardianPhone.dispose();
     super.dispose();
   }
 
@@ -120,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
               children: [
                 // Batch 2, item 6: header reads the SAVED name and
                 // picture from the single profile source itself.
@@ -138,18 +142,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: Text(s['bangla']!),
                     value: 'bn',
                     groupValue: languageNotifier.value.languageCode,
-                    onChanged: (v) {
-                      if (v != null) setLanguage(v);
-                      setState(() {});
-                    }),
+                    onChanged: (v) { if (v != null) setLanguage(v); setState(() {}); }),
                 RadioListTile<String>(
                     title: Text(s['english']!),
                     value: 'en',
                     groupValue: languageNotifier.value.languageCode,
-                    onChanged: (v) {
-                      if (v != null) setLanguage(v);
-                      setState(() {});
-                    }),
+                    onChanged: (v) { if (v != null) setLanguage(v); setState(() {}); }),
                 const SizedBox(height: 16),
                 Text(s['fontSize']!,
                     style: Theme.of(context).textTheme.headlineMedium),
@@ -214,6 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // yet, because no notification scheduling exists.
                 Text(s['notifNote']!,
                     style: Theme.of(context).textTheme.bodySmall),
+                const AiProviderSettingsSection(),
                 const SizedBox(height: 16),
                 Text(s['classSection']!,
                     style: Theme.of(context).textTheme.headlineMedium),
@@ -224,8 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   hint: Text(s['selectClass']!),
                   isExpanded: true,
                   items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-                      .map((c) => DropdownMenuItem(
-                          value: c, child: Text('${s['classLabel']} $c')))
+                      .map((c) => DropdownMenuItem(value: c, child: Text('${s['classLabel']} $c')))
                       .toList(),
                   onChanged: (v) {
                     if (v != null) setState(() => _cls = v);
@@ -237,6 +235,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 TextField(controller: _school, decoration: InputDecoration(labelText: s['editSchool']!)),
                 const SizedBox(height: 12),
                 TextField(controller: _goal, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: s['editGoal']!)),
+                const SizedBox(height: 12),
+                TextField(controller: _guardianName, decoration: InputDecoration(labelText: s['editGuardianName']!)),
+                const SizedBox(height: 12),
+                TextField(controller: _guardianPhone, keyboardType: TextInputType.phone, decoration: InputDecoration(labelText: s['editGuardianPhone']!)),
                 const SizedBox(height: 16),
                 const DemoPremiumToggle(),
                 const SizedBox(height: 16),

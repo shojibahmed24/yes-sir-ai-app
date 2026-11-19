@@ -3,6 +3,7 @@
 // positional jump, and creative grouping in the list.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yes_sir_ai/core/models/guide_bank_model.dart';
+import 'package:yes_sir_ai/core/services/guide_flow_jump.dart';
 import 'package:yes_sir_ai/core/services/guide_flow_list_service.dart';
 import 'package:yes_sir_ai/features/learn/search_flow_types.dart';
 import 'package:yes_sir_ai/features/learn/widgets/guide_creative_groups.dart';
@@ -76,6 +77,36 @@ Future<Map<String, dynamic>?> _unreachable(Map<String, dynamic> body,
     {String? endpoint}) async =>
     null;
 
+/// D1 (Phase-5) fake: new server echoes the section, but the
+/// chapter's rows carry section NULL, so a section-filtered
+/// list is empty (total 0); unfiltered fetches return rows.
+final _nullSectionRows = <Map<String, dynamic>>[
+  for (var i = 1; i <= 3; i++) _row('n$i', 'mcq'),
+  for (var i = 1; i <= 2; i++) _row('s$i', 'short'),
+];
+
+Future<Map<String, dynamic>?> _nullSectionServer(
+    Map<String, dynamic> body,
+    {String? endpoint}) async {
+  final section = body['section'] as String?;
+  final offset = (body['offset'] as num?)?.toInt() ?? 0;
+  final limit = (body['limit'] as num?)?.toInt() ?? 20;
+  if (section != null) {
+    return {
+      'found': true,
+      'total': 0,
+      'lesson': body['lesson'],
+      'section': section,
+      'questions': <Map<String, dynamic>>[],
+    };
+  }
+  return {
+    'found': true,
+    'total': _nullSectionRows.length,
+    'questions': _nullSectionRows.skip(offset).take(limit).toList(),
+  };
+}
+
 void main() {
   test('new server: filtered page has exact total + hasMore', () async {
     final svc = GuideFlowListService(post: _newServer);
@@ -146,7 +177,7 @@ void main() {
 
   test('positional jump: server and old-server client scan agree',
       () async {
-    final svc = GuideFlowListService(post: _newServer);
+    final svc = GuideFlowJumpService(post: _newServer);
     final hit = await svc.jumpToPosition(
         subject: 'math', schoolClass: 9, chapter: 2,
         type: SearchFlowType.mcq, lesson: null, position: 3);
@@ -156,12 +187,44 @@ void main() {
         subject: 'math', schoolClass: 9, chapter: 2,
         type: SearchFlowType.mcq, lesson: null, position: 99);
     expect(miss.outcome, GuideFlowJumpOutcome.notFound);
-    final old = GuideFlowListService(post: _oldServer);
+    final old = GuideFlowJumpService(post: _oldServer);
     final oldHit = await old.jumpToPosition(
         subject: 'math', schoolClass: 9, chapter: 2,
         type: SearchFlowType.mcq, lesson: null, position: 22);
     expect(oldHit.outcome, GuideFlowJumpOutcome.found);
     expect(oldHit.question!.id, 'm22');
+  });
+
+  test('D1: server total 0 with NULL-section rows falls back '
+      'to the client scan', () async {
+    final svc = GuideFlowListService(post: _nullSectionServer);
+    final p = await svc.fetchPage(
+        subject: 'math', schoolClass: 9, chapter: 2,
+        type: SearchFlowType.mcq);
+    expect(p.mode, GuideFlowMode.clientFiltered);
+    expect(p.rows.length, 3);
+    expect(p.rows.every((r) => r.questionType == 'mcq'), isTrue);
+    expect(p.rows.map((r) => r.id), ['n1', 'n2', 'n3']);
+  });
+
+  test('D1: lesson-scoped empty list keeps the server answer',
+      () async {
+    final svc = GuideFlowListService(post: _nullSectionServer);
+    final p = await svc.fetchPage(
+        subject: 'math', schoolClass: 9, chapter: 2,
+        type: SearchFlowType.mcq, lesson: '2.1');
+    expect(p.mode, GuideFlowMode.serverFiltered);
+    expect(p.rows, isEmpty);
+  });
+
+  test('D1: positional jump falls back to the client scan on '
+      'total 0', () async {
+    final svc = GuideFlowJumpService(post: _nullSectionServer);
+    final hit = await svc.jumpToPosition(
+        subject: 'math', schoolClass: 9, chapter: 2,
+        type: SearchFlowType.mcq, lesson: null, position: 2);
+    expect(hit.outcome, GuideFlowJumpOutcome.found);
+    expect(hit.question!.id, 'n2');
   });
 
   test('creative grouping in the list: one row per stimulus', () {

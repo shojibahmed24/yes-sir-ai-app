@@ -24,8 +24,7 @@ import '../../theme/themed_scaffold.dart';
 class BookLibraryScreen extends StatelessWidget {
   const BookLibraryScreen({super.key});
 
-  void _open(
-    BuildContext context, String subject, String id, String entry) {
+  void _open(BuildContext context, String subject, String id, String entry) {
     BookSelectionHolder.set(subject, id, 1);
     LearnStore.addRecentBook(entry);
     context.go('/books/viewer');
@@ -40,89 +39,60 @@ class BookLibraryScreen extends StatelessWidget {
         final s = bn ? bookLibraryStringsBn : bookLibraryStringsEn;
         return ThemedScaffold(
           appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/home'),
-            ),
+            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')),
             title: Text(s['title']!),
           ),
           body: FutureBuilder<List<dynamic>>(
-            future: Future.wait([
-              booksService.classBooksAsync(6, bn),
-              booksService.subjectsAsync(6, bn),
-            ]),
+            future: Future.wait([booksService.classBooksAsync(6, bn), booksService.subjectsAsync(6, bn)]),
             builder: (context, snap) {
               if (!snap.hasData) {
                 return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 12),
-                      Text(s['loading']!),
-                    ],
-                  ),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [const CircularProgressIndicator(), const SizedBox(height: 12), Text(s['loading']!)]),
                 );
               }
               final books = snap.data![0] as List<BookInfo>;
               final subjects = snap.data![1] as List<SubjectInfo>;
               final open = books.where((b) => b.supplied).toList();
-              final lockedBooks =
-                  books.where((b) => !b.supplied).toList();
-              final lockedIds =
-                  lockedBooks.map((b) => b.subject).toSet();
-              final lockedSubjects = subjects
-                  .where((x) => x.locked && !lockedIds.contains(x.id))
-                  .toList();
+              final lockedBooks = books.where((b) => !b.supplied).toList();
+              final lockedIds = lockedBooks.map((b) => b.subject).toSet();
+              final lockedSubjects = subjects.where((x) => x.locked && !lockedIds.contains(x.id)).toList();
               return ListView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
                 children: [
-                  Text(s['subtitle']!,
-                      style: Theme.of(context).textTheme.bodyMedium),
-                  Text(s['class6Only']!,
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(s['subtitle']!, style: Theme.of(context).textTheme.bodyMedium),
+                  Text(s['class6Only']!, style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 12),
                   if (books.isEmpty) Text(s['noBooks']!),
-                  ...open.map((b) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: BookCard(
-                          title: b.title(bn),
-                          meta: bn ? 'ক্লাস ৬ · এনসিটিবি' : 'Class 6 · NCTB',
-                          progress: 0,
-                          onTap: () => _open(
-                            context,
-                            b.subject,
-                            b.id,
-                            '${b.subject}|${b.titleBn}|${b.titleEn}',
-                          ),
-                        ),
-                      )),
-                  ...lockedBooks.map((b) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: BookCard(
-                          title: b.title(bn),
-                          meta: s['lockedSub']!,
-                          progress: 0,
-                          locked: true,
-                          onTap: () => ScaffoldMessenger.of(context)
-                              .showSnackBar(
-                            SnackBar(content: Text(s['lockedNoLesson']!)),
-                          ),
-                        ),
-                      )),
-                  ...lockedSubjects.map((x) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: BookCard(
-                          title: x.name(bn),
-                          meta: s['lockedSub']!,
-                          progress: 0,
-                          locked: true,
-                          onTap: () => ScaffoldMessenger.of(context)
-                              .showSnackBar(
-                            SnackBar(content: Text(s['lockedNoLesson']!)),
-                          ),
-                        ),
-                      )),
+                  ...open.map(
+                    (b) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: BookCard(title: b.title(bn), meta: s['class6Meta']!, progress: 0, onTap: () => _open(context, b.subject, b.id, '${b.subject}|${b.titleBn}|${b.titleEn}')),
+                    ),
+                  ),
+                  ...lockedBooks.map(
+                    (b) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: BookCard(
+                        title: b.title(bn),
+                        meta: s['lockedSub']!,
+                        progress: 0,
+                        locked: true,
+                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s['lockedNoLesson']!))),
+                      ),
+                    ),
+                  ),
+                  ...lockedSubjects.map(
+                    (x) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: BookCard(
+                        title: x.name(bn),
+                        meta: s['lockedSub']!,
+                        progress: 0,
+                        locked: true,
+                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s['lockedNoLesson']!))),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   FutureBuilder<LearnSummary>(
                     future: LearnStore.summary(),
@@ -133,30 +103,16 @@ class BookLibraryScreen extends StatelessWidget {
                           if (recent.isNotEmpty) {
                             final parts = recent.first.split('|');
                             if (parts.isNotEmpty) {
-                              _open(
-                                context,
-                                parts[0],
-                                'class6-${parts[0]}-${bn ? 'bn' : 'en'}',
-                                recent.first,
-                              );
+                              _open(context, parts[0], 'class6-${parts[0]}-${bn ? 'bn' : 'en'}', recent.first);
                               return;
                             }
                           }
                           if (open.isNotEmpty) {
                             final b = open.first;
-                            _open(
-                              context,
-                              b.subject,
-                              b.id,
-                              '${b.subject}|${b.titleBn}|${b.titleEn}',
-                            );
+                            _open(context, b.subject, b.id, '${b.subject}|${b.titleBn}|${b.titleEn}');
                           }
                         },
-                        child: Text(
-                          recent.isEmpty
-                              ? s['continueNoBook']!
-                              : s['continue']!,
-                        ),
+                        child: Text(recent.isEmpty ? s['continueNoBook']! : s['continue']!),
                       );
                     },
                   ),

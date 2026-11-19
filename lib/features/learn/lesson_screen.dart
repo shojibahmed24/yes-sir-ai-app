@@ -37,6 +37,8 @@ class _LessonScreenState extends State<LessonScreen> {
   // under "verified": demo text is "demo", failed-AI book text
   // is "unverified", live AI is "live".
   String _source = 'pending';
+  String _aiProvider = 'unknown';
+  String? _aiModel;
   Grounding? _grounding; // async Edge result; null = not arrived yet
 
   LessonSelection get _sel => LessonSelectionHolder.current;
@@ -96,6 +98,8 @@ class _LessonScreenState extends State<LessonScreen> {
       _fallbackText = r.fallbackText;
       _keyMismatchKey = r.keyMismatchKey;
       _source = r.source;
+      _aiProvider = r.aiProvider;
+      _aiModel = r.aiModel;
     });
     switch (r.outcome) {
       case 'noMatch':
@@ -135,9 +139,6 @@ class _LessonScreenState extends State<LessonScreen> {
         final questionText = _sel.key == 'math|3|45|5'
             ? s['question']!
             : (edgeQuestion.isNotEmpty ? edgeQuestion : syncQuestion(_sel));
-        final chip = '${subjectNameFor(_sel.subject, bn)} · '
-            '${bn ? 'অধ্যায়' : 'Chapter'} ${numStr(_sel.chapter, bn)} · '
-            '${bn ? 'পৃষ্ঠা' : 'Page'} ${numStr(_sel.page, bn)}${_sel.problem == 0 ? '' : ' · ${bn ? 'প্রশ্ন' : 'Question'} ${numStr(_sel.problem, bn)}'}';
         final ctx = g?.context;
         return ThemedScaffold(
           calm: true,
@@ -161,7 +162,20 @@ class _LessonScreenState extends State<LessonScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Chip(label: Text(chip)),
+                // R5/M4: one long chip overflowed on narrow
+                // screens (Chip never wraps its label). Small
+                // chips in a Wrap instead, words from l10n.
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    Chip(label: Text(subjectNameFor(_sel.subject, bn))),
+                    Chip(label: Text('${s['metaChapter']!} ${numStr(_sel.chapter, bn)}')),
+                    Chip(label: Text('${s['metaPage']!} ${numStr(_sel.page, bn)}')),
+                    if (_sel.problem != 0)
+                      Chip(label: Text('${s['metaQuestion']!} ${numStr(_sel.problem, bn)}')),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 if (!isGrounded) ...[
                   Text(
@@ -205,6 +219,8 @@ class _LessonScreenState extends State<LessonScreen> {
                     showSourceChips: _solution != null ||
                         _fallbackText != null,
                     marksPrinted: ctx?.marksPrinted ?? false,
+                    aiProvider: _aiProvider,
+                    aiModel: _aiModel,
                     onStyle: (style) => _applyStyle(style, bn),
                     onPractice: () => context.go('/practice'),
                   ),

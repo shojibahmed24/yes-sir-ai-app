@@ -219,6 +219,7 @@ class _Step12ReviewState extends State<Step12Review> with RegLangMixin {
               for (final r in rows)
                 Card(
                   child: ListTile(
+                    isThreeLine: true,
                     title: Text(r.$1),
                     subtitle: Text(r.$2),
                     trailing: TextButton(

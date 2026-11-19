@@ -100,7 +100,7 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
               children: [
                 Text(s['paywallSub']!,
                     style: Theme.of(context).textTheme.bodyLarge,

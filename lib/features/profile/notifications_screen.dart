@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/notifications_strings.dart';
 import '../../theme/app_theme.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class _Notif {
   final String id;
@@ -99,7 +100,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final s = isBangla ? notificationsStringsBn : notificationsStringsEn;
     final items = _cleared ? const <_Notif>[] : _items(s);
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -110,7 +111,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
               children: [
                 Text(s['centre']!,
                     style: Theme.of(context).textTheme.bodySmall),
@@ -191,7 +192,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             if (item.action.isNotEmpty)
               Text(item.action,
                   style: const TextStyle(
-                      color: AppTheme.primary, fontWeight: FontWeight.w600)),
+                      color: AppTheme.primaryDark, fontWeight: FontWeight.w600)),
           ],
         ),
         onTap: () => _open(item, s),

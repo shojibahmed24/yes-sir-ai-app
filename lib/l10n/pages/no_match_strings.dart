@@ -13,6 +13,13 @@ const Map<String, String> noMatchStringsBn = {
   'tips': 'সহজ টিপস',
   'photoNoteLabel': 'ছবির নোট লেখো (যেমন: পৃষ্ঠা নম্বর)',
   'saveNote': 'নোট সংরক্ষণ করো',
+  // Distinct from saveNote (M6): this button saves a note
+  // ABOUT the book photo (upload itself is not wired yet).
+  'savePhotoNote': 'ছবির নোট সংরক্ষণ করো',
+  // Meta words for the fallback search line (M4).
+  'metaChapter': 'অধ্যায়',
+  'metaPage': 'পৃষ্ঠা',
+  'metaQuestion': 'প্রশ্ন',
   'photoNoteSaved': 'নোট সংরক্ষিত হয়েছে। ছবি আপলোড এখনো চালু হয়নি, তাই আপলোড হয়েছে বলে দাবি করা হচ্ছে না।',
   'photoNotAvailable': 'ছবি আপলোড এখনো চালু হয়নি — নোটটি পরে কাজে লাগবে।',
 };
@@ -29,6 +36,12 @@ const Map<String, String> noMatchStringsEn = {
   'tips': 'Easy tips',
   'photoNoteLabel': 'Write a note about the photo (e.g. page number)',
   'saveNote': 'Save note',
+  // Distinct from saveNote (M6): saves a note ABOUT the photo.
+  'savePhotoNote': 'Save a note about the photo',
+  // Meta words for the fallback search line (M4).
+  'metaChapter': 'Chapter',
+  'metaPage': 'Page',
+  'metaQuestion': 'Question',
   'photoNoteSaved': 'Note saved. Photo upload is not available yet, so no upload is claimed.',
   'photoNotAvailable': 'Photo upload is not available yet — the note will be useful later.',
 };

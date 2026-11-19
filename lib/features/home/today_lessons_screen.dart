@@ -15,6 +15,7 @@ import '../learn/learn_store.dart';
 import '../learn/lesson_selection.dart';
 import '../learn/widgets/digits.dart';
 import '../learn/widgets/mock_data.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 /// Strict parse: exactly 4 parts, non-empty subject, and positive
 /// chapter/page/problem. Anything else is malformed -> null
@@ -86,7 +87,7 @@ class _TodayLessonsScreenState extends State<TodayLessonsScreen> {
       builder: (context, locale, _) {
         final bn = locale.languageCode == 'bn';
         final s = bn ? homeStringsBn : homeStringsEn;
-        return Scaffold(
+        return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
@@ -122,7 +123,11 @@ class _TodayLessonsScreenState extends State<TodayLessonsScreen> {
                   final lesson = lessons[i];
                   return Card(
                     child: ListTile(
-                      title: Text(_rowText(lesson, bn)),
+                      title: Text(
+                        _rowText(lesson, bn),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _open(lesson),
                     ),

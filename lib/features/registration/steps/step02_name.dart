@@ -26,6 +26,13 @@ class _Step02NameState extends State<Step02Name> with RegLangMixin {
       TextEditingController(text: registrationDataNotifier.value.nickname);
   String? _error;
 
+  @override
+  void dispose() {
+    _name.dispose();
+    _nick.dispose();
+    super.dispose();
+  }
+
   void _next() {
     if (_name.text.trim().isEmpty) {
       setState(() => _error =
@@ -67,7 +74,9 @@ class _Step02NameState extends State<Step02Name> with RegLangMixin {
           if (_error != null) ...[
             const SizedBox(height: 12),
             Text(_error!,
-                style: const TextStyle(color: AppTheme.error)),
+                style: TextStyle(
+                    color: AppTheme.errorTextFor(Theme.of(context).brightness == Brightness.dark),
+                    fontWeight: FontWeight.w600)),
           ],
         ],
       ),

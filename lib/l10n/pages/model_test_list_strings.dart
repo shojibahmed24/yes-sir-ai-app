@@ -17,6 +17,7 @@ const Map<String, String> modelTestListStringsBn = {
   'lockedNote': 'এই বিষয়ের বই এখনো দেওয়া হয়নি, তাই টেস্ট শুরু করা যাবে না।',
   'lockedDialogTitle': 'এই টেস্ট লক করা',
   'lockedDialogBody': 'এই টেস্ট শুরু করা যাবে না, কারণ ৬ষ্ঠ শ্রেণির ইংরেজি পাঠ্যবই এখনো দেওয়া হয়নি। বইটি যোগ হলে এই টেস্ট খুলে যাবে।',
+  'ok': 'ঠিক আছে',
 };
 const Map<String, String> modelTestListStringsEn = {
   'title': 'Model Tests',
@@ -36,4 +37,5 @@ const Map<String, String> modelTestListStringsEn = {
   'lockedNote': 'This subject’s book has not been supplied yet, so the test cannot start.',
   'lockedDialogTitle': 'This test is locked',
   'lockedDialogBody': 'This test cannot start because the Class 6 English textbook has not been supplied yet. It will unlock once the book is added.',
+  'ok': 'OK',
 };

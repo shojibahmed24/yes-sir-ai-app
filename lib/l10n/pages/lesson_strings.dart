@@ -20,6 +20,8 @@ const Map<String, String> lessonStringsBn = {
   'fontLarger': 'ফন্ট বড়',
   'demoAnswer': 'ডেমো উত্তর — বইয়ের লেখা থেকে নেওয়া, লাইভ AI নয়',
   'liveAnswer': 'লাইভ AI উত্তর',
+  'aiAttributionUnknown':
+      'AI: জানা যায়নি — সার্ভার আপডেট হয়নি, OpenRouter চলতে পারে',
   'unverifiedAnswer': 'যাচাই হয়নি — বইয়ের উত্তর দেখানো হচ্ছে',
   'aiFailed': 'লাইভ উত্তর আনা যায়নি, বইয়ের উত্তরই দেখানো হচ্ছে',
   'aiServerKeyMissing': 'AI সার্ভারে চালু হয়নি — সার্ভারের চাবি এখনো বসানো হয়নি।',
@@ -40,9 +42,22 @@ const Map<String, String> lessonStringsBn = {
   'noKeyNote': 'এই প্রশ্নের সঠিক উত্তর গাইডে ছাপা নেই — শুধু AI ব্যাখ্যা দেখানো হচ্ছে',
   'keyMismatchNote': 'AI-এর উত্তর গাইডের চাবির সঙ্গে মেলেনি, তাই গাইডের চাবিই দেখানো হচ্ছে',
   'correctAnswer': 'সঠিক উত্তর',
+  'printedExplanation': 'গাইডের ব্যাখ্যা',
   'notIndexed': 'এই প্রশ্ন বইয়ের ইনডেক্সে নেই',
   'chapterOnly': 'এই অধ্যায় বইয়ে আছে, কিন্তু এই প্রশ্নটি যাচাই করা যায়নি — হুবহু প্রশ্নটি লেখো অথবা বইয়ের ছবি দাও।',
   'goToNoMatch': 'না-মেলার পাতায় যাও',
+  'punctuationCheckTitle': 'নিজে যাচাই করো',
+  'punctuationCheckHint': 'পুরো অনুচ্ছেদটি যথাযথ যতিচিহ্নসহ লেখো',
+  'punctuationCheckButton': 'যাচাই করো',
+  'punctuationScoreLabel': 'নম্বর',
+  'punctuationCorrectLabel': 'সঠিক যতিচিহ্ন',
+  'punctuationMissedLabel': 'বাদ পড়েছে',
+  'punctuationExtraLabel': 'বাড়তি যতিচিহ্ন',
+  // Meta words for the lesson meta chips (R5/M4): short words
+  // only, so each chip stays small inside a Wrap.
+  'metaChapter': 'অধ্যায়',
+  'metaPage': 'পৃষ্ঠা',
+  'metaQuestion': 'প্রশ্ন',
 };
 const Map<String, String> lessonStringsEn = {
   'title': 'Lesson',
@@ -65,6 +80,8 @@ const Map<String, String> lessonStringsEn = {
   'fontLarger': 'Larger font',
   'demoAnswer': 'Demo answer — taken from the book text, not live AI',
   'liveAnswer': 'Live AI answer',
+  'aiAttributionUnknown':
+      'AI: unknown — server has not been updated yet, OpenRouter may have answered',
   'unverifiedAnswer': 'Unverified — showing the book answer',
   'aiFailed': 'Live answer could not be fetched; showing the book answer',
   'aiServerKeyMissing':
@@ -86,7 +103,19 @@ const Map<String, String> lessonStringsEn = {
   'noKeyNote': 'No printed key exists for this question — AI explanation only',
   'keyMismatchNote': 'The AI answer did not match the guide key, so the guide key is shown',
   'correctAnswer': 'Correct answer',
+  'printedExplanation': 'Guide explanation',
   'notIndexed': 'This question is not in the book index',
   'chapterOnly': 'This chapter is in the book, but this exact question could not be verified — type the exact question or share a photo of the book page.',
   'goToNoMatch': 'Go to the not-found page',
+  'punctuationCheckTitle': 'Check your own answer',
+  'punctuationCheckHint': 'Type the whole passage with its punctuation',
+  'punctuationCheckButton': 'Check',
+  'punctuationScoreLabel': 'Score',
+  'punctuationCorrectLabel': 'Correct marks',
+  'punctuationMissedLabel': 'Missed',
+  'punctuationExtraLabel': 'Extra marks',
+  // Meta words for the lesson meta chips (R5/M4).
+  'metaChapter': 'Chapter',
+  'metaPage': 'Page',
+  'metaQuestion': 'Question',
 };

@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/services/auth_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/onboarding_step3_strings.dart';
-import '../../theme/app_theme.dart';
 import 'widgets/onboarding_shell.dart';
 
 class OnboardingStep3Screen extends StatelessWidget {
@@ -66,7 +65,7 @@ class OnboardingStep3Screen extends StatelessWidget {
       BuildContext context, IconData icon, String title, String detail) {
     return Row(
       children: [
-        Icon(icon, color: AppTheme.amber),
+        Icon(icon, color: const Color(0xFFB45309)),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

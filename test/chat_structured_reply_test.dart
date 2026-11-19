@@ -9,7 +9,6 @@ import 'package:yes_sir_ai/core/models/solution_model.dart';
 import 'package:yes_sir_ai/core/services/chat_marks.dart';
 import 'package:yes_sir_ai/core/services/explanation_service.dart';
 import 'package:yes_sir_ai/core/services/marks_budget.dart';
-import 'package:yes_sir_ai/core/services/structured_explanation_service.dart';
 import 'package:yes_sir_ai/features/learn/chat_structured_reply.dart';
 
 StructuredSolution fixtureSolution() => const StructuredSolution(

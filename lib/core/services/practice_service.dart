@@ -1,8 +1,12 @@
-// Practice / quiz / model-test data + attempt saving. Daily quiz
-// tries keyed guide MCQs first, bank fallback second; book rows
-// (Edge Mode D, no options/answers) NEVER become scored items —
-// see QUESTION_GENERATION.md. Attempts go to quiz_attempts when
-// a backend exists, AND always locally. No bKash — Play only.
+// Practice / quiz data + attempt saving. Daily quiz tries keyed
+// guide MCQs first; the bank is NEVER a silent substitute any
+// more (Phase 2, plan §2 step 2): a short guide set ships with
+// its shortfall, an empty guide set ships empty, and the SCREEN
+// asks the user before starting a bank set. Book rows (Edge Mode
+// D, no options/answers) NEVER become scored items — see
+// QUESTION_GENERATION.md. Attempts go to quiz_attempts when a
+// backend exists, AND always locally. No bKash — Play only.
+// Fixed-count model tests moved to model_test_service.dart.
 import '../models/backend_models.dart';
 import 'guide_quiz_service.dart';
 import 'local_store.dart';
@@ -11,14 +15,6 @@ import 'question_bank.dart';
 import 'question_generation.dart';
 import 'supabase_client.dart';
 import '../../features/practice/practice_store.dart';
-
-class ModelTest {
-  final String id, subject, chapter;
-  final int minutes;
-  final bool locked; // true = no supplied book, must not start
-  final List<QuizItem> items;
-  const ModelTest({required this.id, required this.subject, required this.chapter, required this.minutes, required this.locked, required this.items});
-}
 
 class PracticeService {
   // Banks live in practice_banks.dart (stable ids; saved/weak logic keys on them).
@@ -39,29 +35,15 @@ class PracticeService {
   List<QuizItem> modelMath() => PracticeBanks.modelMath();
   List<QuizItem> modelScience() => PracticeBanks.modelScience();
 
-  /// Daily quiz: 5 questions, seeded per day. Sync, no network.
-  List<QuizItem> dailyQuizFor(String subject, {String? seedKey}) =>
+  /// Bank quiz set: up to [count] questions (Phase 2 size 20),
+  /// seeded per day. Sync, no network. A 5-item bank pool
+  /// yields 5 items — the pool is never padded by repetition.
+  List<QuizItem> dailyQuizFor(String subject,
+          {String? seedKey, int count = 20}) =>
       questionGeneration.selectQuestions(
-          pool: quizFor(subject), count: 5,
+          pool: quizFor(subject), count: count,
           seedKey: seedKey ?? 'daily-$subject-${PracticeSession.today()}',
           chapterOf: (q) => chapterOf(q.id, true));
-
-  /// Model-test items: fixed count (maths 10, science 8), fixed seed.
-  List<QuizItem> modelItemsFor(String subject) {
-    final pool = subject == 'science' ? modelScience() : modelMath();
-    final count = subject == 'science' ? 8 : 10;
-    return questionGeneration.selectQuestions(
-        pool: pool, count: count,
-        seedKey: questionGeneration.modelSeedKey('mt-$subject'),
-        chapterOf: (q) => chapterOf(q.id, true));
-  }
-
-  List<ModelTest> modelTests() => [
-    ModelTest(id: 'mt-math', subject: 'math', chapter: 'ch-math', minutes: 15, locked: false, items: modelItemsFor('math')),
-    ModelTest(id: 'mt-science', subject: 'science', chapter: 'ch-science', minutes: 12, locked: false, items: modelItemsFor('science')),
-    // English: no supplied Class 6 book yet, so locked, never opens.
-    const ModelTest(id: 'mt-english', subject: 'english', chapter: 'ch-en', minutes: 10, locked: true, items: []),
-  ];
 
   List<PracticeProblem> practiceFor(String subject) => subject == 'science'
       ? const [PracticeProblem(id: 'sp1', questionBn: 'বেগ নির্ণয়ের সূত্র লেখো।',
@@ -96,13 +78,13 @@ class PracticeService {
   }) => guideQuizService.practiceGuideQuiz(
       subject: subject, schoolClass: schoolClass, bangla: bangla);
 
-  /// Daily quiz: guide first, bank fallback when < 5 scored items.
-  /// RESILIENCE: book probe is best-effort (throw/timeout -> 0,
-  /// never aborts); guide throw/timeout -> EMPTY guide items, so
-  /// the bank runs. Only a bank failure (local/sync, ~never)
-  /// reaches the caller's error path. Service timeouts sit below
-  /// the screens' 60s outer timeout, so a slow guide run falls
-  /// back instead of tripping the screen into an error SnackBar.
+  /// Daily quiz: guide set of up to 20, never silently bank.
+  /// Guide throw/timeout -> EMPTY guide items (the screen asks
+  /// the user about a bank set; the service never substitutes).
+  /// A short guide set ships with its guideShortfall; an empty
+  /// guide set ships empty with shortfall 20. RESILIENCE: book
+  /// probe is best-effort (throw/timeout -> 0, never aborts).
+  /// Service timeouts sit below the screens' 60s outer timeout.
   Future<GeneratedSet> generateDailyQuiz({
     required String subject,
     required int schoolClass,
@@ -121,19 +103,17 @@ class PracticeService {
     try {
       guideItems = await fetchGuideDaily(subject: subject, schoolClass: schoolClass, bangla: bangla, day: d).timeout(guideTimeout);
     } catch (_) { guideItems = []; }
-    final useGuide = guideItems.length >= 5;
     return GeneratedSet(
-        items: useGuide
-            ? guideItems
-            : dailyQuizFor(subject, seedKey: seedKey),
-        source: useGuide ? QuestionSource.guide : QuestionSource.bankFallback,
+        items: guideItems,
+        source: QuestionSource.guide,
         seedKey: seedKey,
-        bookQuestionsIndexed: book?.length ?? 0);
+        bookQuestionsIndexed: book?.length ?? 0,
+        guideShortfall: GuideQuizService.quizLimit - guideItems.length);
   }
 
-  /// Subject practice: same guide-first + bank-fallback rule as
-  /// the old _startPractice path, guide call guarded (throw/
-  /// timeout -> bank set). Scoring, filtering, size unchanged.
+  /// Subject practice: same guide-first, never-silent rule as
+  /// daily (guide call guarded: throw/timeout -> empty guide
+  /// set, shortfall 20). Scoring and filtering unchanged.
   Future<GeneratedSet> generatePracticeQuiz({
     required String subject,
     required int schoolClass,
@@ -144,27 +124,12 @@ class PracticeService {
     try {
       guideItems = await fetchPracticeGuide(subject: subject, schoolClass: schoolClass, bangla: bangla).timeout(guideTimeout);
     } catch (_) { guideItems = []; }
-    final useGuide = guideItems.length >= 5;
     return GeneratedSet(
-        items: useGuide ? guideItems : dailyQuizFor(subject),
-        source: useGuide ? QuestionSource.guide : QuestionSource.bankFallback,
+        items: guideItems,
+        source: QuestionSource.guide,
         seedKey: 'practice-$subject-${PracticeSession.today()}',
-        bookQuestionsIndexed: 0);
-  }
-
-  /// Model tests (practice bank): fixed count, fixed seed, bank pool.
-  Future<GeneratedSet> generateModelTest({
-    required String subject,
-    required int schoolClass,
-    required bool bangla,
-  }) async {
-    final book = await questionGeneration.fetchBookQuestions(
-        subject: subject, schoolClass: schoolClass, bangla: bangla);
-    return GeneratedSet(
-        items: modelItemsFor(subject),
-        source: QuestionSource.bankFallback,
-        seedKey: questionGeneration.modelSeedKey('mt-$subject'),
-        bookQuestionsIndexed: book?.length ?? 0);
+        bookQuestionsIndexed: 0,
+        guideShortfall: GuideQuizService.quizLimit - guideItems.length);
   }
 
   /// Weak revision: the user's ACTUAL wrong answers, newest first,
@@ -182,7 +147,7 @@ class PracticeService {
       for (final e in a.answers.entries) {
         if (seen.contains(e.key)) continue;
         final q = findQuestion(e.key);
-        if (q == null || e.value == q.correctIndex) continue;
+        if (q == null || q.isCorrect(e.value)) continue;
         if (seen.add(q.id)) out.add(q);
       }
     }

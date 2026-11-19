@@ -14,6 +14,7 @@ dependencies:
   supabase_flutter: 2.9.0
   in_app_purchase: 3.2.1
   shared_preferences: 2.3.0
+  connectivity_plus: ^6.1.0
   # Parent PIN v2 hash (2026-10-31): per-PIN salt + iterated SHA-256.
   # Was transitive via supabase_flutter; now a direct dependency so
   # parent_pin_store.dart imports it explicitly.

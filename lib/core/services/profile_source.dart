@@ -25,9 +25,12 @@ class ProfileFields {
   }
 }
 
-/// Columns the profiles table actually has (migrations 001 + 006).
-/// An upsert is built from this list only, so local-only keys
-/// (guardian_*, avatar_local_path) can never fail a cloud save.
+/// Columns the profiles table actually has (migrations 001 + 006
+/// + 014). An upsert is built from this list only, so local-only
+/// keys (avatar_local_path) can never fail a cloud save. Guardian
+/// joined this list with migration 014; until 014 is applied live,
+/// an upsert carrying guardian keys fails (local copy still kept),
+/// while profiles without guardian values upsert as before.
 const profileRemoteColumns = {
   'id',
   'full_name',
@@ -41,6 +44,8 @@ const profileRemoteColumns = {
   'email',
   'daily_goal_minutes',
   'avatar_url',
+  'guardian_name',
+  'guardian_phone',
 };
 
 /// Upsert [remote]; if it fails only because the live table has no

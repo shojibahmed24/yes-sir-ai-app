@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/data/set_only_chapters.dart';
 import '../../../core/services/guide_bank_service.dart';
 import '../../../core/services/resolve_school_class.dart';
 import 'digits.dart';
@@ -53,13 +54,20 @@ class SubjectGuideCard extends StatelessWidget {
         }
         final total = counts.values.fold<int>(0, (a, b) => a + b);
         if (total <= 0) return const SizedBox.shrink();
+        // Chapter count includes set-only chapters (civics
+        // 1/3/4): their rows live in sets, so the Edge chapter
+        // list omits them, but the card's total stays the
+        // chapter-scope row count — set rows are counted in
+        // their Sets, never double-counted here.
+        final chapterCount =
+            counts.length + setOnlyChapterCount(subjectId);
         return Card(
           child: ListTile(
             leading: const Icon(Icons.assignment),
             title: Text(s['guideQuestions']!),
             subtitle: Text(
               '${numStr(total, bn)}${s['questionsSuffix']!} · '
-              '${numStr(counts.length, bn)}${s['chaptersSuffix']!}',
+              '${numStr(chapterCount, bn)}${s['chaptersSuffix']!}',
             ),
             trailing: const Icon(Icons.chevron_right),
             // Step 7: old /guide-chapters deleted; the new

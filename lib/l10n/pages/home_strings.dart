@@ -49,9 +49,20 @@ const Map<String, String> homeStringsBn = {
       'সেটিংসে গিয়ে তোমার ক্লাস বাছো — তাহলে তোমার ক্লাসের বিষয়গুলো এখানে দেখাবে।',
   'chooseClassAction': 'সেটিংসে যাও',
   'noWeakYet': 'এখনো দুর্বল অধ্যায় চিহ্নিত হয়নি',
+  'findQuestions': 'প্রশ্ন খুঁজুন',
   'noRecentBook': 'এখনো কোনো বই খোলা হয়নি',
   'loadingSubjects': 'বিষয় লোড হচ্ছে…',
   'noSubjects': 'কোনো বিষয় পাওয়া যায়নি',
+  // Cache-once home grid: shown ONLY when no saved list exists
+  // and the fetch fails — never for a load failure that still
+  // has a list on screen, and never as "no subjects".
+  'subjectsLoadFailed': 'বিষয় লোড করা যায়নি — আবার চেষ্টা করো।',
+  'subjectsRetry': 'আবার চেষ্টা করুন',
+  // Set-based guide tile (class-9 English): number + suffix.
+  'guideSets': 'টি সেট',
+  // Bank-only guide subject (sets and chapters both zero).
+  'guideAvailable': 'গাইড আছে',
+  'refreshSubjects': 'বিষয় রিফ্রেশ করো',
   // Phase 6 (H1): home is the tab root, so system back asks twice
   // instead of silently exiting the app.
   'pressBackAgain': 'আবার ব্যাক চাপলে অ্যাপ বন্ধ হবে',
@@ -103,8 +114,14 @@ const Map<String, String> homeStringsEn = {
       'Choose your class in Settings to see your class subjects here.',
   'chooseClassAction': 'Go to Settings',
   'noWeakYet': 'No weak chapter marked yet',
+  'findQuestions': 'Find questions',
   'noRecentBook': 'No book opened yet',
   'loadingSubjects': 'Loading subjects…',
   'noSubjects': 'No subjects found',
+  'subjectsLoadFailed': 'Subjects could not be loaded — try again.',
+  'subjectsRetry': 'Try again',
+  'guideSets': 'sets',
+  'guideAvailable': 'Guide available',
+  'refreshSubjects': 'Refresh subjects',
   'pressBackAgain': 'Press back again to exit the app',
 };

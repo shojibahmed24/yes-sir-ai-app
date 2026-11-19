@@ -1,13 +1,10 @@
-// Route: /login
-// Design: stitch-reference/login_screen/code.html
-// Start screen after splash/onboarding. Email sign-in is real via
-// Supabase (AuthService.signInEmail); phone OTP lives on /otp.
-// Google sign-in is deferred — its button and service method are
-// untouched this round (see BACKEND_DETAILS_LIST.md).
+// Route: /login. Email sign-in is real via Supabase; phone OTP
+// lives on /otp. Google button shows only with an OAuth client id.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/auth_signin_listener.dart';
+import '../../core/services/profile_restore_service.dart';
 import '../../core/widgets/demo_banner.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/login_strings.dart';
@@ -15,8 +12,7 @@ import 'widgets/auth_buttons.dart';
 import 'widgets/auth_fields.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/fade_slide.dart';
-// Phase 6 (H1, M2): real logo, matching splash — no more drawn
-// RobotAvatar on login, so both screens share one brand mark.
+// Phase 6: real logo, matching splash (no drawn RobotAvatar).
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,18 +31,20 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Confirmation link tapped while on /login: the SDK signs the
-    // user in, so go home instead of leaving a live session here.
-    // Also covers a session that landed just before this screen
-    // mounted (cold-start race).
+    // Cold-start session (OAuth redirect landed before mount):
+    // same post-sign-in work as the live listener below.
     if (authService.currentUserId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await profileRestoreService.ensureGoogleProfile();
+        await profileRestoreService.restoreAfterSignIn();
         if (mounted) context.go('/home');
       });
     }
-    _cancelAuthListener = listenForFreshSignIn((user) {
-      authService.saveSession(user.id);
-      context.go('/home');
+    _cancelAuthListener = listenForFreshSignIn((user) async {
+      await authService.saveSession(user.id);
+      await profileRestoreService.ensureGoogleProfile();
+      await profileRestoreService.restoreAfterSignIn();
+      if (mounted) context.go('/home');
     });
   }
 
@@ -54,9 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_busy) return;
     final s = isBangla ? loginStringsBn : loginStringsEn;
     final contact = _contact.text.trim();
-    // Previously empty contact/password sailed through DEMO mode
-    // straight to /home. Also, a phone number was passed to Supabase
-    // email auth in real mode and failed confusingly.
+    // Empty contact/password used to sail through DEMO to /home.
     if (contact.isEmpty || _password.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s['emptyError']!)),
@@ -74,17 +70,17 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (res.ok) {
-      // Persisted session: splash routes a signed-in user to /home.
-      // "Remember me" off means DEMO sessions are not persisted;
-      // a real Supabase session persists via Supabase itself.
+      // Session for splash routing ("Remember me" off skips DEMO only).
       if (_remember && res.userId != null) {
         await authService.saveSession(res.userId!);
       }
+      // Real-mode sign-in: restore the server profile before /home.
+      if (res.mode == AuthMode.supabase) {
+        await profileRestoreService.restoreAfterSignIn();
+      }
       if (mounted) context.go('/home');
     } else if (res.emailNotConfirmed) {
-      // Unconfirmed address: offer a resend instead of a dead end.
-      // The contact field holds the email here (phone logins are
-      // rejected above in real mode), so resending to it is safe.
+      // Unconfirmed address: offer a resend (contact holds the email).
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -97,8 +93,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } else {
+      // Mapped Bangla/English message only — never raw SDK text.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res.error ?? s['loginFailed']!)),
+        SnackBar(content: Text(s[signInErrorStringKey(res)]!)),
       );
     }
   }
@@ -112,26 +109,26 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _busy = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(res.ok
-            ? s['confirmationResent']!
-            : (res.error ?? s['loginFailed']!)),
+        content: Text(res.ok ? s['confirmationResent']! : s['loginFailed']!),
       ),
     );
   }
 
   Future<void> _signInGoogle() async {
-    // Previously a failed Google sign-in did nothing silently.
     final s = isBangla ? loginStringsBn : loginStringsEn;
     final res = await authService.signInWithGoogle();
     if (!mounted) return;
-    if (res.ok) {
-      // DEMO Google is labelled by the DEMO banner on this screen;
-      // it never claims a real Google account was linked.
-      if (res.userId != null) await authService.saveSession(res.userId!);
-      if (mounted) context.go('/home');
+    if (res.googleLaunched) {
+      // Browser launched, NOT signed in: stay here for signedIn.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s['googleWaiting']!),
+          duration: const Duration(minutes: 5),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res.error ?? s['loginFailed']!)),
+        SnackBar(content: Text(s[signInErrorStringKey(res)]!)),
       );
     }
   }
@@ -216,13 +213,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   label: s['login']!,
                   onPressed: _signIn,
                 ),
-                const SizedBox(height: 12),
-                Text(s['or']!, style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(height: 12),
-                AuthGoogleButton(
-                  label: s['google']!,
-                  onPressed: _signInGoogle,
-                ),
+                if (authService.googleSignInAvailable) ...[
+                  Text(s['or']!,
+                      style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 12),
+                  AuthGoogleButton(
+                    label: s['google']!,
+                    onPressed: _signInGoogle,
+                  ),
+                ],
                 const SizedBox(height: 8),
                 AuthTextLink(
                   label: s['otp']!,

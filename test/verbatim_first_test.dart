@@ -94,7 +94,7 @@ void main() {
       ),
     );
     expect(find.text('গাইডের উত্তর'), findsOneWidget);
-    expect(find.text('গাইডের সমাধান'), findsOneWidget);
+    expect(find.text('গাইডের সমাধান', findRichText: true), findsOneWidget);
     await tester.tap(find.text('বিস্তারিত বলুন'));
     expect(detailed, isTrue);
     await tester.tap(find.text('ধাপে ধাপে বুঝিয়ে বলুন'));

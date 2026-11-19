@@ -5,12 +5,13 @@
 // locked note also stays visible under the locked card.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yes_sir_ai/core/services/practice_service.dart';
+import 'package:yes_sir_ai/core/services/model_test_service.dart';
 import 'package:yes_sir_ai/core/services/progress_service.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/model_test_list_strings.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class ModelTestListScreen extends StatelessWidget {
   const ModelTestListScreen({super.key});
@@ -25,7 +26,7 @@ class ModelTestListScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
+            child: Text(s['ok']!),
           ),
         ],
       ),
@@ -37,6 +38,8 @@ class ModelTestListScreen extends StatelessWidget {
     PracticeSession.modelSubject = t.subject;
     PracticeSession.modelItems = t.items;
     PracticeSession.modelMinutes = t.minutes;
+    PracticeSession.modelIsGuide = false;
+    PracticeSession.clearModelExam();
     context.go('/model-test-exam');
   }
 
@@ -44,8 +47,8 @@ class ModelTestListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Locale>(valueListenable: languageNotifier, builder: (context, locale, _) {
       final s = locale.languageCode == 'bn' ? modelTestListStringsBn : modelTestListStringsEn;
-      final tests = practiceService.modelTests();
-      return Scaffold(
+      final tests = modelTestService.modelTests();
+      return ThemedScaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -61,11 +64,11 @@ class ModelTestListScreen extends StatelessWidget {
             Text(s['subtitle']!, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 12),
             Row(children: [
-              Expanded(child: PracticeCard(title: '${s['total']!}: ${tests.length}')),
+              Expanded(child: PracticeCard(title: '${tests.length}', subtitle: s['total']!)),
               const SizedBox(width: 8),
-              Expanded(child: PracticeCard(title: '${s['done']!}: ${models.length}')),
+              Expanded(child: PracticeCard(title: '${models.length}', subtitle: s['done']!)),
               const SizedBox(width: 8),
-              Expanded(child: PracticeCard(title: '${s['avg']!}: $avg%')),
+              Expanded(child: PracticeCard(title: '$avg%', subtitle: s['avg']!)),
             ]),
             const SizedBox(height: 12),
             for (int i = 0; i < tests.length; i++) ...[

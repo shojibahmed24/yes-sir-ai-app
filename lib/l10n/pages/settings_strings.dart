@@ -32,6 +32,8 @@ const Map<String, String> settingsStringsBn = {
   'editName': 'নাম',
   'editSchool': 'স্কুলের নাম',
   'editGoal': 'দিনে পড়ার লক্ষ্য (মিনিট)',
+  'editGuardianName': 'অভিভাবকের নাম',
+  'editGuardianPhone': 'অভিভাবকের ফোন নম্বর',
   'sepiaNote': 'সেপিয়া থিম এখনো অ্যাপে নেই, তাই সেপিয়া বেছে নিলে ডে মোড (হালকা) দেখাবে।',
   'demoTestSection': 'ডেমো টেস্ট — শুধু টেস্টের জন্য, আসল প্রিমিয়াম নয়',
   'demoVoiceTest': 'DEMO ভয়েস-গেট টেস্ট চালু করো (শুধু টেস্ট)',
@@ -54,6 +56,12 @@ const Map<String, String> settingsStringsBn = {
   'pictureRemoved': 'প্রোফাইল ছবি সরানো হয়েছে',
   'pictureLocalOnlyNote': 'নোট: এই ছবি শুধু এই ডিভাইসে আছে — অনলাইনে আপলোড হয়নি, তাই অন্য ডিভাইসে দেখাবে না।',
   'notifNote': 'নোট: এই টগলগুলো এখনো কোনো আসল নোটিফিকেশন চালু/বন্ধ করে না — পুশ বা লোকাল নোটিফিকেশন এখনো চালু হয়নি।',
+  // AI provider (2026-11-04): OpenRouter + Gemini, both via Edge.
+  'aiProvider': 'AI প্রোভাইডার',
+  'aiProviderSub': 'লেখা উত্তরের জন্য কোন AI ব্যবহার হবে',
+  'openRouter': 'OpenRouter',
+  'gemini': 'Gemini',
+  'aiProviderNote': 'নোট: Gemini বেছে নিলে Supabase Edge Secrets-এ GEMINI_API_KEY বসাতে হবে আর explain-question ফাংশন রিডিপ্লয় করতে হবে, না হলে সৎ এরর দেখাবে। OpenRouter-ই ডিফল্ট।',
 };
 const Map<String, String> settingsStringsEn = {
   'title': 'Settings',
@@ -86,6 +94,8 @@ const Map<String, String> settingsStringsEn = {
   'editName': 'Name',
   'editSchool': 'School name',
   'editGoal': 'Daily study goal (minutes)',
+  'editGuardianName': 'Guardian name',
+  'editGuardianPhone': 'Guardian phone number',
   'sepiaNote': 'There is no sepia theme in the app yet, so choosing sepia shows day mode (light).',
   'demoTestSection': 'Demo test — testing only, not real premium',
   'demoVoiceTest': 'Enable DEMO voice-gate test (test only)',
@@ -108,4 +118,10 @@ const Map<String, String> settingsStringsEn = {
   'pictureRemoved': 'Profile picture removed',
   'pictureLocalOnlyNote': 'Note: this picture lives on this device only — it was not uploaded online, so it will not show on another device.',
   'notifNote': 'Note: these toggles do not switch any real notification on or off yet — no push or local notification scheduling exists yet.',
+  // AI provider (2026-11-04): OpenRouter + Gemini, both via Edge.
+  'aiProvider': 'AI provider',
+  'aiProviderSub': 'Which AI answers written explanations',
+  'openRouter': 'OpenRouter',
+  'gemini': 'Gemini',
+  'aiProviderNote': 'Note: if you choose Gemini, set GEMINI_API_KEY in Supabase Edge Secrets and redeploy the explain-question function, otherwise an honest error will show. OpenRouter is the default.',
 };

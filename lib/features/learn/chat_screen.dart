@@ -17,6 +17,7 @@ import 'guide_chat_grounding.dart';
 import 'learn_store.dart';
 import 'lesson_selection.dart';
 import 'widgets/chat_bubble.dart';
+import 'widgets/chat_question_card.dart';
 import 'widgets/mock_data.dart';
 import '../../theme/themed_scaffold.dart';
 
@@ -78,12 +79,17 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     final resolved = await resolveChatGrounding(_sel, schoolClass, bn);
     final grounding = resolved.grounding;
+    // 2026-11-03 chat fix: missing context/options -> honest
+    // reply, NEVER a model call (no wrong-passage answers).
+    final honest = honestGuideChatReply(resolved, s);
     String reply;
     String? saveId;
     if (!grounding.found) {
       reply = resolved.isGuide
           ? s['guideNotFound']!
           : '${s['outsideLesson']!}\n${s['notIndexedDetail']!}';
+    } else if (honest != null) {
+      reply = honest;
     } else {
       // Marks-bearing message -> structured path with the marks
       // budget; null (marks-less, or structured yielded nothing)
@@ -151,18 +157,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      contextLine,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                    Text(contextLine,
+                        style: Theme.of(context).textTheme.bodySmall),
+                    // Guide chats show the exact question above
+                    // the messages (2026-11-03 chat fix).
+                    if (_sel.guideQuestionId != null)
+                      ChatQuestionCard(sel: _sel, s: s),
                     TextButton(
                       onPressed: () => context.go(_sel.returnTo),
                       child: Text(s['viewQuestion']!),
                     ),
-                    Row(children: [
-                      TextButton(onPressed: _smaller, child: Text(ls['fontSmaller']!)),
-                      TextButton(onPressed: _larger, child: Text(ls['fontLarger']!)),
-                    ]),
+                    Row(children: [TextButton(onPressed: _smaller, child: Text(ls['fontSmaller']!)), TextButton(onPressed: _larger, child: Text(ls['fontLarger']!))]),
                     // Tip string is area-lesson-only, not for others.
                     if (_sel.key == 'math|3|45|5')
                       Text(
@@ -198,37 +203,41 @@ class _ChatScreenState extends State<ChatScreen> {
                   },
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      s['textOnly']!,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _controller,
-                            decoration: InputDecoration(
-                              hintText: s['hint'],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
+              // R9: keep the input row clear of the gesture bar.
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text(
+                        s['textOnly']!,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              decoration: InputDecoration(
+                                hintText: s['hint'],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
                               ),
+                              onSubmitted: (_) => _send(bn, s),
                             ),
-                            onSubmitted: (_) => _send(bn, s),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.send),
-                          onPressed: () => _send(bn, s),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () => _send(bn, s),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

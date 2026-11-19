@@ -1,15 +1,7 @@
-// Auth: Supabase when configured, DEMO mode otherwise.
-// DEMO mode never pretends to be a real account - callers show the
-// DEMO banner and save data locally (see profile_service.dart).
-// Session + onboarding state are persisted locally so splash routing
-// is real: a signed-in user (Supabase session or DEMO session saved
-// here) goes to /home, a returning user who finished onboarding goes
-// to /login, and only a first-run user sees onboarding.
-// Phone OTP is real via auth_phone_service.dart (Supabase SDK
-// signInWithOtp / verifyOTP). It still needs a Twilio / Vonage
-// provider configured in the Supabase dashboard (see
-// BACKEND_DETAILS_LIST.md); without one, Supabase returns an error
-// which callers show honestly, never faked as success.
+// Auth: Supabase when configured, DEMO mode otherwise (DEMO never
+// pretends to be a real account). Phone OTP is real via
+// auth_phone_service.dart; it still needs a Twilio/Vonage provider
+// in the Supabase dashboard (see BACKEND_DETAILS_LIST.md).
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/parent/parent_pin_store.dart';
@@ -28,6 +20,9 @@ class AuthService {
     final client = supabaseOrNull;
     return client?.auth.currentUser?.id;
   }
+
+  /// False with no client id: login hides the button, no fake path.
+  bool get googleSignInAvailable => AppConfig.googleOAuthClientId.isNotEmpty;
 
   static const _sessionKey = 'ys_session_user_id';
   static const _onboardingKey = 'ys_onboarding_seen';
@@ -49,14 +44,11 @@ class AuthService {
   }
 
   /// Splash session validation: refreshes an expired-but-
-  /// refreshable session and reports false when no LIVE session
-  /// exists (expired, revoked, never signed in). Splash must
-  /// call this instead of trusting the prefs session key alone.
-  /// DEMO mode has no Supabase session, so splash keeps the
-  /// existing demo behaviour there instead of calling this.
-  /// Offline with a still-valid cached session still counts as
-  /// valid (expiry-checked), so a dead network never logs a
-  /// signed-in user out.
+  /// refreshable session, false when no LIVE session exists.
+  /// Splash must call this instead of trusting the prefs key
+  /// alone. Offline with a still-valid cached session (expiry-
+  /// checked) still counts as valid, so a dead network never
+  /// logs a signed-in user out.
   Future<bool> validateSession() async {
     final client = supabaseOrNull;
     if (client == null) return false;
@@ -108,8 +100,7 @@ class AuthService {
         mode: AuthMode.supabase,
       );
     } on AuthException catch (e) {
-      // Supabase reports an unconfirmed address with code
-      // 'email_not_confirmed' (message: "Email not confirmed").
+      // 'email_not_confirmed' = unconfirmed address (resend path).
       final notConfirmed = e.code == 'email_not_confirmed' ||
           e.message.toLowerCase().contains('not confirmed');
       return AuthResult(
@@ -117,7 +108,11 @@ class AuthService {
         error: e.message,
         mode: AuthMode.supabase,
         emailNotConfirmed: notConfirmed,
+        errorKind: classifySignInError(e),
       );
+    } on Exception catch (e) {
+      // Network failures land here, not as AuthException.
+      return AuthResult(ok: false, mode: AuthMode.supabase, errorKind: classifySignInError(e));
     }
   }
 
@@ -222,23 +217,32 @@ class AuthService {
     }
   }
 
-  /// Google sign-in via Supabase OAuth. Requires GOOGLE_OAUTH_CLIENT_ID
-  /// and the Supabase Google provider to be enabled - both are in
-  /// BACKEND_DETAILS_LIST.md. In DEMO mode this returns a demo result
-  /// and the UI must NOT claim a real Google account was linked.
+  /// Google sign-in via Supabase OAuth (Supabase holds the real
+  /// client id/secret; GOOGLE_OAUTH_CLIENT_ID is only the button
+  /// gate). Returns googleLaunched, never ok:true: the session
+  /// arrives via the signedIn event and only then may the caller
+  /// navigate. Launch failure maps to a Bangla-safe errorKind.
   Future<AuthResult> signInWithGoogle() async {
     final client = supabaseOrNull;
     if (client == null || AppConfig.googleOAuthClientId.isEmpty) {
-      return const AuthResult(ok: true, userId: 'demo-user', mode: AuthMode.demo);
+      // No real OAuth path: never a fake success (button hidden too).
+      return AuthResult(ok: false, mode: client == null ? AuthMode.demo : AuthMode.supabase, googleNotConfigured: true);
     }
     try {
-      final ok = await client.auth.signInWithOAuth(
+      final launched = await client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'com.yessirai.app://login-callback',
+        redirectTo: AppConfig.googleOAuthRedirectTo,
       );
-      return AuthResult(ok: ok, mode: AuthMode.supabase);
+      return AuthResult(
+        ok: false,
+        mode: AuthMode.supabase,
+        googleLaunched: launched,
+        errorKind: launched ? AuthErrorKind.none : AuthErrorKind.unknown,
+      );
     } on AuthException catch (e) {
-      return AuthResult(ok: false, error: e.message, mode: AuthMode.supabase);
+      return AuthResult(ok: false, error: e.message, mode: AuthMode.supabase, errorKind: classifySignInError(e));
+    } catch (e) {
+      return AuthResult(ok: false, error: e.toString(), mode: AuthMode.supabase, errorKind: classifySignInError(e));
     }
   }
 }

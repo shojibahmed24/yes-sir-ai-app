@@ -33,6 +33,7 @@ Widget renderer() => const MaterialApp(
             fontSize: 16,
             s: s,
             marksPrinted: false,
+            isMcq: true,
             questionText: 'মূল প্রশ্নের লেখা এখানে।',
             questionLabel: 'বইয়ের প্রশ্ন (হুবহু)',
             explanationLabel: 'AI ব্যাখ্যা (বইয়ের ভিত্তিতে)',
@@ -55,7 +56,7 @@ void main() {
     await tester.pump();
     expect(richContains(tester, 'সারাংশের লেখা এখানে।'), isTrue);
     expect(richContains(tester, 'চূড়ান্ত উত্তরের লেখা এখানে।'), isTrue);
-    expect(find.text('মূল প্রশ্নের লেখা এখানে।'), findsNothing);
+    expect(find.text('মূল প্রশ্নের লেখা এখানে।', findRichText: true), findsNothing);
   });
 
   testWidgets('tapping question shows only the question, back restores',
@@ -64,13 +65,13 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('বইয়ের প্রশ্ন (হুবহু)').first);
     await tester.pump();
-    expect(find.text('মূল প্রশ্নের লেখা এখানে।'), findsOneWidget);
+    expect(find.text('মূল প্রশ্নের লেখা এখানে।', findRichText: true), findsOneWidget);
     expect(richContains(tester, 'সারাংশের লেখা এখানে।'), isFalse);
     expect(richContains(tester, 'চূড়ান্ত উত্তরের লেখা এখানে।'), isFalse);
     await tester.tap(find.text('AI ব্যাখ্যা (বইয়ের ভিত্তিতে)').first);
     await tester.pump();
     expect(richContains(tester, 'সারাংশের লেখা এখানে।'), isTrue);
-    expect(find.text('মূল প্রশ্নের লেখা এখানে।'), findsNothing);
+    expect(find.text('মূল প্রশ্নের লেখা এখানে।', findRichText: true), findsNothing);
   });
 
   testWidgets('no toggle when question text is absent', (tester) async {
@@ -84,6 +85,7 @@ void main() {
               fontSize: 16,
               s: s,
               marksPrinted: false,
+              isMcq: true,
             ),
           ),
         ),

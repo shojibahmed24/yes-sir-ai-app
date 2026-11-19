@@ -1,9 +1,13 @@
 import '../../../core/models/guide_bank_model.dart';
+import 'guide_creative_parts.dart';
 
-/// Pilot creative grouping (lesson 2.1, 2026-10-31): pure
-/// function. Creative rows sharing a non-empty stimulusId form
+/// Creative grouping (lesson 2.1, 2026-10-31; family widened
+/// 2026-11-08): pure function. Rows of a creative-family type
+/// (see creativeFamilyTypes) sharing a non-empty stimulusId form
 /// one group, in first-appearance order of the stimulus; every
-/// other entry stays a singleton. A group with a single visible
+/// other entry stays a singleton. The gate is the PATTERN — a
+/// creative-family row with a stimulus — in ANY subject or class,
+/// never a subject or section name. A group with a single visible
 /// part (the rest filtered out) renders as a plain row — the
 /// caller collapses it, so a lone part never gets a lonely
 /// header. No stimulus text is invented: the model carries no
@@ -24,7 +28,9 @@ List<GroupedRows> groupQuestionRows(
   for (final e in entries) {
     final q = e.$2;
     final stim = q.stimulusId;
-    if (q.questionType == 'creative' && stim != null && stim.isNotEmpty) {
+    if (isCreativeFamilyType(q.questionType) &&
+        stim != null &&
+        stim.isNotEmpty) {
       final existing = byStimulus[stim];
       if (existing != null) {
         existing.parts.add(e);

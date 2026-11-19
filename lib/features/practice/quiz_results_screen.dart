@@ -9,6 +9,7 @@ import 'package:yes_sir_ai/features/practice/practice_store.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/quiz_results_strings.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class QuizResultsScreen extends StatelessWidget {
   const QuizResultsScreen({super.key});
@@ -32,7 +33,7 @@ class QuizResultsScreen extends StatelessWidget {
     return ValueListenableBuilder<Locale>(valueListenable: languageNotifier, builder: (context, locale, _) {
       final s = locale.languageCode == 'bn' ? quizResultsStringsBn : quizResultsStringsEn;
       final bangla = locale.languageCode == 'bn';
-      return Scaffold(
+      return ThemedScaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -54,8 +55,10 @@ class QuizResultsScreen extends StatelessWidget {
           }
           final skipped = attempt.total - attempt.answers.length;
           final wrong = attempt.answers.length - attempt.correct;
-          final wrongItems = items.where((q) =>
-              attempt.answers.containsKey(q.id) && attempt.answers[q.id] != q.correctIndex).toList();
+          final wrongItems = items.where((q) {
+            final a = attempt.answers[q.id];
+            return a != null && !q.isCorrect(a);
+          }).toList();
           final weakChapters = wrongItems.map((q) => practiceService.chapterOf(q.id, bangla)).toSet().toList();
           return ListView(padding: const EdgeInsets.all(16), children: [
             ScoreHeader(score: '${attempt.correct} / ${attempt.total}', total: '${attempt.percent}% • +${attempt.xp} XP', message: s['message']!),
@@ -78,8 +81,8 @@ class QuizResultsScreen extends StatelessWidget {
               Text(s['wrongListTitle']!, style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: 8),
               for (final q in wrongItems) Padding(padding: const EdgeInsets.only(bottom: 8),
-                  child: PracticeCard(title: bangla ? q.questionBn : q.questionEn,
-                      subtitle: q.options[q.correctIndex], icon: Icons.cancel)),
+                  child: PracticeCard(title: bangla ? q.questionBn : q.questionEn, maxTitleLines: null,
+                      subtitle: q.acceptedOptionTexts.join(' / '), icon: Icons.cancel)),
             ],
             const SizedBox(height: 16),
             ElevatedButton(onPressed: () {

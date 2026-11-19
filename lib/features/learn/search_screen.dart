@@ -21,7 +21,7 @@ import 'lesson_selection.dart';
 import 'widgets/search_guide_section.dart';
 import 'widgets/search_recents.dart';
 import 'widgets/search_stepper.dart';
-
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 // Phase 16 (M1): [initialQuery] is the text typed on Home (?q=).
 // The stepper cannot resolve free text, so it is shown honestly
 // above the stepper instead of being silently dropped.
@@ -59,9 +59,11 @@ class _SearchScreenState extends State<SearchScreen> {
     if (mounted) setState(() => _schoolClass = cls);
   }
 
-  String _label(bool bn) => bn
-      ? 'অধ্যায় ${_sel.chapter} পৃষ্ঠা ${_sel.page} প্রশ্ন ${_sel.problem}'
-      : 'Chapter ${_sel.chapter}, page ${_sel.page}, question ${_sel.problem}';
+  String _label(bool bn) =>
+      (bn ? searchStringsBn : searchStringsEn)['selectionLabel']!
+          .replaceAll('{chapter}', '${_sel.chapter}')
+          .replaceAll('{page}', '${_sel.page}')
+          .replaceAll('{problem}', '${_sel.problem}');
 
   void _goChapterList({int? bannerPage}) {
     ChapterListHolder.set(
@@ -135,7 +137,7 @@ class _SearchScreenState extends State<SearchScreen> {
         final s = bn ? searchStringsBn : searchStringsEn;
         final nav = bn ? homeStringsBn : homeStringsEn;
         final classItems = {6, 7, _schoolClass}.toList()..sort();
-        return Scaffold(
+        return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
@@ -148,15 +150,13 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(s['subtitle']!,
-                    style: Theme.of(context).textTheme.bodyMedium),
+                Text(s['subtitle']!, style: Theme.of(context).textTheme.bodyMedium),
                 if (widget.initialQuery.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Card(
                     child: ListTile(
                       leading: const Icon(Icons.search),
-                      title: Text(
-                          '${s['homeSearch']!} ${widget.initialQuery}'),
+                      title: Text('${s['homeSearch']!} ${widget.initialQuery}'),
                       subtitle: Text(s['homeSearchSub']!),
                     ),
                   ),

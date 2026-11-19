@@ -47,7 +47,11 @@ class ChapterCard extends StatelessWidget {
             color: chapter.status == 'done'
                 ? AppTheme.success
                 : AppTheme.subjectColorFor(subjectId, dark: dark)),
-        title: Text(bn ? chapter.bn : chapter.en),
+        title: Text(
+          bn ? chapter.bn : chapter.en,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         subtitle: Text(chapter.pages.isEmpty
             ? statusLabel
             : '$pagesLabel ${chapter.pages} · $statusLabel'),

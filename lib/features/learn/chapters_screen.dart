@@ -80,7 +80,7 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.go('/home/subjects'),
             ),
-            title: Text('$subjectName · ${s['subtitle']!}'),
+            title: Text('$subjectName · ${s['subtitle']!}', overflow: TextOverflow.ellipsis),
           ),
           body: FutureBuilder<List<dynamic>>(
             future: _future,
@@ -142,7 +142,6 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                         style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(height: 8),
                   ],
-                  Text(s['subtitle']!),
                   const SizedBox(height: 8),
                   Text(
                     '${numStr(openedHere, bn)} ${s['chaptersOpened']!}',
@@ -232,17 +231,19 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
   }
 
   Widget _error(Map<String, String> s) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(s['loadFailed']!),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: () => setState(() => _future = _load()),
-            child: Text(s['retry']!),
-          ),
-        ],
+    return SingleChildScrollView(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(s['loadFailed']!),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => setState(() => _future = _load()),
+              child: Text(s['retry']!),
+            ),
+          ],
+        ),
       ),
     );
   }

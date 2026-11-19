@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import '../core/models/guide_bank_model.dart';
+import '../core/services/english_reader_service.dart';
 import '../core/widgets/back_scope.dart';
 import '../features/learn/guide_answer_holder.dart';
 import '../features/home/home_screen.dart';
@@ -15,8 +16,11 @@ import '../features/learn/lesson_screen.dart';
 import '../features/learn/chat_screen.dart';
 import '../features/learn/no_match_screen.dart';
 import '../features/learn/guide_answer_screen.dart';
+import '../features/learn/search_flow_board_sections.dart';
 import '../features/learn/search_flow_list_screen.dart';
 import '../features/learn/search_flow_screen.dart';
+import '../features/learn/english_search_flow_list_screen.dart';
+import '../features/learn/english_reader_screen.dart';
 import '../features/learn/search_flow_types.dart';
 import '../features/practice/guide_model_test_list_screen.dart';
 
@@ -120,6 +124,70 @@ final List<GoRoute> learnRoutes = [
           type: type,
           lesson: q['lesson'],
           questionNumber: int.tryParse(q['questionNumber'] ?? ''),
+          section: q['section'],
+          setId: q['setId'],
+          chapterless: q['chapterless'] == 'true',
+          board: q['board'] == 'true',
+        ),
+      );
+    },
+  ),
+  // Board sub-sections (Board revision 2026-11-02): the Board
+  // tile lands here, never straight on a mixed list. The
+  // screen re-fetches Board counts and hides zero sections.
+  GoRoute(
+    path: '/search-flow-board',
+    builder: (c, s) {
+      final q = s.uri.queryParameters;
+      return BackScope(
+        parent: '/search-flow',
+        child: SearchFlowBoardSectionsScreen(
+          subjectId: q['subject'] ?? 'math',
+          schoolClass: int.tryParse(q['class'] ?? '') ?? 6,
+        ),
+      );
+    },
+  ),
+  // No separate English picker (2026-11-05): English guide goes
+  // through the main /search-flow global picker (subject=english);
+  // the old /english-search-flow route was removed. The list and
+  // reader routes below stay as destinations reached from it.
+  GoRoute(
+    path: '/english-search-flow-list',
+    builder: (c, s) {
+      final q = s.uri.queryParameters;
+      return BackScope(
+        parent: '/search-flow',
+        child: EnglishSearchFlowListScreen(
+          schoolClass: int.tryParse(q['class'] ?? '') ?? 9,
+          setId: q['setId'],
+          section: q['section'],
+          lesson: q['lesson'],
+        ),
+      );
+    },
+  ),
+  // Redesigned English reader (2026-11-03): one collection
+  // (model test, practice serial, poem, story) with a sticky
+  // passage box, one sub-question at a time, and a jump bar.
+  GoRoute(
+    path: '/english-reader',
+    builder: (c, s) {
+      final q = s.uri.queryParameters;
+      var kind = EnglishReaderKind.model;
+      for (final k in EnglishReaderKind.values) {
+        if (k.name == q['kind']) kind = k;
+      }
+      return BackScope(
+        parent: '/search-flow',
+        child: EnglishReaderScreen(
+          schoolClass: int.tryParse(q['class'] ?? '') ?? 9,
+          kind: kind,
+          title: q['title'] ?? '',
+          setId: q['setId'],
+          lesson: q['lesson'],
+          stimulusRef: q['ref'],
+          workName: q['work'],
         ),
       );
     },

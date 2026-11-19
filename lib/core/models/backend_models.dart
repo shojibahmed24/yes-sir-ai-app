@@ -1,4 +1,8 @@
 // Plain data models shared by the data services. No network code here.
+// GroundedContext lives in grounded_context.dart (moved 2026-11-03
+// to keep this file under the 250-line rule); re-exported so
+// existing imports keep working unchanged.
+export 'grounded_context.dart';
 
 /// One row of the books_public view. The view carries a SINGLE title
 /// column: a 'bn' row's title is the Bangla title, an 'en' row's title
@@ -55,6 +59,10 @@ class SubjectInfo {
   /// (DEMO fallback, or the guide check failed) — never a guess.
   final bool hasGuide;
   final int guideChapterCount;
+
+  /// Set-based guide content: model-test set count for subjects
+  /// whose guide rows are sets + bank rows, not chapters.
+  final int guideSetCount;
   const SubjectInfo({
     required this.id,
     required this.nameBn,
@@ -63,142 +71,105 @@ class SubjectInfo {
     required this.chapterCount,
     this.hasGuide = false,
     this.guideChapterCount = 0,
+    this.guideSetCount = 0,
   });
   String name(bool bangla) => bangla ? nameBn : nameEn;
+
+  /// Cache-once round-trip: unknown keys default to false/0,
+  /// so older caches without guideSetCount still load.
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'nameBn': nameBn,
+    'nameEn': nameEn,
+    'locked': locked,
+    'chapterCount': chapterCount,
+    'hasGuide': hasGuide,
+    'guideChapterCount': guideChapterCount,
+    'guideSetCount': guideSetCount,
+  };
+  factory SubjectInfo.fromJson(Map<String, dynamic> json) => SubjectInfo(
+    id: '${json['id'] ?? ''}',
+    nameBn: '${json['nameBn'] ?? ''}',
+    nameEn: '${json['nameEn'] ?? ''}',
+    locked: json['locked'] == true,
+    chapterCount: (json['chapterCount'] as num?)?.toInt() ?? 0,
+    hasGuide: json['hasGuide'] == true,
+    guideChapterCount: (json['guideChapterCount'] as num?)?.toInt() ?? 0,
+    guideSetCount: (json['guideSetCount'] as num?)?.toInt() ?? 0,
+  );
+}
+
+/// How a subjects fetch resolved: server (fresh truth), demo
+/// (no backend configured — content by design, not an error),
+/// or failed (unreachable — never mistake fallback for "none").
+enum SubjectsFetchKind { server, demo, failed }
+
+class SubjectsFetchResult {
+  const SubjectsFetchResult({required this.subjects, required this.kind});
+  final List<SubjectInfo> subjects;
+  final SubjectsFetchKind kind;
 }
 
 class LessonResult {
   final String question, answerBn, answerEn;
   final bool found;
-  const LessonResult({
-    required this.question,
-    required this.answerBn,
-    required this.answerEn,
-    required this.found,
-  });
-  static const noMatch = LessonResult(
-    question: '',
-    answerBn: '',
-    answerEn: '',
-    found: false,
-  );
-}
-
-/// Book-verified context for ONE question, returned only by the
-/// server-side path (Edge Function) or the local DEMO index.
-/// questionText is the book's own wording, verbatim — the AI is
-/// sent this text, never just a question title. localAnswer is
-/// non-empty ONLY for the local DEMO index; edge-grounded rows
-/// carry no stored answer (book_questions holds question text
-/// only), so a no-key DEMO fallback shows the question itself.
-/// sourceLink is deliberately absent: it is server-only and must
-/// never reach the app.
-class GroundedContext {
-  final String bookTitle, chapterTitle, subject;
-  final int schoolClass, chapterNumber, page, problem;
-  final String questionText, localAnswer, source; // edge | local-index | guide
-  /// Book chapter text chunks (OCR) for this question's page, max 3,
-  /// in reading order. Empty = no chunk grounding; the prompt must
-  /// then say plainly the explanation is question-only grounded.
-  /// chunkPageRanges runs parallel to chunkTexts ('12–14' style).
-  final List<String> chunkTexts, chunkPageRanges;
-
-  /// Guide Mode G fields (empty for textbook Mode A rows).
-  /// questionType: 'mcq' | 'short' | 'creative' | 'problem' | ''.
-  /// marks is the PRINTED mark count, or null when unprinted.
-  /// answerKey is the printed key for MCQ/short, else ''.
-  /// guideUnitText is HIDDEN grounding (the guide's worked
-  /// solution for creative/long/Math) — it goes into the AI
-  /// prompt. It is rendered to the student ONLY when the server
-  /// marks it verbatim (verbatimKind 'guide'/'corrected'); in
-  /// every other case it stays hidden grounding, exactly as
-  /// before. fallbackChunkText is the single prose fallback
-  /// chunk, or ''.
-  final String guideQuestionId, questionType, answerKey;
-  final String guideUnitText, guideUnitKind, fallbackChunkText;
-  final String verbatimKind, verbatimText, correctionNote;
-  final bool guideError;
-  final int? marks;
-  const GroundedContext({
-    required this.bookTitle,
-    required this.chapterTitle,
-    required this.subject,
-    required this.schoolClass,
-    required this.chapterNumber,
-    required this.page,
-    required this.problem,
-    required this.questionText,
-    this.localAnswer = '',
-    required this.source,
-    this.chunkTexts = const [],
-    this.chunkPageRanges = const [],
-    this.guideQuestionId = '',
-    this.questionType = '',
-    this.answerKey = '',
-    this.guideUnitText = '',
-    this.guideUnitKind = '',
-    this.fallbackChunkText = '',
-    this.verbatimKind = 'none',
-    this.verbatimText = '',
-    this.correctionNote = '',
-    this.guideError = false,
-    this.marks,
-  });
-
-  /// True when the server explicitly allows stage-1 verbatim
-  /// display for this row (guide text or curated correction).
-  bool get hasVerbatim =>
-      (verbatimKind == 'guide' || verbatimKind == 'corrected') &&
-      verbatimText.isNotEmpty;
-
-  /// True when this row carries printed marks (a badge may show).
-  bool get marksPrinted => marks != null;
+  const LessonResult({required this.question, required this.answerBn, required this.answerEn, required this.found});
+  static const noMatch = LessonResult(question: '', answerBn: '', answerEn: '', found: false);
 }
 
 class PracticeProblem {
   final String id, questionBn, questionEn, answerBn, answerEn;
-  const PracticeProblem({
-    required this.id,
-    required this.questionBn,
-    required this.questionEn,
-    required this.answerBn,
-    required this.answerEn,
-  });
+  const PracticeProblem({required this.id, required this.questionBn, required this.questionEn, required this.answerBn, required this.answerEn});
 }
 
 class QuizItem {
   final String id, questionBn, questionEn;
   final List<String> options;
   final int correctIndex;
+  // Multi-key (Phase 2 gap plan): accepted indices for JSON-list
+  // keys; empty = single-key (correctIndex alone is the set).
+  final List<int> correctIndices;
   const QuizItem({
     required this.id,
     required this.questionBn,
     required this.questionEn,
     required this.options,
     required this.correctIndex,
+    this.correctIndices = const [],
   });
+
+  /// Multi-key judgment: any accepted index earns full marks;
+  /// empty set = single-key, only correctIndex. Accepted texts.
+  bool isCorrect(int selected) =>
+      correctIndices.isEmpty ? selected == correctIndex : correctIndices.contains(selected);
+  List<String> get acceptedOptionTexts {
+    final idx = correctIndices.isEmpty ? [correctIndex] : correctIndices;
+    return idx.where((i) => i >= 0 && i < options.length).map((i) => options[i]).toList();
+  }
 
   // Phase 2 (2026-10-31): weak-revision persistence. A finished
   // run's wrong items are stored inside Attempt, so a later
   // revision quiz can re-ask GUIDE items too — guide ids are
   // not in any bank, so findQuestion() can never rebuild them.
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'questionBn': questionBn,
-        'questionEn': questionEn,
-        'options': options,
-        'correctIndex': correctIndex,
-      };
+    'id': id,
+    'questionBn': questionBn,
+    'questionEn': questionEn,
+    'options': options,
+    'correctIndex': correctIndex,
+    'correctIndices': correctIndices,
+  };
 
   static QuizItem fromJson(Map<String, dynamic> j) {
     final opts = j['options'];
+    final acc = j['correctIndices'];
     return QuizItem(
       id: j['id'] as String? ?? '',
       questionBn: j['questionBn'] as String? ?? '',
       questionEn: j['questionEn'] as String? ?? '',
-      options:
-          opts is List ? opts.map((e) => e.toString()).toList() : const [],
+      options: opts is List ? opts.map((e) => e.toString()).toList() : const [],
       correctIndex: (j['correctIndex'] as num?)?.toInt() ?? 0,
+      correctIndices: acc is List ? acc.whereType<num>().map((n) => n.toInt()).toList() : const [],
     );
   }
 }

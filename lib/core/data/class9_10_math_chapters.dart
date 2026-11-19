@@ -52,22 +52,31 @@ const Map<int, String> class9_10MathChapterTitles = {
 
 /// Chapter-2 lesson titles. DB-backed scope: these are the lessons
 /// the guide database actually covers for chapter 2. Keep separate
-/// from [pilotOnlyLessonTitles] — never merge the two maps.
+/// from [guideLessonTitles]: ch2 titles come from the pilot-2.1/
+/// 2.2 page_maps, the other map from the pilot-3/7/8/9/11/16
+/// page_maps. Both maps are DB-backed since the 2026-11-01 math
+/// import; they stay separate by chapter for readability.
 const Map<String, String> chapter2LessonTitles = {
   '2.1': 'সেট',
   '2.2': 'অন্বয় ও ফাংশন এবং ডোমেন ও রেঞ্জ',
 };
 
-/// ★ PILOT-FILE-ONLY lesson titles — NOT DB-backed.
+/// Guide lesson titles, lesson-code -> banner title.
 ///
 /// Read from the guide pilot page_maps' "লেসন-শিরোনাম" sections
 /// (guide banners verified at 500 dpi / scout renders):
-/// pilot-3, pilot-7, pilot-8, pilot-9. These lessons exist in the
-/// pilot transcription files only; they must never be presented as
-/// database-backed titles. Chapter 3's guide also has an unnumbered
-/// "পরিশিষ্ট" (appendix) section — it is not a numbered lesson, so
-/// it is intentionally absent from this map.
-const Map<String, String> pilotOnlyLessonTitles = {
+/// pilot-3, pilot-7, pilot-8, pilot-9, pilot-11 (11.1 banner on PDF
+/// 604, 11.2 banner on PDF 636), pilot-16 (title table with banner
+/// references for 16.1–16.4).
+/// DB-backed scope: every key matches a live DB lesson value
+/// verbatim (math import 2026-11-01 landed ch 3/7/8/9/11/16 lessons
+/// in the DB). Formerly named pilotOnlyLessonTitles, when these
+/// lessons existed in pilot files only; that name is retired now
+/// that the DB covers them — nothing here is pilot-only any more.
+/// Chapter 3's guide also has an unnumbered "পরিশিষ্ট" (appendix)
+/// section — it is not a numbered lesson, so it is intentionally
+/// absent from this map (its rows stay reachable via 'সব লেসন').
+const Map<String, String> guideLessonTitles = {
   // Chapter 3 — বীজগাণিতিক রাশি (pilot-3/page_map.md).
   '3.1': 'বর্গ সংবলিত সূত্রাবলি ও প্রয়োগ',
   '3.2': 'ঘন সংবলিত সূত্রাবলি ও প্রয়োগ',
@@ -86,4 +95,12 @@ const Map<String, String> pilotOnlyLessonTitles = {
   // Chapter 9 — ত্রিকোণমিতিক অনুপাত (pilot-9/page_map.md).
   '9.1': 'ত্রিকোণমিতিক অনুপাত ও অনুপাতের সম্পর্ক',
   '9.2': 'বিভিন্ন কোণের ত্রিকোণমিতিক অনুপাত',
+  // Chapter 11 — বীজগাণিতিক অনুপাত ও সমানুপাত (pilot-11/page_map.md).
+  '11.1': 'বীজগাণিতিক অনুপাত ও সমানুপাত',
+  '11.2': 'ধারাবাহিক অনুপাত ও সমানুপাতিক ভাগ',
+  // Chapter 16 — পরিমিতি (pilot-16/page_map.md title table).
+  '16.1': 'ত্রিভুজক্ষেত্রের ক্ষেত্রফল',
+  '16.2': 'চতুর্ভুজক্ষেত্রের ক্ষেত্রফল',
+  '16.3': 'বৃত্ত সংক্রান্ত পরিমাপ',
+  '16.4': 'আয়তাকার ঘনবস্তু',
 };

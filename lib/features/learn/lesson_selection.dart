@@ -15,6 +15,9 @@ class LessonSelection {
     this.questionId,
     this.schoolClass,
     this.guideQuestionId,
+    this.stimulusText,
+    this.stimulusQuestionId,
+    this.guideOptions = const [],
     this.returnTo = '/lesson',
   });
   final String subject;
@@ -40,6 +43,26 @@ class LessonSelection {
   /// and page/problem 0 is never looked up in the book index.
   final String? guideQuestionId;
 
+  /// Creative stimulus (উদ্দীপক) for a guide chat open, when
+  /// the opening question object carries one. The chat AI
+  /// prompt gains it (see withChatStimulus); the displayed
+  /// question never changes. Null/empty = no stimulus.
+  final String? stimulusText;
+
+  /// Ownership of [stimulusText] (2026-11-03 chat fix): the id of
+  /// the question the stimulus belongs to. withChatStimulus
+  /// applies the stimulus ONLY when this equals the resolved
+  /// guide question id — a stimulus from any other question can
+  /// never leak into this chat's prompt, and a fused
+  /// stimulus-as-question can never recur.
+  final String? stimulusQuestionId;
+
+  /// Verbatim option texts of the opening guide question, when
+  /// the opening list row carries them (2026-11-03 chat fix).
+  /// The chat prompt quotes these exactly; Mode G options win
+  /// when both exist (same DB row, same texts).
+  final List<String> guideOptions;
+
   /// Where chat's back button (and system back via the route's
   /// BackScope) returns: '/lesson' for textbook flows, the
   /// guide answer route for guide flows. Never invented per tap.
@@ -47,7 +70,8 @@ class LessonSelection {
 
   /// Same selection with the class stamped in; every other field
   /// (including questionId and guide fields) is preserved.
-  LessonSelection copyWith({int? schoolClass}) => LessonSelection(
+  LessonSelection copyWith({int? schoolClass, String? stimulusText}) =>
+      LessonSelection(
         subject: subject,
         chapter: chapter,
         page: page,
@@ -57,6 +81,9 @@ class LessonSelection {
         questionId: questionId,
         schoolClass: schoolClass ?? this.schoolClass,
         guideQuestionId: guideQuestionId,
+        stimulusText: stimulusText ?? this.stimulusText,
+        stimulusQuestionId: stimulusQuestionId,
+        guideOptions: guideOptions,
         returnTo: returnTo,
       );
 

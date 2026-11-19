@@ -1,7 +1,7 @@
 // Registration Step 12 - Review strings (bn + en, written together).
 const Map<String, String> regStep12Bn = {
   'title': 'সব ঠিক আছে তো?',
-  'subtitle': 'ভুল থাকলে Edit চাপো।',
+  'subtitle': 'ভুল থাকলে সম্পাদনা করো।',
   'name': 'নাম',
   'gender': 'ছেলে / মেয়ে',
   'class': 'ক্লাস',
@@ -18,7 +18,7 @@ const Map<String, String> regStep12Bn = {
   'otpNotVerified': 'যাচাই হয়নি',
   'otpDemo': 'DEMO যাচাই (আসল SMS নয়)',
   'otpEntered': 'কোড দেওয়া হয়েছে — আসল SMS যাচাই চালু হয়নি',
-  'edit': 'Edit',
+  'edit': 'সম্পাদনা করো',
   'boy': 'ছেলে',
   'girl': 'মেয়ে',
   'bangla': 'বাংলা ভার্সন',

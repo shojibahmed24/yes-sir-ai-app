@@ -90,6 +90,20 @@ class ProgressService {
           }
         } catch (_) {}
       }
+      // Cached server row from the sign-in restore: a fresh install
+      // still shows progress when the server is unreachable now.
+      // Live data above always wins; this is offline fallback only.
+      final cached = await LocalStore.readServerProgress();
+      if (cached != null) {
+        return ProgressSummary(
+            streakDays: cached['streak_days'] ?? 0,
+            chaptersDone: cached['chapters_done'] ?? 0,
+            averageScore: cached['average_score'] ?? 0,
+            totalAttempts: 0, totalCorrect: 0, totalAnswered: 0, xp: 0,
+            level: 1, todayAnswered: 0, todayMinutes: 0,
+            goalMinutes: goalMinutes,
+            activityDates: [], weakChapters: [], attempts: []);
+      }
       return ProgressSummary.empty;
     }
     final dates = await PracticeStore.activityDates();
@@ -126,7 +140,7 @@ class ProgressService {
         totalByChapter[ch] = (totalByChapter[ch] ?? 0) + 1;
         final q = practiceService.findQuestion(e.key);
         if (persistedWrong.contains(e.key) ||
-            (q != null && e.value != q.correctIndex)) {
+            (q != null && !q.isCorrect(e.value))) {
           wrongByChapter[ch] = (wrongByChapter[ch] ?? 0) + 1;
         }
       }

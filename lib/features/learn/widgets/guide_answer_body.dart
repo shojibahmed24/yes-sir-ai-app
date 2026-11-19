@@ -1,29 +1,30 @@
 // Guide answer body (split from guide_answer_screen.dart to keep
-// both files under the 250-line rule): header (chapter, type,
-// printed marks, set — only from row metadata, never invented),
-// question card, MCQ options card, key card, verbatim-first
-// stage 1 + explanation buttons, stage-2 explanation renderer,
-// font controls, report row. The parent owns loading/attempt
-// state; this widget only renders it (plus its own try-first
-// attempt flag, reset whenever the question id changes).
-// Verbatim text renders ONLY when the server marked it verbatim
-// (parent passes kind/text from Grounding); 'none' shows the
-// honest note and the explanation directly. STAGE-1
-// INDEPENDENCE: question/key/verbatim render even when the AI
-// explanation failed — failure shows ONLY in its own section.
-// TRY-FIRST (2026-11-01): a keyed MCQ first shows only the
-// question + options; key, verbatim and explanation reveal
-// after the pick. Unkeyed MCQs show options display-only;
-// option-less MCQs show an honest notice, not a no-key note.
+// both files under the 250-line rule): header, question card,
+// MCQ options card, key card, printed explanation, verbatim +
+// explanation buttons, stage-2 renderer, footer. The parent owns
+// loading/attempt state; this widget only renders it (plus its
+// own try-first attempt flag, reset when the question id
+// changes). Verbatim text renders ONLY when the server marked it
+// verbatim (parent passes kind/text from Grounding); 'none'
+// shows the honest note and the explanation directly. STAGE-1
+// INDEPENDENCE: question/key/verbatim render even when the AI explanation fails; failure shows ONLY in its own section.
+// TRY-FIRST (2026-11-01): a keyed MCQ first shows only question
+// + options; key, verbatim and explanation reveal after the
+// pick. Unkeyed MCQs show options display-only; option-less MCQs show an honest notice, not a no-key note.
 import 'package:flutter/material.dart';
 
 import '../../../core/models/guide_bank_model.dart';
+import '../../../core/services/punctuation_score.dart';
 import '../../../core/services/structured_explanation_service.dart';
 import 'guide_answer_footer.dart';
 import 'guide_explanation_section.dart';
-import 'guide_math_text.dart';
+import 'guide_key_card.dart';
+import 'guide_mcq_no_options_card.dart';
 import 'guide_mcq_options_card.dart';
+import 'guide_printed_explanation_card.dart';
+import 'guide_punctuation_check.dart';
 import 'guide_question_header.dart';
+import 'guide_translated_math_text.dart';
 import 'verbatim_answer_card.dart';
 
 class GuideAnswerBody extends StatefulWidget {
@@ -32,22 +33,22 @@ class GuideAnswerBody extends StatefulWidget {
     required this.q,
     required this.attempt,
     required this.keyText,
-    this.correctOptionIndex,
+    this.correctOptionIndex, this.acceptedIndices,
     required this.chips,
     required this.fontSize,
     required this.onFontSmaller,
     required this.onFontLarger,
     required this.verbatimKind,
     required this.verbatimText,
+    this.guideExplanation = '',
     required this.correctionNote,
     required this.guideError,
     required this.showExplanation,
-    this.explanationPending = false,
     required this.stepsOnly,
     required this.onExplainDetailed,
     required this.onExplainSteps,
-    required this.onRetry,
-    this.onAskAi,
+    required this.explanation,
+    this.showStimulus = true, this.onAskAi,
     required this.subjectId,
     required this.chapterNumber,
     required this.bn,
@@ -62,24 +63,31 @@ class GuideAnswerBody extends StatefulWidget {
   /// Mode G key letter mapped to an option index (single view
   /// only; null = unknown — list rows never carry an index).
   final int? correctOptionIndex;
+
+  /// Multi-key accepted indices from the Mode G key (null =
+  /// single-key); passed to the try-first card (see there).
+  final List<int>? acceptedIndices;
   final List<String> chips;
   final double fontSize;
   final VoidCallback onFontSmaller;
   final VoidCallback onFontLarger;
   final String verbatimKind;
   final String verbatimText;
+  // Printed explanation from Mode G (migration 017); '' = none.
+  final String guideExplanation;
   final String correctionNote;
   final bool guideError;
   final bool showExplanation;
 
-  /// True while the AI explanation is still running after
-  /// stage-1 already rendered: the explanation section shows a
-  /// pending row, never a premature failed row.
-  final bool explanationPending;
+  /// On-demand explanation state (button / pending / result),
+  /// owned by the parent screen (2026-11-03 fix).
+  final ExplanationSectionInput explanation;
   final bool stepsOnly;
   final VoidCallback onExplainDetailed;
   final VoidCallback onExplainSteps;
-  final VoidCallback onRetry;
+
+  /// False in the grouped view: the stimulus is pinned above.
+  final bool showStimulus;
 
   /// Ask-AI below the explanation area (step 6); null = no button.
   final VoidCallback? onAskAi;
@@ -107,14 +115,11 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
   /// Try-first applies only to a keyed MCQ with options: the
   /// answer area stays hidden until the student picks.
   bool get _tryFirst =>
-      _q.questionType == 'mcq' &&
-      _q.options.isNotEmpty &&
-      widget.correctOptionIndex != null &&
-      widget.correctOptionIndex! >= 0 &&
+      _q.questionType == 'mcq' && _q.options.isNotEmpty &&
+      widget.correctOptionIndex != null && widget.correctOptionIndex! >= 0 &&
       widget.correctOptionIndex! < _q.options.length;
 
-  bool get _mcqNoOptions =>
-      _q.questionType == 'mcq' && _q.options.isEmpty;
+  bool get _mcqNoOptions => _q.questionType == 'mcq' && _q.options.isEmpty;
 
   bool get _revealed => !_tryFirst || _attempted;
 
@@ -132,16 +137,19 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
           fontSize: fontSize,
           s: widget.s,
           color: onVariant,
+          showStimulus: widget.showStimulus,
         ),
         const SizedBox(height: 8),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: GuideMathText(
+            child: GuideTranslatedMathText(
               text: _q.questionText,
               fontSize: fontSize + 1,
               fontWeight: FontWeight.w600,
               color: onSurface,
+              // English only: other subjects always render the original.
+              translate: widget.subjectId == 'english',
             ),
           ),
         ),
@@ -150,10 +158,9 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: GuideMcqOptionsCard(
-              key: ValueKey('mcq:${_q.id}'),
-              options: _q.options,
-              correctOptionIndex:
-                  _tryFirst ? widget.correctOptionIndex : null,
+              key: ValueKey('mcq:${_q.id}'), options: _q.options,
+              correctOptionIndex: _tryFirst ? widget.correctOptionIndex : null,
+              acceptedIndices: _tryFirst ? widget.acceptedIndices : null,
               fontSize: fontSize,
               s: widget.s,
               onAttempted: () => setState(() => _attempted = true),
@@ -162,45 +169,16 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
         if (_mcqNoOptions)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: GuideMathText(
-                  text: widget.s['optionsMissing']!,
-                  fontSize: fontSize,
-                  color: onSurface,
-                ),
-              ),
-            ),
+            child: GuideMcqNoOptionsCard(fontSize: fontSize, s: widget.s),
           ),
         if (_revealed) ...[
           if (widget.keyText != null)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.ls['correctAnswer']!,
-                      style: TextStyle(
-                        fontSize: fontSize + 1,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'HindSiliguri',
-                        color: onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    GuideMathText(
-                      text: widget.keyText!,
-                      fontSize: fontSize,
-                      color: onSurface,
-                    ),
-                  ],
-                ),
-              ),
+            GuideKeyCard(
+              keyText: widget.keyText!,
+              fontSize: fontSize,
+              ls: widget.ls,
             )
-          else if (!_mcqNoOptions)
+          else if (_q.questionType == 'mcq' && !_mcqNoOptions) // MCQ-only: creative/short rows have no key concept, so a missing key never shows the note there.
             Text(widget.ls['noKeyNote']!),
           if (widget.attempt != null &&
               widget.attempt!.status == StructuredStatus.keyMismatch) ...[
@@ -218,8 +196,32 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
             explanationShown: widget.showExplanation,
             onExplainDetailed: widget.onExplainDetailed,
             onExplainSteps: widget.onExplainSteps,
+            translate: widget.subjectId == 'english',
           ),
+          if (widget.guideExplanation.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            GuidePrintedExplanationCard(
+              explanation: widget.guideExplanation,
+              fontSize: fontSize,
+              ls: widget.ls,
+            ),
+          ],
           const SizedBox(height: 12),
+          // Q9 self-check: punctuation rows with marks in the
+          // key passage only; guide_error rows never score.
+          if (_q.section == 'punctuation' &&
+              !widget.guideError &&
+              widget.keyText != null &&
+              extractPunctuationMarks(widget.keyText!).isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GuidePunctuationCheck(
+                keyText: widget.keyText!,
+                maxMarks: _q.marks ?? 5,
+                fontSize: fontSize,
+                ls: widget.ls,
+              ),
+            ),
         ],
         if (widget.showExplanation && _revealed)
           GuideExplanationSection(
@@ -230,8 +232,7 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
             s: widget.s,
             ls: widget.ls,
             stepsOnly: widget.stepsOnly,
-            explanationPending: widget.explanationPending,
-            onRetry: widget.onRetry,
+            explanation: widget.explanation,
           ),
         GuideAnswerFooter(
           question: _q,

@@ -52,6 +52,44 @@ void main() {
     expect(find.byIcon(Icons.cancel), findsNothing);
   });
 
+  testWidgets('multi-key: second accepted option is also correct',
+      (tester) async {
+    var attempts = 0;
+    await tester.pumpWidget(wrap(GuideMcqOptionsCard(
+      options: const ['have', 'enjoy', 'go', 'play'],
+      correctOptionIndex: 0,
+      acceptedIndices: const [0, 1],
+      fontSize: 16,
+      s: guideBankStringsBn,
+      onAttempted: () => attempts++,
+    )));
+    // 'enjoy' is the second accepted option, not the first.
+    await tester.tap(find.text('enjoy', findRichText: true));
+    await tester.pump();
+    expect(attempts, 1);
+    expect(find.text('ঠিক উত্তর!'), findsOneWidget);
+    // Both accepted options get a tick (first + picked).
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(2));
+    expect(find.byIcon(Icons.cancel), findsNothing);
+  });
+
+  testWidgets('multi-key: unaccepted option is still wrong',
+      (tester) async {
+    var attempts = 0;
+    await tester.pumpWidget(wrap(GuideMcqOptionsCard(
+      options: const ['have', 'enjoy', 'go', 'play'],
+      correctOptionIndex: 0,
+      acceptedIndices: const [0, 1],
+      fontSize: 16,
+      s: guideBankStringsBn,
+      onAttempted: () => attempts++,
+    )));
+    await tester.tap(find.text('go', findRichText: true));
+    await tester.pump();
+    expect(attempts, 1);
+    expect(find.text('ভুল হয়েছে — সঠিক উত্তরটি দেখো'), findsOneWidget);
+  });
+
   testWidgets('display-only mode shows options without pick or feedback',
       (tester) async {
     var attempts = 0;

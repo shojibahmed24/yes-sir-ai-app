@@ -20,6 +20,7 @@ class GuideMcqOptionsCard extends StatefulWidget {
     super.key,
     required this.options,
     required this.correctOptionIndex,
+    this.acceptedIndices,
     required this.fontSize,
     required this.s,
     required this.onAttempted,
@@ -29,6 +30,14 @@ class GuideMcqOptionsCard extends StatefulWidget {
   /// Null = display-only (unkeyed MCQ): options show, no pick,
   /// no feedback. Non-null = try-first interactive mode.
   final int? correctOptionIndex;
+
+  /// Multi-key: every accepted option index. Null = single-key
+  /// (correctOptionIndex alone). When set, ANY accepted option
+  /// counts as correct — the old code compared against the
+  /// single index, so a second accepted option was marked
+  /// wrong. The first accepted index is still passed as
+  /// correctOptionIndex, so interactive gating is unchanged.
+  final List<int>? acceptedIndices;
   final double fontSize;
 
   /// Guide-bank strings (title / hint / feedback lines).
@@ -44,11 +53,15 @@ class _GuideMcqOptionsCardState extends State<GuideMcqOptionsCard> {
 
   bool get _interactive => widget.correctOptionIndex != null;
 
+  bool _isAccepted(int i) =>
+      widget.acceptedIndices?.contains(i) ??
+      i == widget.correctOptionIndex;
+
   Color _rowColor(int i, ColorScheme scheme, bool dark) {
     if (!_interactive || _selected == null) {
       return scheme.surfaceContainerHighest;
     }
-    if (i == widget.correctOptionIndex) {
+    if (_isAccepted(i)) {
       return dark ? Colors.green.shade900 : Colors.green.shade100;
     }
     if (i == _selected) return scheme.errorContainer;
@@ -61,7 +74,7 @@ class _GuideMcqOptionsCardState extends State<GuideMcqOptionsCard> {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final onSurface = scheme.onSurface;
     final picked = _interactive && _selected != null;
-    final correct = picked && _selected == widget.correctOptionIndex;
+    final correct = picked && _isAccepted(_selected!);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -107,6 +120,9 @@ class _GuideMcqOptionsCardState extends State<GuideMcqOptionsCard> {
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     width: double.infinity,
+                    // M9: 48dp minimum touch height even for a
+                    // one-word option (was ~44dp with padding).
+                    constraints: const BoxConstraints(minHeight: 48),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
@@ -137,12 +153,12 @@ class _GuideMcqOptionsCardState extends State<GuideMcqOptionsCard> {
                             color: onSurface,
                           ),
                         ),
-                        if (picked && i == widget.correctOptionIndex)
+                        if (picked && _isAccepted(i))
                           const Icon(Icons.check_circle,
                               color: Colors.green, size: 20),
                         if (picked &&
                             i == _selected &&
-                            i != widget.correctOptionIndex)
+                            !_isAccepted(i))
                           const Icon(Icons.cancel,
                               color: Colors.red, size: 20),
                       ],

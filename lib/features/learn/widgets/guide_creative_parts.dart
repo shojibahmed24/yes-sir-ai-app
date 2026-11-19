@@ -1,17 +1,60 @@
 // Pure creative-part ordering helpers (step 6, no Flutter).
 // One creative question's parts share a stimulus; each part row
-// carries its own marks and guide solution. Parts arrive in an
-// arbitrary order, so the answer view orders them ক→খ→গ→ঘ.
-// Detection is tolerant: a row whose question text does not
-// start with a part letter keeps its input order after the
-// lettered parts, and is labelled by position — never dropped.
+// carries its own marks. Parts arrive in an arbitrary order, so
+// the answer view orders them by marks ascending (ক=1, খ=2,
+// গ=3, ঘ=4); unmarked rows keep input order after the marked
+// ones. Labels are positional, never parsed from the question
+// text: a question that merely starts with a part letter (e.g.
+// "খলিফা...") is NOT a part label, and parsing it produced
+// duplicate খ / missing ক chips (147 Bangla groups, 2026-11-04).
+// Ties on marks: lettered rows first, then id order (natural, so
+// ...-9 before ...-10), then input order. 2/4/4 groups tie খ/গ.
+import '../../../core/models/creative_marks_parts.dart';
 import '../../../core/models/guide_bank_model.dart';
+
+/// Creative-family question types: every row kind that can carry
+/// one সৃজনশীল question's parts (stimulus + ক খ গ ঘ, marks 1-4),
+/// in ANY subject or class. User rule (2026-11-08): the same
+/// creative form applies whenever a question matches the pattern
+/// — stimulus + 4 parts + marks 1,2,3,4 — whichever subject it
+/// is. Section labels do NOT identify the pattern: model/board/
+/// chapter-model creative rows carry other sections, so the
+/// family is keyed on question_type, never on section.
+const creativeFamilyTypes = <String>{
+  'creative',
+  'chapter_model_creative',
+  'special_model_creative',
+  'board_creative',
+};
+
+/// True when the row's question_type belongs to the creative
+/// family (see creativeFamilyTypes).
+bool isCreativeFamilyType(String type) => creativeFamilyTypes.contains(type);
+
+/// True when the loaded parts ARE one সৃজনশীল question by the
+/// user's pattern: exactly 4 parts with marks 1, 2, 3, 4.
+/// Unmarked (null) parts never satisfy it — they keep the legacy
+/// grouping behaviour instead (see groupQuestionRows), never a
+/// forced split, and never dropped.
+bool isCreativePatternGroup(List<GuideBankQuestion> parts) {
+  if (parts.length != 4) return false;
+  final marks = <int>[];
+  for (final p in parts) {
+    final m = p.marks;
+    if (m == null) return false;
+    marks.add(m);
+  }
+  marks.sort();
+  return marks[0] == 1 && marks[1] == 2 && marks[2] == 3 && marks[3] == 4;
+}
 
 /// Canonical part letters, in display order.
 const creativePartLetters = ['ক', 'খ', 'গ', 'ঘ'];
 
 /// 0-based part index parsed from the row's leading letter, or
 /// null when the text starts with anything else (or is empty).
+/// Tiebreaker ONLY for orderedCreativeParts: never a label, and
+/// never the primary order (marks are).
 int? creativePartIndex(GuideBankQuestion q) {
   final text = q.questionText.trimLeft();
   if (text.isEmpty) return null;
@@ -19,35 +62,33 @@ int? creativePartIndex(GuideBankQuestion q) {
   return i >= 0 ? i : null;
 }
 
-/// Tab label for a part: its parsed letter, else the letter at
-/// its position in the ordered list (so an unlettered second
-/// part still reads খ). Beyond ঘ, the 1-based position number.
-String creativePartLabel(GuideBankQuestion q, int fallbackIndex) {
-  final i = creativePartIndex(q);
-  if (i != null) return creativePartLetters[i];
-  if (fallbackIndex >= 0 && fallbackIndex < creativePartLetters.length) {
-    return creativePartLetters[fallbackIndex];
+/// Tab label for a part: the letter at its position in the
+/// marks-ordered list (so the first part always reads ক, the
+/// second খ, and so on). Beyond ঘ, the 1-based position number.
+String creativePartLabel(int index) {
+  if (index >= 0 && index < creativePartLetters.length) {
+    return creativePartLetters[index];
   }
-  return '${fallbackIndex + 1}';
+  return '${index + 1}';
 }
 
-/// Parts in ক→খ→গ→ঘ order (stable for duplicate letters);
-/// unlettered rows keep input order after the lettered ones.
-/// Missing parts are simply absent — never synthesised.
+/// Parts in marks order (ক=1, খ=2, গ=3, ঘ=4; stable for equal
+/// marks, lettered rows first on ties). Unmarked rows keep
+/// input order after the marked ones. Missing parts are simply
+/// absent — never synthesised.
 List<GuideBankQuestion> orderedCreativeParts(
   List<GuideBankQuestion> group,
 ) {
-  final lettered = <(int, int, GuideBankQuestion)>[];
-  final rest = <GuideBankQuestion>[];
+  final indexed = <(int, int, int, GuideBankQuestion)>[];
   for (var i = 0; i < group.length; i++) {
-    final p = creativePartIndex(group[i]);
-    if (p == null) {
-      rest.add(group[i]);
-    } else {
-      lettered.add((p, i, group[i]));
-    }
+    final p = group[i];
+    indexed.add((p.marks ?? 999, creativePartIndex(p) ?? 999, i, p));
   }
-  lettered.sort((a, b) =>
-      a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
-  return [...lettered.map((e) => e.$3), ...rest];
+  indexed.sort((a, b) {
+    if (a.$1 != b.$1) return a.$1.compareTo(b.$1);
+    if (a.$2 != b.$2) return a.$2.compareTo(b.$2);
+    final c = compareIdsNatural(a.$4.id, b.$4.id);
+    return c != 0 ? c : a.$3.compareTo(b.$3);
+  });
+  return indexed.map((e) => e.$4).toList();
 }

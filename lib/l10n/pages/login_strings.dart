@@ -27,6 +27,14 @@ const Map<String, String> loginStringsBn = {
       'এই ইমেইল এখনো কনফার্ম হয়নি। ইনবক্সে কনফার্মেশন লিংক দেখো, অথবা আবার পাঠাও।',
   'resend': 'আবার পাঠাও',
   'confirmationResent': 'কনফার্মেশন ইমেইল আবার পাঠানো হয়েছে। ইনবক্স চেক করো।',
+  'invalidCredentials':
+      'ইমেইল বা পাসওয়ার্ড ভুল হয়েছে। আবার চেষ্টা করো, অথবা পাসওয়ার্ড ভুলে গেলে রিসেট করো।',
+  'networkError':
+      'ইন্টারনেট সংযোগ নেই। সংযোগ চেক করে আবার চেষ্টা করো।',
+  'googleUnavailable':
+      'গুগল দিয়ে লগইন এখনো চালু হয়নি। ইমেইল দিয়ে লগইন করো।',
+  'googleWaiting':
+      'গুগল সাইন-ইন চলছে — ব্রাউজারে গুগল অ্যাকাউন্ট বেছে নিলে স্বয়ংক্রিয়ভাবে হোমে যাবে।',
 };
 const Map<String, String> loginStringsEn = {
   'title': 'Welcome back!',
@@ -55,4 +63,12 @@ const Map<String, String> loginStringsEn = {
       'This email is not confirmed yet. Check your inbox for the confirmation link, or resend it.',
   'resend': 'Resend',
   'confirmationResent': 'Confirmation email resent. Please check your inbox.',
+  'invalidCredentials':
+      'Wrong email or password. Try again, or reset your password if you forgot it.',
+  'networkError':
+      'No internet connection. Check your connection and try again.',
+  'googleUnavailable':
+      'Google sign-in is not enabled yet. Please log in with email.',
+  'googleWaiting':
+      'Google sign-in is in progress — pick your Google account in the browser and you will return home automatically.',
 };

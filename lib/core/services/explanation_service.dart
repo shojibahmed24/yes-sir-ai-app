@@ -12,7 +12,6 @@ import 'edge_post.dart';
 import 'marks_budget.dart';
 import 'openrouter_client.dart';
 import 'learn_service.dart';
-import 'practice_service.dart';
 import 'supabase_client.dart';
 
 enum ExplanationOutcome { live, demo, ungrounded, failed }
@@ -33,11 +32,25 @@ class ExplanationResult {
   final GroundedContext? context;
   final String demoKind; // '' | 'grounded' | 'bank'
   final bool serverKeyMissing; // Edge OPENROUTER secret not set
+  /// Phase 2: a guide row id that Mode G could not resolve
+  /// (row genuinely absent). The quiz screen shows the
+  /// guide-specific honest message, never a bank substitute.
+  final bool guideMissing;
+
+  /// Attribution from the Edge response (see GenResult):
+  /// 'openrouter' | 'gemini' | 'unknown'. Only live results
+  /// carry a real value; demo/failed results stay 'unknown'
+  /// and the UI shows no AI label for them.
+  final String aiProvider;
+  final String? aiModel;
   const ExplanationResult({
     required this.outcome,
     this.text = '',
     this.context,
     this.demoKind = '', this.serverKeyMissing = false,
+    this.guideMissing = false,
+    this.aiProvider = 'unknown',
+    this.aiModel,
   });
 }
 
@@ -197,33 +210,15 @@ class ExplanationService {
       outcome: ExplanationOutcome.live,
       text: text,
       context: ctx,
+      aiProvider: gen.provider,
+      aiModel: gen.model,
     );
   }
 
-  /// Quiz explanation via the book index. Live-but-unmatched =>
-  /// ungrounded, NEVER the DEMO bank (bank only, no server path).
-  Future<ExplanationResult> explainQuiz({
-    required QuizItem item,
-    required String subject,
-    required bool bangla,
-  }) async {
-    final grounding = await resolveByText(
-      subject: subject,
-      questionText: bangla ? item.questionBn : item.questionEn,
-      bangla: bangla,
-    );
-    if (grounding.found) {
-      return explain(grounding: grounding, style: 'simple', bangla: bangla);
-    }
-    if (grounding.reason == 'edge-missing') {
-      return ExplanationResult(
-        outcome: ExplanationOutcome.demo,
-        text: practiceService.explanation(item.id, bangla),
-        demoKind: 'bank',
-      );
-    }
-    return const ExplanationResult(outcome: ExplanationOutcome.ungrounded);
-  }
+  // Quiz explanations moved to quiz_explanation_service.dart
+  // (Phase 2): guide rows resolve by id via Mode G, bank rows
+  // keep the textbook-index path above. This file keeps the
+  // textbook resolve + explain primitives both paths share.
 
   GroundedContext? _contextFrom(
     Map<String, dynamic> res,

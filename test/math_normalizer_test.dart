@@ -82,4 +82,20 @@ void main() {
   test('Bangla prose slash stays inline', () {
     expect(normalizeMathText('এবং/অথবা'), 'এবং/অথবা');
   });
+
+  test('Bangla genitive hyphen stays inline, never math minus', () {
+    expect(
+      normalizeMathText('ক-এর নকল গাইড উত্তর'),
+      'ক-এর নকল গাইড উত্তর',
+    );
+    expect(normalizeMathText('খ-এর মান'), 'খ-এর মান');
+  });
+
+  test('bare operator between Bangla words stays inline', () {
+    expect(normalizeMathText('ক+খ'), 'ক+খ');
+  });
+
+  test('real math minus still converts', () {
+    expect(normalizeMathText('x-3'), r'$x-3$');
+  });
 }

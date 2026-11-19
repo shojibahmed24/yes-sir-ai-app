@@ -154,13 +154,11 @@ class _SearchStepperState extends State<SearchStepper> {
                 Expanded(child: Text(widget.labels['stepSubject']!)),
                 DropdownButton<String>(
                   value: _subject,
+                  isExpanded: true,
                   items: _subjects
                       .map((s) => DropdownMenuItem(
-                            value: s.id,
-                            child: Text(
-                              '${s.name(widget.bn)}${s.locked ? ' 🔒' : ''}',
-                            ),
-                          ))
+                          value: s.id,
+                          child: Text('${s.name(widget.bn)}${s.locked ? ' 🔒' : ''}')))
                       .toList(),
                   onChanged: (v) {
                     if (v == null) return;
@@ -186,6 +184,7 @@ class _SearchStepperState extends State<SearchStepper> {
                   value: _chapterNumbers.contains(_chapter)
                       ? _chapter
                       : _chapterNumbers.first,
+                  isExpanded: true,
                   items: _chapterNumbers
                       .map((n) => DropdownMenuItem(
                             value: n,

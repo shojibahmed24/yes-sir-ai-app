@@ -1,53 +1,27 @@
 // Books + subjects + chapters. Supabase when configured, DEMO
-// fallback otherwise. Real schema (supabase/migrations/002_books.sql):
-//   books_public VIEW: id, class_id, subject_id, language, title,
-//     supplied, created_at. Clients query the VIEW, never the books
-//     table: the table holds server-only source_link and deliberately
-//     has no client RLS policy, so direct reads stay blocked.
-//   subjects table: id, name_bn, name_en.
-//   chapters table: id, book_id, number, title_bn, title_en.
-// book_questions is NEVER queried from the app: migration 002 gives
-// it no client read policy on purpose (server / Edge Function only).
-// That is why question-level resolution lives in LearnService as a
-// DB chapter check + no-match gate, not a question lookup (see C2).
-// Async methods fall back to the local DEMO lists on any query
-// failure instead of crashing. A query that SUCCEEDS with zero rows
-// is returned as-is: an empty class really has no books. Locked
-// rule preserved: a subject with no supplied book is locked — the
-// UI shows Locked and offers no lesson/practice/AI for it. The
-// dropped minority-language book is not listed anywhere.
+// fallback otherwise. Schema (migrations/002_books.sql):
+// books_public VIEW (id, class_id, subject_id, language, title,
+// supplied, created_at) is the only book source clients query —
+// the books table holds server-only source_link with no client
+// RLS policy. subjects (id, name_bn, name_en); chapters (id,
+// book_id, number, title_bn, title_en). book_questions is NEVER
+// queried from the app (no client read policy; server / Edge
+// only) — question resolution lives in LearnService as a DB
+// chapter check + no-match gate, not a question lookup (C2).
+// Async methods fall back to DEMO lists on failure, never crash;
+// a query that SUCCEEDS with zero rows is returned as-is.
+// Locked = no supplied book. The dropped minority-language
+// book is not listed anywhere.
 import '../models/backend_models.dart';
 import 'books_fallback.dart';
 import 'guide_subject_flags.dart';
+import 'subjects_cache.dart';
 import 'supabase_client.dart';
 
-/// Tiny in-memory TTL cache: one entry per key, dropped after
-/// [ttl]. Only successful DB reads are cached — failures and
-/// DEMO fallbacks are never cached, so recovery is never hidden
-/// behind a stale entry.
-class _TtlCache<T> {
-  static const ttl = Duration(minutes: 5);
-  final _entries = <String, ({T value, DateTime at})>{};
-  T? get(String key) {
-    final e = _entries[key];
-    if (e == null) return null;
-    if (DateTime.now().difference(e.at) > ttl) {
-      _entries.remove(key);
-      return null;
-    }
-    return e.value;
-  }
-
-  void set(String key, T value) =>
-      _entries[key] = (value: value, at: DateTime.now());
-
-  void remove(String key) => _entries.remove(key);
-}
-
 class BooksService {
-  final _booksCache = _TtlCache<List<BookInfo>>();
-  final _subjectsCache = _TtlCache<List<SubjectInfo>>();
-  final _chaptersCache = _TtlCache<List<ChapterInfo>>();
+  final _booksCache = TtlCache<List<BookInfo>>();
+  final _subjectsCache = TtlCache<List<SubjectInfo>>();
+  final _chaptersCache = TtlCache<List<ChapterInfo>>();
   // DEMO fallbacks live in books_fallback.dart; the async methods
   // below are the real Supabase reads.
   List<BookInfo> classBooks(int schoolClass, bool bangla) =>
@@ -77,12 +51,12 @@ class BooksService {
   }
 
   /// Drops one cached subjects entry, so the next call
-  /// revalidates against the server (home grid refresh).
+  /// revalidates against the server (manual refresh).
   void invalidateSubjectsCache(int schoolClass, bool bangla) {
     _subjectsCache.remove('$schoolClass:$bangla');
   }
-  /// The view has one title column, so titleBn == titleEn == the
-  /// row's title (Bangla for 'bn' rows, English for 'en' rows).
+
+  /// The view has one title column: titleBn == titleEn == the row's title.
   Future<List<BookInfo>> classBooksAsync(int schoolClass, bool bangla) async {
     final client = supabaseOrNull;
     if (client == null) return classBooks(schoolClass, bangla);
@@ -116,36 +90,57 @@ class BooksService {
     }
   }
 
-  /// All subjects with locked state + real chapter counts for one
-  /// class + UI language. Subjects come from the subjects table;
-  /// locked = no supplied book row for this class + language;
-  /// chapter counts come from the chapters table via that class's
-  /// book ids. Any failure returns the DEMO fallback list.
-  /// Guide sourcing (all classes): a LOCKED subject is enriched
-  /// with server guide-bank chapters (Edge guideChapters, the
-  /// same action the guide screens use — class 10 falls back to
-  /// the class-9 book server-side). hasGuide = at least one guide
-  /// chapter; guideChapterCount = that chapter count. Checks run
-  /// in parallel, one per locked subject, each capped at 8s, and
-  /// any failure leaves hasGuide false — never a guessed true.
-  /// The enriched list is cached like the plain list (5-min TTL),
-  /// so the checks run at most once per cache window.
+  /// All subjects + locked state + real chapter counts for one
+  /// class + UI language. LOCKED subjects are enriched with guide
+  /// content (withGuideFlags): chapters, else sets, else bank
+  /// rows. Complete enrichments are cached (5-min TTL) and
+  /// persisted as last-good; INCOMPLETE ones are served but
+  /// NEVER cached or persisted.
   Future<List<SubjectInfo>> subjectsAsync(int schoolClass, bool bangla) async {
-    final client = supabaseOrNull;
-    if (client == null) return _fallbackSubjects(schoolClass);
+    if (supabaseOrNull == null) return _fallbackSubjects(schoolClass);
     final key = '$schoolClass:$bangla';
     final hit = _subjectsCache.get(key);
     if (hit != null) return hit;
+    return (await _fetchSubjects(schoolClass, bangla)).subjects;
+  }
+
+  /// Fresh fetch reporting how it resolved (server / demo /
+  /// failed), never silently substituting DEMO for a failure.
+  /// Bypasses the memory cache; complete success refreshes both.
+  /// Each server query is capped at 10s, so a stall becomes a failure with retry UI, never loading forever.
+  Future<SubjectsFetchResult> fetchSubjectsFresh(
+    int schoolClass,
+    bool bangla,
+  ) => _fetchSubjects(schoolClass, bangla);
+
+  /// Last-good list across restarts. Null = no usable cache.
+  Future<List<SubjectInfo>?> loadPersistedSubjects(
+    int schoolClass,
+    bool bangla,
+  ) => loadPersistedSubjectsList(subjectsLastGoodKey(schoolClass, bangla));
+
+  Future<SubjectsFetchResult> _fetchSubjects(
+    int schoolClass,
+    bool bangla,
+  ) async {
+    final client = supabaseOrNull;
+    if (client == null) {
+      return SubjectsFetchResult(
+        subjects: _fallbackSubjects(schoolClass),
+        kind: SubjectsFetchKind.demo,
+      );
+    }
+    final key = '$schoolClass:$bangla';
     try {
       final lang = bangla ? 'bn' : 'en';
       final subjRes = await client
           .from('subjects')
-          .select('id, name_bn, name_en');
+          .select('id, name_bn, name_en').timeout(const Duration(seconds: 10));
       final bookRes = await client
           .from('books_public')
           .select('id, subject_id, title, supplied')
           .eq('class_id', schoolClass)
-          .eq('language', lang);
+          .eq('language', lang).timeout(const Duration(seconds: 10));
       final books = _rows(bookRes);
       final bookSubject = <String, String>{};
       final suppliedSubjects = <String>{};
@@ -158,7 +153,7 @@ class BooksService {
         final chapRes = await client
             .from('chapters')
             .select('book_id')
-            .inFilter('book_id', books.map((b) => '${b['id']}').toList());
+            .inFilter('book_id', books.map((b) => '${b['id']}').toList()).timeout(const Duration(seconds: 10));
         for (final c in _rows(chapRes)) {
           final s = bookSubject['${c['book_id']}'];
           if (s != null) counts[s] = (counts[s] ?? 0) + 1;
@@ -176,20 +171,25 @@ class BooksService {
       }).toList();
       _sortSubjects(out);
       final enriched = await withGuideFlags(out, schoolClass);
-      // Server-wins (Step 4): an INCOMPLETE enrichment is served
-      // but NEVER cached — a partial snapshot must not shadow
-      // the real server count for 5 minutes.
-      if (enriched.complete) _subjectsCache.set(key, enriched.subjects);
-      return enriched.subjects;
+      if (enriched.complete) {
+        _subjectsCache.set(key, enriched.subjects);
+        await persistSubjectsList(key, enriched.subjects);
+      }
+      return SubjectsFetchResult(
+        subjects: enriched.subjects,
+        kind: SubjectsFetchKind.server,
+      );
     } catch (_) {
-      return _fallbackSubjects(schoolClass);
+      return SubjectsFetchResult(
+        subjects: _fallbackSubjects(schoolClass),
+        kind: SubjectsFetchKind.failed,
+      );
     }
   }
 
-  /// Chapters of one subject's book(s) in one UI language, ordered
-  /// by book then chapter number. Returns null when unconfigured or
-  /// when a query fails (caller uses the DEMO fallback), and an
-  /// empty list when the subject genuinely has no book / chapters.
+  /// Chapters of one subject's book(s), ordered by book then
+  /// number. Null when unconfigured / on failure (DEMO fallback
+  /// by caller); empty when the subject has no book / chapters.
   Future<List<ChapterInfo>?> chaptersForSubjectAsync(
     int schoolClass,
     String subject,

@@ -20,7 +20,11 @@
 import 'app_config.dart';
 import 'edge_post.dart';
 import 'guide_flow_client_scan.dart';
+import 'guide_flow_creative_scan.dart';
+import 'guide_flow_inflight.dart';
 import 'guide_flow_models.dart';
+import 'guide_flow_prefetch.dart';
+import 'guide_flow_section_scan.dart';
 import '../../features/learn/search_flow_types.dart';
 
 export 'guide_flow_models.dart';
@@ -31,6 +35,8 @@ class GuideFlowListService {
         _customPost = post != null;
   final GuideFlowPost _post;
   final bool _customPost;
+  final GuideFlowPageCache _pageCache = GuideFlowPageCache();
+  final _inFlight = GuideFlowInflight();
 
   static const pageSize = 20;
 
@@ -40,28 +46,115 @@ class GuideFlowListService {
   }
 
   /// One display page (<= 20 rows) for a type (+ lesson) selection.
-  /// [scanOffset] is meaningful only for clientFiltered resumption;
-  /// serverFiltered paging uses [offset] directly.
+  /// Prefetched pages (Phase 5) are served from the one-page
+  /// cache; identical concurrent requests share one future.
   Future<GuideFlowPage> fetchPage({
     required String subject,
     required int schoolClass,
     required int chapter,
     required SearchFlowType type,
     String? lesson,
+    String? section,
     int offset = 0,
     int scanOffset = 0,
   }) async {
-    final section = searchFlowGuideSection(type);
-    final res = await _list({
+    final identity =
+        [subject, schoolClass, chapter, type.name, lesson ?? '', section ?? '']
+            .join('|');
+    if (offset > 0) {
+      final cached = _pageCache.take('$identity@$offset');
+      if (cached != null) {
+        prefetchGuideFlowPage(
+            fetch: (body, {endpoint}) => _list(body),
+            cache: _pageCache,
+            identity: identity,
+            body: cached.nextBody,
+            pageSize: pageSize);
+        return cached.page;
+      }
+    }
+    final key = '$identity@$offset@$scanOffset';
+    final existing = _inFlight.existing(key);
+    if (existing != null) return existing;
+    return _inFlight.track(
+        key,
+        _fetchPageInner(
+            identity: identity,
+            subject: subject,
+            schoolClass: schoolClass,
+            chapter: chapter,
+            type: type,
+            lesson: lesson,
+            section: section,
+            offset: offset,
+            scanOffset: scanOffset));
+  }
+
+  Future<GuideFlowPage> _fetchPageInner({
+    required String identity,
+    required String subject,
+    required int schoolClass,
+    required int chapter,
+    required SearchFlowType type,
+    String? lesson,
+    String? section,
+    int offset = 0,
+    int scanOffset = 0,
+  }) async {
+    if (section != null) {
+      // Phase 2: the server filters these sections now, so try
+      // the direct page first; the client scan is the fallback
+      // for old servers (no section echo) and unreachable ones.
+      final direct = await fetchDirectSectionPage(
+          fetch: (body, {endpoint}) => _list(body),
+          subject: subject,
+          schoolClass: schoolClass,
+          chapter: chapter,
+          section: section,
+          lesson: lesson,
+          offset: offset,
+          pageSize: pageSize);
+      if (direct != null) return direct;
+      return guideFlowSectionPage(
+          fetch: (body, {endpoint}) => _list(body),
+          subject: subject,
+          schoolClass: schoolClass,
+          chapter: chapter,
+          section: section,
+          lesson: lesson,
+          scanOffset: scanOffset);
+    }
+    final typeSection = searchFlowGuideSection(type);
+    if (type == SearchFlowType.creative) {
+      // User rule (2026-11-08): the creative form follows the
+      // pattern (stimulus + 4 parts + marks 1-4) in ANY subject —
+      // one server section ('creative') misses model/board/
+      // chapter-model creative rows, so the creative type is
+      // served by the pattern scan instead of the section page.
+      // Paging continues via scanOffset (the screen tracks
+      // nextScanOffset); no server prefetch applies here.
+      return guideFlowCreativePatternPage(
+          fetch: (body, {endpoint}) => _list(body),
+          subject: subject,
+          schoolClass: schoolClass,
+          chapter: chapter,
+          lesson: lesson,
+          scanOffset: scanOffset);
+    }
+    // Phase 3: slim rows for list screens, except creative
+    // (group opens need the full stimulus text in the rows).
+    final body = <String, dynamic>{
       'action': 'list',
       'classId': schoolClass,
       'subject': subject,
       'chapter': chapter,
       'lesson': lesson,
-      'section': section,
+      'section': typeSection,
       'offset': offset,
       'limit': pageSize,
-    });
+      'slim': type != SearchFlowType.creative,
+    };
+    final res = await _list(body);
     if (res == null) {
       return const GuideFlowPage(rows: [], total: null, hasMore: false,
           mode: GuideFlowMode.unavailable, nextScanOffset: 0);
@@ -74,7 +167,7 @@ class GuideFlowListService {
               : GuideFlowMode.unavailable,
           nextScanOffset: 0);
     }
-    final filtered = lesson != null || section.isNotEmpty;
+    final filtered = lesson != null || typeSection.isNotEmpty;
     if (filtered &&
         (!res.containsKey('lesson') || !res.containsKey('section'))) {
       return guideFlowClientPage(
@@ -87,62 +180,29 @@ class GuideFlowListService {
     final total = (res['total'] as num?)?.toInt();
     final hasMore =
         total != null ? offset + rows.length < total : rows.length >= pageSize;
-    return GuideFlowPage(rows: rows, total: total, hasMore: hasMore,
+    final page = GuideFlowPage(rows: rows, total: total, hasMore: hasMore,
         mode: GuideFlowMode.serverFiltered, nextScanOffset: 0);
+    // D1 (Phase-5): server total 0 can mean NULL-section
+    // rows (class 7/8), not an empty chapter — fall back to
+    // the client scan (see guide_flow_client_scan).
+    final fallback = await guideFlowTypeFallbackPage(
+        fetch: (body, {endpoint}) => _list(body),
+        subject: subject, schoolClass: schoolClass,
+        chapter: chapter, type: type, lesson: lesson,
+        total: total, typeSection: typeSection,
+        scanOffset: scanOffset);
+    if (fallback != null) return fallback;
+    if (hasMore) {
+      prefetchGuideFlowPage(
+          fetch: (b, {endpoint}) => _list(b),
+          cache: _pageCache,
+          identity: identity,
+          body: {...body, 'offset': offset + rows.length},
+          pageSize: pageSize);
+    }
+    return page;
   }
 
-  /// Positional jump (guide rows carry NO printed question number:
-  /// no question_number column exists in migrations 008/011/013
-  /// and the list payload has no number field — so "number N"
-  /// means the Nth row of the filtered list in Edge id order).
-  /// Returns the row, or notFound when N is beyond the list.
-  Future<GuideFlowJump> jumpToPosition({
-    required String subject,
-    required int schoolClass,
-    required int chapter,
-    required SearchFlowType type,
-    required String? lesson,
-    required int position,
-  }) async {
-    final section = searchFlowGuideSection(type);
-    final res = await _list({
-      'action': 'list',
-      'classId': schoolClass,
-      'subject': subject,
-      'chapter': chapter,
-      'lesson': lesson,
-      'section': section,
-      'offset': position - 1,
-      'limit': 1,
-    });
-    if (res == null) {
-      return const GuideFlowJump(
-          question: null, outcome: GuideFlowJumpOutcome.unavailable);
-    }
-    if (res['found'] != true) {
-      return GuideFlowJump(
-          question: null,
-          outcome: res['reason'] == 'pilot-columns-missing'
-              ? GuideFlowJumpOutcome.filterPending
-              : GuideFlowJumpOutcome.unavailable);
-    }
-    final filtered = lesson != null || section.isNotEmpty;
-    if (filtered &&
-        (!res.containsKey('lesson') || !res.containsKey('section'))) {
-      return guideFlowClientJump(
-          fetch: (body, {endpoint}) => _list(body),
-          subject: subject, schoolClass: schoolClass,
-          chapter: chapter, type: type, lesson: lesson,
-          position: position);
-    }
-    final rows = guideFlowRows(res);
-    if (rows.isEmpty) {
-      return const GuideFlowJump(
-          question: null, outcome: GuideFlowJumpOutcome.notFound);
-    }
-    return GuideFlowJump(
-        question: rows.first, outcome: GuideFlowJumpOutcome.found);
-  }
 }
 
 final guideFlowListService = GuideFlowListService();

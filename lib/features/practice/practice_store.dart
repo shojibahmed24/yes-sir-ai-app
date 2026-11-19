@@ -92,9 +92,52 @@ class PracticeSession {
   // marks a weak-topic revision set (actual wrong answers only).
   static String quizSource = 'bankFallback';
   static bool quizIsRevision = false;
+
+  /// Phase 2: the current quiz set's guide shortfall (0 = full
+  /// or bank set) and its seedKey (for the quiz screen's bank
+  /// button, which rebuilds the bank set with the same seed).
+  static int quizShortfall = 0;
+  static String quizSeedKey = '';
   static List<QuizItem> modelItems = [];
   static String modelTestId = '', modelSubject = '', modelChapter = '';
   static int modelMinutes = 15; // matches the default (maths) test
+
+  /// Phase 2: true when the running exam is a GUIDE model-test
+  /// set (Ask-AI enabled via the guide-chat path); false for
+  /// bank model tests (no Ask-AI button — no guide row exists).
+  static bool modelIsGuide = false;
+
+  /// Phase 2: in-memory exam progress, so opening Ask-AI chat
+  /// (a route change that disposes the exam screen) and coming
+  /// back restores answers, flags, clock and position instead
+  /// of restarting the timed exam. Cleared on submit and on
+  /// every fresh exam start.
+  static String modelExamTestId = '';
+  static Map<int, int> modelExamAnswers = {};
+  static Set<int> modelExamFlagged = {};
+  static int modelExamSecondsLeft = -1;
+  static int modelExamIndex = 0;
+
+  static void saveModelExam({
+    required Map<int, int> answers,
+    required Set<int> flagged,
+    required int secondsLeft,
+    required int index,
+  }) {
+    modelExamTestId = modelTestId;
+    modelExamAnswers = Map<int, int>.from(answers);
+    modelExamFlagged = Set<int>.from(flagged);
+    modelExamSecondsLeft = secondsLeft;
+    modelExamIndex = index;
+  }
+
+  static void clearModelExam() {
+    modelExamTestId = '';
+    modelExamAnswers = {};
+    modelExamFlagged = {};
+    modelExamSecondsLeft = -1;
+    modelExamIndex = 0;
+  }
   static Attempt? lastAttempt;
   static List<QuizItem> lastItems = [];
   // Phase 17 (L3): one-shot flag — the model-test exam sets this

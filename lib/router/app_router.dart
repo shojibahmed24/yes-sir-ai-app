@@ -6,6 +6,8 @@ import '../features/parent/parent_session.dart';
 import 'auth_routes.dart';
 import 'registration_routes.dart';
 import 'learn_routes.dart';
+import 'bangla_first_routes.dart';
+import 'bangla_second_routes.dart';
 import 'practice_routes.dart';
 import 'profile_routes.dart';
 
@@ -42,6 +44,8 @@ final GoRouter appRouter = GoRouter(
     ...authRoutes,
     ...registrationRoutes,
     ...learnRoutes,
+    ...banglaFirstRoutes,
+    ...banglaSecondRoutes,
     ...practiceRoutes,
     ...profileRoutes,
   ],

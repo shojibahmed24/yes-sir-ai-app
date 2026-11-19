@@ -6,25 +6,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/guide_bank_model.dart';
-import '../../../core/services/structured_explanation_service.dart';
+import 'creative_part_marks.dart';
+import 'digits.dart';
 import 'guide_answer_body.dart';
 import 'guide_creative_part_loader.dart';
 import 'guide_creative_parts.dart';
-import 'guide_math_text.dart';
-
-class _PartState {
-  bool loading = false;
-  bool loaded = false;
-  bool explaining = false;
-  bool stage1Seen = false;
-  String verbatimKind = 'none';
-  String verbatimText = '';
-  String correctionNote = '';
-  bool guideError = false;
-  StructuredAttempt? attempt;
-  bool showExplanation = true;
-  bool stepsOnly = false;
-}
+import 'guide_creative_stimulus_header.dart';
+import 'guide_explanation_section.dart';
 
 class GuideCreativeAnswerView extends StatefulWidget {
   const GuideCreativeAnswerView({
@@ -66,9 +54,10 @@ class GuideCreativeAnswerView extends StatefulWidget {
 }
 
 class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
-  late final List<GuideBankQuestion> _parts =
-      orderedCreativeParts(widget.parts);
-  final _states = <String, _PartState>{};
+  late final List<GuideBankQuestion> _parts = orderForDisplay(widget.parts);
+  late final List<int?> _marks =
+      creativePartMarks(_parts, marksParts: groupMarksParts(_parts));
+  final _states = <String, CreativePartState>{};
   int _selected = 0;
   double _fontSize = 16;
 
@@ -78,9 +67,8 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
     _loadPart(_parts.first);
   }
 
-  _PartState _stateOf(GuideBankQuestion p) =>
-      _states.putIfAbsent(p.id, () => _PartState());
-
+  CreativePartState _stateOf(GuideBankQuestion p) =>
+      _states.putIfAbsent(p.id, () => CreativePartState());
   Future<void> _loadPart(GuideBankQuestion part) async {
     final st = _stateOf(part);
     if (st.loading || st.loaded) return;
@@ -102,7 +90,7 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
           st.correctionNote = stage1.correctionNote;
           st.guideError = stage1.guideError;
           st.showExplanation = !stage1.hasVerbatim;
-          st.explaining = true;
+          st.grounding = stage1.grounding;
           st.stage1Seen = true;
           st.loaded = true;
         });
@@ -113,12 +101,11 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
         st.verbatimText = result.verbatimText;
         st.correctionNote = result.correctionNote;
         st.guideError = result.guideError;
-        st.attempt = result.attempt;
+        st.grounding = result.grounding;
         // No stage-1 callback (e.g. an injected loader): derive
         // the initial explanation visibility from the record.
         // With stage-1 seen, keep the user's button taps.
         if (!st.stage1Seen) st.showExplanation = !result.hasVerbatim;
-        st.explaining = false;
         st.loading = false;
         st.loaded = true;
       });
@@ -131,9 +118,37 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
     }
   }
 
-  void _reloadPart(GuideBankQuestion part) {
-    _states[part.id] = _PartState();
-    _loadPart(part);
+  /// On-demand explanation for one part (2026-11-03 fix): runs
+  /// ONLY after the student taps "ব্যাখ্যা দেখুন" (or retry).
+  /// A part without grounding reloads first, then chains into
+  /// the explanation in the same tap; a failed reload shows the
+  /// failed row, whose retry is this method again.
+  Future<void> _requestPartExplanation(GuideBankQuestion part) async {
+    var st = _stateOf(part);
+    if (st.explaining) return;
+    if (st.grounding == null) {
+      _states[part.id] = CreativePartState();
+      await _loadPart(part);
+      if (!mounted) return;
+      st = _stateOf(part);
+      if (st.grounding == null) {
+        setState(() => st.explanationRequested = true);
+        return;
+      }
+    }
+    setState(() {
+      st.explanationRequested = true;
+      st.explaining = true;
+    });
+    final attempt = await runCreativePartExplanation(
+      st.grounding!,
+      widget.bn,
+    );
+    if (!mounted) return;
+    setState(() {
+      st.explaining = false;
+      st.attempt = attempt;
+    });
   }
 
   String? _keyText(GuideBankQuestion q) {
@@ -151,29 +166,21 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.stimulusText.isNotEmpty)
-          Card(
-            margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.s['stimulusTitle']!,
-                    style: TextStyle(
-                      fontSize: _fontSize + 1,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'HindSiliguri',
-                      color: onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  GuideMathText(
-                    text: widget.stimulusText,
-                    fontSize: _fontSize,
-                    color: onSurface,
-                  ),
-                ],
+          // D2 (2026-11-08): a long stimulus scrolls inside a
+          // capped box instead of pushing the Expanded answer
+          // body into a negative height (RenderFlex overflow).
+          // The cap is a fraction of the screen so the part
+          // tabs below always stay visible.
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.38,
+            ),
+            child: SingleChildScrollView(
+              child: GuideCreativeStimulusHeader(
+                stimulusText: widget.stimulusText,
+                fontSize: _fontSize,
+                title: widget.s['stimulusTitle']!,
+                color: onSurface,
               ),
             ),
           ),
@@ -184,13 +191,12 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
             children: [
               for (var i = 0; i < _parts.length; i++)
                 ChoiceChip(
-                  label: Text(creativePartLabel(_parts[i], i)),
+                  label: Text(_marks[i] == null
+                      ? creativePartLabel(i)
+                      : '${creativePartLabel(i)} · '
+                          '${numStr(_marks[i]!, widget.bn)}'),
                   selected: i == _selected,
-                  onSelected: (_) {
-                    if (i == _selected) return;
-                    setState(() => _selected = i);
-                    _loadPart(_parts[i]);
-                  },
+                  onSelected: (_) { if (i == _selected) return; setState(() => _selected = i); _loadPart(_parts[i]); },
                 ),
             ],
           ),
@@ -199,6 +205,9 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
           child: st.loaded
               ? GuideAnswerBody(
                   q: selected,
+                  // Stimulus is pinned above the tabs; the header
+                  // must not render it a second time per part.
+                  showStimulus: false,
                   attempt: st.attempt,
                   keyText: _keyText(selected),
                   chips: [
@@ -208,26 +217,24 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
                     widget.ls['sourceAiExplanation']!,
                   ],
                   fontSize: _fontSize,
-                  onFontSmaller: () => setState(
-                      () => _fontSize = (_fontSize - 1).clamp(12, 24)),
-                  onFontLarger: () => setState(
-                      () => _fontSize = (_fontSize + 1).clamp(12, 24)),
+                  onFontSmaller: () => setState(() => _fontSize = (_fontSize - 1).clamp(12, 24)),
+                  onFontLarger: () => setState(() => _fontSize = (_fontSize + 1).clamp(12, 24)),
                   verbatimKind: st.verbatimKind,
                   verbatimText: st.verbatimText,
                   correctionNote: st.correctionNote,
                   guideError: st.guideError,
                   showExplanation: st.showExplanation,
-                  explanationPending: st.explaining,
                   stepsOnly: st.stepsOnly,
-                  onExplainDetailed: () => setState(() {
-                    st.showExplanation = true;
-                    st.stepsOnly = false;
-                  }),
-                  onExplainSteps: () => setState(() {
-                    st.showExplanation = true;
-                    st.stepsOnly = true;
-                  }),
-                  onRetry: () => _reloadPart(selected),
+                  onExplainDetailed: () => setState(() { st.showExplanation = true; st.stepsOnly = false; }),
+                  onExplainSteps: () => setState(() { st.showExplanation = true; st.stepsOnly = true; }),
+                  explanation: ExplanationSectionInput(
+                    requested: st.explanationRequested,
+                    pending: st.explaining,
+                    // Creative parts carry no options.
+                    unavailable: false,
+                    onRequest: () => _requestPartExplanation(selected),
+                    onRetry: () => _requestPartExplanation(selected),
+                  ),
                   onAskAi: () => widget.onAskAi(selected),
                   subjectId: widget.subjectId,
                   chapterNumber: widget.chapterNumber,

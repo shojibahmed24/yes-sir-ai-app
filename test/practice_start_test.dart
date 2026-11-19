@@ -1,7 +1,10 @@
 // Batch 2 (item 8): the practice + practice-tab start buttons
-// really start a quiz with the right questions — daily = 5-item
-// generated set, weak revision = exactly the wrong answers, and
-// the weak button is disabled when there are truly no wrongs.
+// really start a quiz with the right questions — daily = the
+// 20-question guide set (the 5-item bank pool yields 5), weak
+// revision = exactly the wrong answers, and the weak button is
+// disabled when there are truly no wrongs. Phase 2: an empty
+// guide set asks about a bank set first (dialog), never
+// silently substituting the bank.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -53,12 +56,16 @@ Future<void> _seedWrong() async {
 }
 
 void main() {
-  testWidgets('practice daily button starts a 5-question quiz',
+  testWidgets('practice daily button asks, then starts a bank quiz',
       (WidgetTester t) async {
     await _reset();
     await t.pumpWidget(MaterialApp.router(routerConfig: _router('/practice')));
     await t.pumpAndSettle();
     await t.tap(find.text('কুইজ শুরু করো'));
+    await t.pumpAndSettle();
+    // No server in tests -> guide empty -> dialog first.
+    expect(find.text('ব্যাংক-সেট দিয়ে শুরু করো'), findsOneWidget);
+    await t.tap(find.text('ব্যাংক-সেট দিয়ে শুরু করো'));
     await t.pumpAndSettle();
     expect(find.textContaining('QUIZ 5 items daily'), findsOneWidget);
   });
@@ -101,15 +108,18 @@ void main() {
         findsOneWidget);
   });
 
-  testWidgets('practice-tab daily button starts a 5-question quiz',
+  testWidgets('practice-tab daily button asks, then starts a bank quiz',
       (WidgetTester t) async {
     await _reset();
     await t.pumpWidget(
         MaterialApp.router(routerConfig: _router('/practice-tab')));
     await t.pumpAndSettle();
-    expect(find.textContaining('অনুশীলন ব্যাংক · বইয়ের প্রশ্ন নয়'),
-        findsOneWidget);
+    expect(find.textContaining('গাইড MCQ'), findsOneWidget);
     await t.tap(find.text('শুরু করো').first);
+    await t.pumpAndSettle();
+    // No server in tests -> guide empty -> dialog first.
+    expect(find.text('ব্যাংক-সেট দিয়ে শুরু করো'), findsOneWidget);
+    await t.tap(find.text('ব্যাংক-সেট দিয়ে শুরু করো'));
     await t.pumpAndSettle();
     expect(find.textContaining('QUIZ 5 items daily'), findsOneWidget);
   });

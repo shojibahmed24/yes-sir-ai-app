@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../theme/app_theme.dart';
+import '../home_design.dart';
 
 /// Destination for a home subject tile: ALWAYS the new search
 /// flow, with the tapped subject preselected (Step 4). The old
@@ -36,7 +37,7 @@ class HomeSubjectTile extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(HomeDesign.cardRadius),
         onTap: () => context.go(homeSubjectRoute(subjectId)),
         child: Padding(
           padding: const EdgeInsets.all(16),

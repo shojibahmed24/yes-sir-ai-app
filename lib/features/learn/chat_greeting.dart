@@ -31,10 +31,13 @@ String? greetingFirstName(Map<String, dynamic>? profile) {
 /// A questionId selection may carry page/problem 0 (unknown);
 /// those are omitted, never displayed as 0.
 String chatQuestionLine(LessonSelection sel, String subjectName, bool bn) {
-  final parts = <String>[
-    subjectName,
-    '${bn ? 'অধ্যায়' : 'Chapter'} ${numStr(sel.chapter, bn)}',
-  ];
+  final parts = <String>[subjectName];
+  // Guide set-based opens carry chapter 0 (unknown) — never
+  // display it as a real chapter number (2026-11-03 fix: the
+  // "অধ্যায় ০" title bug).
+  if (sel.chapter > 0) {
+    parts.add('${bn ? 'অধ্যায়' : 'Chapter'} ${numStr(sel.chapter, bn)}');
+  }
   if (sel.page > 0) {
     parts.add('${bn ? 'পৃষ্ঠা' : 'Page'} ${numStr(sel.page, bn)}');
   }

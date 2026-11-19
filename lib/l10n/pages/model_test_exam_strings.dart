@@ -19,6 +19,9 @@ const Map<String, String> modelTestExamStringsBn = {
   'flaggedNone': 'কোনো প্রশ্ন রিভিউ চিহ্নিত নয়',
   'submitFailed': 'সংরক্ষণে সমস্যা হয়েছে, তবুও ফলাফল দেখানো হচ্ছে।',
   'timeUp': 'সময় শেষ — উত্তর স্বয়ংক্রিয়ভাবে জমা হয়েছে।',
+  'askAi': 'AI-কে জিজ্ঞাসা কর',
+  'multiKeyHint':
+      'এই প্রশ্নের একাধিক সঠিক উত্তর থাকতে পারে — যেকোনো একটা বেছে নিলেই হবে।',
 };
 const Map<String, String> modelTestExamStringsEn = {
   'title': 'Model Test Exam',
@@ -40,4 +43,7 @@ const Map<String, String> modelTestExamStringsEn = {
   'flaggedNone': 'No questions flagged for review',
   'submitFailed': 'Saving had a problem, but your result is shown anyway.',
   'timeUp': 'Time is up — answers were submitted automatically.',
+  'askAi': 'Ask AI',
+  'multiKeyHint':
+      'More than one answer may be correct — any one earns full marks.',
 };

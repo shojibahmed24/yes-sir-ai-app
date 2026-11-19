@@ -25,6 +25,11 @@ class GuideAnswerHolder {
   /// stimulusText fields; never invented).
   static String stimulusText = '';
 
+  /// Effective chat stimulus for one open question: the part's
+  /// own stimulusText, else the group stimulus; '' = none.
+  static String chatStimulus(GuideBankQuestion q) =>
+      q.stimulusText?.isNotEmpty == true ? q.stimulusText! : stimulusText;
+
   /// Where the answer screen's back button returns (Step 7):
   /// the exact new-flow list URL when opened from a list, else
   /// the search-flow screen. Never the deleted /guide-bank route.

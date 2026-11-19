@@ -10,6 +10,14 @@
 // widget clips the image to a circle, which is the square crop the
 // eye sees. A real cropper (image_cropper + native config) is a
 // separate, explicitly-scoped addition, not silently faked here.
+//
+// Migration 014 follow-up: the server copy is no longer fire-and-
+// forget. A local-only photo (upload never succeeded) gets one more
+// upload attempt after sign-in restore, and removing a photo deletes
+// the Storage object AND clears avatar_url explicitly — otherwise a
+// fresh install would resurrect a deleted photo from a stale URL.
+// Storage calls go through PictureBackend so tests can use a fake
+// without initialising Supabase.
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,6 +27,61 @@ import 'auth_service.dart';
 import 'profile_service.dart';
 import 'profile_source.dart';
 import 'supabase_client.dart';
+
+const _avatarBucket = 'avatars';
+
+/// Server side of avatar storage, behind an interface so tests can
+/// use a fake without initialising Supabase.
+abstract class PictureBackend {
+  String? get currentUserId;
+  Future<void> uploadAvatar(String userId, Uint8List bytes);
+  String publicAvatarUrl(String userId);
+  Future<void> removeAvatar(String userId);
+  Future<bool> saveAvatarUrl(String userId, String url);
+}
+
+/// Real backend: the signed-in user's own '<uid>/avatar.jpg' object
+/// (Storage policies restrict each user to their own path). Throws
+/// when Supabase is not initialised, so callers must treat every
+/// call as best-effort — except saveAvatarUrl, which returns false.
+class SupabasePictureBackend implements PictureBackend {
+  @override
+  String? get currentUserId => authService.currentUserId;
+
+  SupabaseClient _client() {
+    final client = supabaseOrNull;
+    if (client == null) throw StateError('Supabase not initialised');
+    return client;
+  }
+
+  @override
+  Future<void> uploadAvatar(String userId, Uint8List bytes) async {
+    await _client().storage.from(_avatarBucket).uploadBinary(
+          '$userId/avatar.jpg',
+          bytes,
+          fileOptions: const FileOptions(
+            upsert: true,
+            contentType: 'image/jpeg',
+          ),
+        );
+  }
+
+  @override
+  String publicAvatarUrl(String userId) =>
+      _client().storage.from(_avatarBucket).getPublicUrl('$userId/avatar.jpg');
+
+  @override
+  Future<void> removeAvatar(String userId) async {
+    await _client().storage.from(_avatarBucket).remove(['$userId/avatar.jpg']);
+  }
+
+  @override
+  Future<bool> saveAvatarUrl(String userId, String url) async {
+    final client = supabaseOrNull;
+    if (client == null) return false;
+    return upsertProfileRemote(client, {'id': userId, 'avatar_url': url});
+  }
+}
 
 /// Outcome of a picture pick. [cancelled] = user backed out (no
 /// change, no message). [denied] = permission refused. [unavailable]
@@ -45,7 +108,10 @@ class PictureResult {
 
 class ProfilePictureService {
   static const _fileName = 'profile_picture.jpg';
-  static const _bucket = 'avatars';
+
+  final PictureBackend _backend;
+  ProfilePictureService({PictureBackend? backend})
+      : _backend = backend ?? SupabasePictureBackend();
 
   final ImagePicker _picker = ImagePicker();
 
@@ -88,21 +154,12 @@ class ProfilePictureService {
     // so Profile never shows the previous person's photo.
     String? remoteUrl;
     var uploaded = false;
-    final client = supabaseOrNull;
-    final userId = authService.currentUserId;
-    if (client != null && userId != null) {
+    final userId = _backend.currentUserId;
+    if (userId != null && userId != 'demo-user') {
       try {
         final bytes = await File(localPath).readAsBytes();
-        await client.storage.from(_bucket).uploadBinary(
-              '$userId/avatar.jpg',
-              bytes,
-              fileOptions: const FileOptions(
-                upsert: true,
-                contentType: 'image/jpeg',
-              ),
-            );
-        remoteUrl =
-            client.storage.from(_bucket).getPublicUrl('$userId/avatar.jpg');
+        await _backend.uploadAvatar(userId, bytes);
+        remoteUrl = _backend.publicAvatarUrl(userId);
         uploaded = true;
       } catch (_) {
         uploaded = false;
@@ -121,8 +178,35 @@ class ProfilePictureService {
     );
   }
 
-  /// Remove-photo: delete the local copy and drop both picture keys
-  /// from the single profile source. Never throws.
+  /// Retry a local-only photo upload (called after sign-in restore).
+  /// True only when the upload really succeeded and the URL was
+  /// saved; every other case — no local file, remote URL already
+  /// present, not signed in, upload failure — returns false and
+  /// never throws, so login can never break on a picture.
+  Future<bool> retryUploadIfLocalOnly() async {
+    try {
+      final userId = _backend.currentUserId;
+      if (userId == null || userId == 'demo-user') return false;
+      final profile = await profileService.loadProfile();
+      final localPath = ProfileFields.localPicture(profile);
+      if (localPath == null) return false;
+      if (ProfileFields.remotePicture(profile) != null) return false;
+      final file = File(localPath);
+      if (!await file.exists()) return false;
+      final bytes = await file.readAsBytes();
+      await _backend.uploadAvatar(userId, bytes);
+      final url = _backend.publicAvatarUrl(userId);
+      await profileService.updateProfileFields(avatarUrl: url);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Remove-photo: delete the local copy, the Storage object, and
+  /// the server URL. The explicit '' upsert matters: clearAvatar
+  /// omits avatar_url from its upsert, which would leave the old
+  /// server value untouched as a stale URL. Never throws.
   Future<void> removePicture() async {
     try {
       final profile = await profileService.loadProfile();
@@ -132,7 +216,18 @@ class ProfilePictureService {
         if (await file.exists()) await file.delete();
       }
     } catch (_) {}
+    final userId = _backend.currentUserId;
+    if (userId != null && userId != 'demo-user') {
+      try {
+        await _backend.removeAvatar(userId);
+      } catch (_) {}
+    }
     await profileService.updateProfileFields(clearAvatar: true);
+    if (userId != null && userId != 'demo-user') {
+      try {
+        await _backend.saveAvatarUrl(userId, '');
+      } catch (_) {}
+    }
   }
 }
 

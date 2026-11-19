@@ -65,10 +65,10 @@ class _HomeTopBarState extends State<HomeTopBar> {
       return GestureDetector(
         onTap: () => setLanguage(code),
         child: Container(
-          // J1: touch target is at least 44px tall (minHeight
+          // J1: touch target is at least 48px tall (minHeight
           // constraint, not padding alone, so it holds at any
           // font scale).
-          constraints: const BoxConstraints(minHeight: 44),
+          constraints: const BoxConstraints(minHeight: 48),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: active ? AppTheme.primary : Colors.transparent,
@@ -111,6 +111,8 @@ class _HomeTopBarState extends State<HomeTopBar> {
                 children: [
                   Text(
                     greeting,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 2),

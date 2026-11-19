@@ -6,16 +6,20 @@
 // never a blank screen, never raw markdown. The source toggle
 // is setState only — never a new AI/Edge call. hideSummary
 // (verbatim-first "steps" mode) hides the summary card so only
-// steps + final show.
+// steps + final show. whyCorrect / whyOthersWrong render ONLY
+// for MCQ (isMcq): a creative/short explanation never carries
+// option reasoning, even when the model fills those fields.
 import 'package:flutter/material.dart';
 
 import '../../../core/models/solution_model.dart';
 import '../../../core/services/structured_parse.dart';
 import '../../../theme/app_theme.dart';
-import 'guide_math_text.dart';
+import 'ai_attribution_label.dart';
+import 'solution_answer_cards.dart';
 import 'solution_blocks.dart';
 import 'solution_source_chips.dart';
 import 'solution_step_card.dart';
+import 'solution_why_blocks.dart';
 
 class SolutionRenderer extends StatefulWidget {
   const SolutionRenderer({
@@ -25,17 +29,24 @@ class SolutionRenderer extends StatefulWidget {
     required this.fontSize,
     required this.s,
     required this.marksPrinted,
+    required this.isMcq,
     this.fallbackText,
     this.questionText,
     this.questionLabel,
     this.explanationLabel,
     this.hideSummary = false,
+    this.aiProvider = 'unknown',
+    this.aiModel,
   });
   final StructuredSolution? solution;
   final List<String> sourceChips;
   final double fontSize;
   final Map<String, String> s;
   final bool marksPrinted;
+
+  /// True only for multiple-choice questions: the
+  /// whyCorrect/whyOthersWrong blocks render only then.
+  final bool isMcq;
   final String? fallbackText;
 
   /// Verbatim question for the toggle; null = no toggle shown.
@@ -45,6 +56,14 @@ class SolutionRenderer extends StatefulWidget {
 
   /// Steps-only view: hide the summary card (steps + final).
   final bool hideSummary;
+
+  /// Attribution from the Edge response (see GenResult).
+  /// 'unknown' = stale deploy that reported neither field:
+  /// the label then says so honestly, never the selected
+  /// provider. Only shown under an AI explanation, never
+  /// under the verbatim-question toggle view.
+  final String aiProvider;
+  final String? aiModel;
 
   @override
   State<SolutionRenderer> createState() => _SolutionRendererState();
@@ -70,15 +89,10 @@ class _SolutionRendererState extends State<SolutionRenderer> {
       widget.explanationLabel != null;
 
   Widget _questionView() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: GuideMathText(
-          text: widget.questionText!,
-          fontSize: widget.fontSize,
-          color: _onSurface,
-        ),
-      ),
+    return SolutionQuestionCard(
+      questionText: widget.questionText!,
+      fontSize: widget.fontSize,
+      color: _onSurface,
     );
   }
 
@@ -141,68 +155,20 @@ class _SolutionRendererState extends State<SolutionRenderer> {
             ),
             const SizedBox(height: 12),
           ],
-          if (solution.whyCorrect != null) ...[
-            Text(
-              s['whyCorrect']!,
-              style: TextStyle(
-                fontSize: widget.fontSize + 1,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'HindSiliguri',
-                color: _onSurface,
-              ),
-            ),
-            const SizedBox(height: 4),
-            SolutionBlocks(
-              text: solution.whyCorrect!,
+          if (widget.isMcq)
+            SolutionWhyBlocks(
+              solution: solution,
               fontSize: widget.fontSize,
+              s: s,
+              onSurface: _onSurface,
             ),
-            const SizedBox(height: 12),
-          ],
-          if (solution.whyOthersWrong != null) ...[
-            Text(
-              s['whyOthersWrong']!,
-              style: TextStyle(
-                fontSize: widget.fontSize + 1,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'HindSiliguri',
-                color: _onSurface,
-              ),
-            ),
-            const SizedBox(height: 4),
-            SolutionBlocks(
-              text: solution.whyOthersWrong!,
-              fontSize: widget.fontSize,
-            ),
-            const SizedBox(height: 12),
-          ],
         ],
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _finalBg,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                s['finalAnswer']!,
-                style: TextStyle(
-                  fontSize: widget.fontSize + 2,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'HindSiliguri',
-                  color: _finalOn,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SolutionBlocks(
-                text: solution.finalAnswer,
-                fontSize: widget.fontSize,
-                color: _finalOn,
-              ),
-            ],
-          ),
+        SolutionFinalAnswerCard(
+          label: s['finalAnswer']!,
+          finalAnswer: solution.finalAnswer,
+          fontSize: widget.fontSize,
+          background: _finalBg,
+          foreground: _finalOn,
         ),
       ],
     );
@@ -239,6 +205,16 @@ class _SolutionRendererState extends State<SolutionRenderer> {
         SolutionSourceChips(labels: widget.sourceChips),
         const SizedBox(height: 12),
         _showQuestion ? _questionView() : _explanationView(),
+        if (!_showQuestion &&
+            (widget.solution != null || widget.fallbackText != null)) ...[
+          const SizedBox(height: 8),
+          AiAttributionLabel(
+            provider: widget.aiProvider,
+            model: widget.aiModel,
+            unknownText:
+                widget.s['aiAttributionUnknown'] ?? 'AI: unknown',
+          ),
+        ],
       ],
     );
   }

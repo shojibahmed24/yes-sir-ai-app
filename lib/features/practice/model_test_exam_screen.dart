@@ -13,9 +13,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yes_sir_ai/core/models/backend_models.dart';
+import 'package:yes_sir_ai/core/services/model_test_service.dart';
 import 'package:yes_sir_ai/core/services/practice_service.dart';
 import 'package:yes_sir_ai/core/services/progress_service.dart';
+import 'package:yes_sir_ai/core/services/resolve_school_class.dart';
+import 'package:yes_sir_ai/features/learn/lesson_selection.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
+import 'package:yes_sir_ai/features/practice/widgets/model_test_flagged_card.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/model_test_exam_strings.dart';
@@ -47,20 +51,51 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
     super.initState();
     _items = PracticeSession.modelItems.isNotEmpty
         ? PracticeSession.modelItems
-        : practiceService.modelTests().first.items;
+        : modelTestService.modelTests().first.items;
     _seconds = (PracticeSession.modelMinutes > 0 ? PracticeSession.modelMinutes : 15) * 60;
+    // Restore a saved run (e.g. after Ask-AI chat navigation
+    // disposed this screen) instead of restarting the exam.
+    if (PracticeSession.modelExamTestId == PracticeSession.modelTestId &&
+        PracticeSession.modelExamSecondsLeft >= 0) {
+      _seconds = PracticeSession.modelExamSecondsLeft;
+      _index = PracticeSession.modelExamIndex.clamp(0, _items.length - 1);
+      _answers.addAll(Map.fromEntries(PracticeSession.modelExamAnswers.entries.where((e) => e.key >= 0 && e.key < _items.length)));
+      _flagged.addAll(PracticeSession.modelExamFlagged.where((i) => i >= 0 && i < _items.length));
+    }
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || _submitted || _submitting || _dialogOpen) return;
       if (_seconds > 0) {
         setState(() => _seconds--);
+        _persist();
       } else {
         _submit(auto: true);
       }
     });
   }
 
+  /// In-memory progress save (answers, flags, clock, position).
+  void _persist() => PracticeSession.saveModelExam(
+      answers: _answers, flagged: _flagged,
+      secondsLeft: _seconds, index: _index);
+
+  /// Ask-AI (guide exams only): Phase 1 guide-chat path — row
+  /// id + return to this exam, never the textbook index.
+  Future<void> _askAi(bool bangla) async {
+    final q = _items[_index];
+    final schoolClass = await resolveSchoolClass();
+    if (!mounted) return;
+    _persist();
+    LessonSelectionHolder.set(LessonSelection(
+      subject: PracticeSession.modelSubject, chapter: 0,
+      page: 0, problem: 0,
+      queryText: bangla ? q.questionBn : q.questionEn,
+      schoolClass: schoolClass,
+      guideQuestionId: q.id, returnTo: '/model-test-exam'));
+    context.go('/lesson/chat');
+  }
+
   @override
-  void dispose() { _timer?.cancel(); super.dispose(); }
+  void dispose() { _timer?.cancel(); if (!_submitted) _persist(); super.dispose(); }
   String get _clock => '${(_seconds ~/ 60).toString().padLeft(2, '0')}:${(_seconds % 60).toString().padLeft(2, '0')}';
   int get _totalSeconds => (PracticeSession.modelMinutes > 0 ? PracticeSession.modelMinutes : 15) * 60;
 
@@ -71,7 +106,7 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
     if (mounted) setState(() {});
     var correct = 0;
     for (final e in _answers.entries) {
-      if (_items[e.key].correctIndex == e.value) correct++;
+      if (_items[e.key].isCorrect(e.value)) correct++;
     }
     final flaggedIds = _flagged.toList()..sort();
     final attempt = Attempt(kind: 'model', testId: PracticeSession.modelTestId.isNotEmpty ? PracticeSession.modelTestId : 'mt-math',
@@ -82,9 +117,11 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
         flagged: [for (final i in flaggedIds) _items[i].id],
         // Phase 2: same persistence as the quiz screen.
         wrongItems: [for (final e in _answers.entries)
-          if (_items[e.key].correctIndex != e.value) _items[e.key]]);
+          if (!_items[e.key].isCorrect(e.value)) _items[e.key]]);
     // In-memory first: the results screen can always show this run,
     // even if the disk write below fails (see practice_store).
+    // A submitted exam never restores its old progress.
+    PracticeSession.clearModelExam();
     PracticeSession.lastAttempt = attempt;
     PracticeSession.lastItems = _items;
     try {
@@ -121,8 +158,7 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
     _dialogOpen = true;
     final ok = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
       title: Text(s['confirmTitle']!),
-      content: Text("${s['confirmMsg']!}\n${_answers.length}/${_items.length} ${s['answered']!}"
-          "\n$unanswered ${s['unanswered']!}"
+      content: Text("${s['confirmMsg']!}\n${_answers.length}/${_items.length} ${s['answered']!}\n$unanswered ${s['unanswered']!}"
           "\n${s['flaggedLabel']!}: ${flaggedNums.isEmpty ? s['flaggedNone']! : flaggedNums.map((i) => '${i + 1}').join(', ')}"),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s['confirmNo']!)),
@@ -144,12 +180,14 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/model-tests'),
+            onPressed: () => context.go(PracticeSession.modelIsGuide
+                ? '/guide-model-tests'
+                : '/model-tests'),
           ),
           title: Text(s['title']!),
           actions: [
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Chip(label: Text(_clock)),
             ),
           ],
@@ -158,7 +196,7 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
           Text("${s['qLabel']!} ${_index + 1}/${_items.length}", style: Theme.of(context).textTheme.headlineMedium),
           Text(practiceService.chapterOf(q.id, bangla), style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 12),
-          Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(bangla ? q.questionBn : q.questionEn, style: Theme.of(context).textTheme.bodyLarge))),
+          QuizQuestionCard(item: q, bangla: bangla, hint: s['multiKeyHint']!),
           const SizedBox(height: 12),
           for (int i = 0; i < q.options.length; i++) Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -166,6 +204,10 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
                 onTap: () => setState(() => _answers[_index] = i)),
           ),
           const SizedBox(height: 12),
+          if (PracticeSession.modelIsGuide) ...[
+            OutlinedButton.icon(onPressed: _submitting ? null : () => _askAi(bangla), icon: const Icon(Icons.chat_bubble_outline), label: Text(s['askAi']!)),
+            const SizedBox(height: 12),
+          ],
           Row(children: [
             Expanded(child: OutlinedButton(onPressed: !_submitting && _index > 0 ? () => setState(() => _index--) : null, child: Text(s['prev']!))),
             const SizedBox(width: 8),
@@ -173,18 +215,13 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
           ]),
           const SizedBox(height: 12),
           if (_flagged.isNotEmpty) ...[
-            Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(child: Text(s['flaggedTitle']!, style: Theme.of(context).textTheme.headlineMedium)),
-                TextButton(onPressed: _submitting ? null : () => setState(() => _flagged.clear()), child: Text(s['flaggedClear']!)),
-              ]),
-              const SizedBox(height: 8),
-              // Jump chips: tapping one goes straight to that question.
-              Wrap(spacing: 6, runSpacing: 6, children: (_flagged.toList()..sort()).map((i) => ActionChip(
-                label: Text("${s['qLabel']!} ${i + 1}"),
-                onPressed: _submitting ? null : () => setState(() => _index = i),
-              )).toList()),
-            ]))),
+            ModelTestFlaggedCard(
+              flagged: _flagged.toList()..sort(),
+              s: s,
+              disabled: _submitting,
+              onClear: () => setState(() => _flagged.clear()),
+              onJump: (i) => setState(() => _index = i),
+            ),
             const SizedBox(height: 12),
           ],
           ElevatedButton(
@@ -202,6 +239,7 @@ class _ModelTestExamScreenState extends State<ModelTestExamScreen> {
             final flagged = _flagged.contains(i);
             return ActionChip(
               label: Text('${i + 1}${flagged ? ' ⚑' : ''}'),
+              materialTapTargetSize: MaterialTapTargetSize.padded, // D3: ~48 dp tap target (default ~32 dp).
               backgroundColor: i == _index ? AppTheme.primary.withValues(alpha: 0.25) : (answered ? AppTheme.success.withValues(alpha: 0.2) : null),
               onPressed: _submitting ? null : () => setState(() => _index = i));
           })),

@@ -8,14 +8,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yes_sir_ai/core/models/backend_models.dart';
+import 'package:yes_sir_ai/core/services/model_test_service.dart';
 import 'package:yes_sir_ai/core/services/practice_service.dart';
 import 'package:yes_sir_ai/core/services/profile_service.dart';
 import 'package:yes_sir_ai/core/services/progress_service.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
+import 'package:yes_sir_ai/features/practice/widgets/guide_fallback_dialog.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/practice_strings.dart';
 import 'package:yes_sir_ai/l10n/pages/practice_tab_strings.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class PracticeTabScreen extends StatefulWidget {
   const PracticeTabScreen({super.key});
@@ -48,8 +51,25 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
               subject: subject, schoolClass: schoolClass, bangla: bangla)
           .timeout(const Duration(seconds: 60));
       PracticeSession.selectedSubject = subject;
-      PracticeSession.quizItems = gen.items;
-      PracticeSession.quizSource = gen.source.name;
+      PracticeSession.quizShortfall = gen.guideShortfall;
+      PracticeSession.quizSeedKey = gen.seedKey;
+      if (!context.mounted) return;
+      if (gen.items.isEmpty) {
+        // Guide empty: ask, never silently substitute the bank.
+        // Generation is DONE, so the spinner stops here — the
+        // dialog is an idle user choice, not busy work.
+        if (mounted) setState(() => _startingDaily = false);
+        final useBank = await showGuideFallbackDialog(context);
+        if (!context.mounted) return;
+        if (!useBank) return;
+        PracticeSession.quizItems = practiceService.dailyQuizFor(
+            subject, seedKey: gen.seedKey, count: 20);
+        PracticeSession.quizSource = 'bankFallback';
+        PracticeSession.quizShortfall = 0;
+      } else {
+        PracticeSession.quizItems = gen.items;
+        PracticeSession.quizSource = gen.source.name;
+      }
       PracticeSession.quizIsRevision = false;
       if (!context.mounted) return;
       navigated = true;
@@ -73,6 +93,8 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
   void _startRevision(BuildContext context, List<QuizItem> items) {
     PracticeSession.quizItems = items;
     PracticeSession.quizSource = 'bankFallback';
+    PracticeSession.quizShortfall = 0;
+    PracticeSession.quizSeedKey = '';
     PracticeSession.quizIsRevision = true;
     context.go('/quiz');
   }
@@ -82,6 +104,8 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
     PracticeSession.modelSubject = t.subject;
     PracticeSession.modelItems = t.items;
     PracticeSession.modelMinutes = t.minutes;
+    PracticeSession.modelIsGuide = false;
+    PracticeSession.clearModelExam();
     context.go('/model-test-exam');
   }
 
@@ -90,13 +114,13 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
     return ValueListenableBuilder<Locale>(valueListenable: languageNotifier, builder: (context, locale, _) {
       final s = locale.languageCode == 'bn' ? practiceTabStringsBn : practiceTabStringsEn;
       final bangla = locale.languageCode == 'bn';
-      return DefaultTabController(length: 3, child: Scaffold(
+      return DefaultTabController(length: 3, child: ThemedScaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go('/practice'),
           ),
-          title: Text(s['title']!), bottom: TabBar(tabs: [
+          title: Text(s['title']!), bottom: TabBar(isScrollable: true, tabs: [
           Tab(text: s['tabQuiz']!), Tab(text: s['tabModel']!), Tab(text: s['tabProgress']!),
         ])),
         body: FutureBuilder<ProgressSummary>(future: progressService.summary(), builder: (context, snap) {
@@ -135,8 +159,8 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
               OutlinedButton(onPressed: () => context.go('/quiz-results'), child: Text(s['results']!)),
             ]),
             ListView(padding: const EdgeInsets.all(16), children: [
-              for (final t in practiceService.modelTests()) ...[
-                PracticeCard(title: '${s['modelTest']!} · ${t.subject == 'math' ? s['maths']! : (t.subject == 'science' ? s['science']! : s['english']!)}', subtitle: '${t.items.length} ${s['questions']!} · ${t.minutes} min', icon: Icons.assignment,
+              for (final t in modelTestService.modelTests()) ...[
+                PracticeCard(title: '${s['modelTest']!} · ${t.subject == 'math' ? s['maths']! : (t.subject == 'science' ? s['science']! : s['english']!)}', subtitle: '${t.items.length} ${s['questions']!} · ${t.minutes} ${s['minutes']!}', icon: Icons.assignment,
                     trailing: t.locked ? null : ElevatedButton(onPressed: () => _startModel(context, t), child: Text(s['start']!))),
                 const SizedBox(height: 12),
               ],

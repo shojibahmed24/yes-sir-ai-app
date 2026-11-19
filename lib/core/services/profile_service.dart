@@ -1,5 +1,6 @@
 // Profile creation from the registration wizard.
-// Supabase: upsert into profiles (+ parent_links if guardian given).
+// Supabase: upsert into profiles (guardian included since migration
+// 014; parent_links is history only and no longer written).
 // Local: the same data is always saved as JSON (LocalStore) so the
 // home/profile screens show the registered user even when Supabase
 // is unconfigured or unreachable. A Supabase failure NEVER blocks
@@ -64,8 +65,9 @@ class ProfileService {
   }
 
   /// Remote shape: exactly the public.profiles columns. Guardian is
-  /// NOT a profiles column (it lives in parent_links), so guardian
-  /// keys must never reach a profiles upsert - see createProfile.
+  /// a profiles column since migration 014 (it used to live in
+  /// parent_links only), so it belongs in the upsert like any other
+  /// field - and the login backfill can heal older local copies.
   Map<String, dynamic> toMap(RegistrationData d, String userId) {
     return {
       'id': userId,
@@ -79,6 +81,8 @@ class ProfileService {
       'phone': d.phone,
       'email': d.email,
       'daily_goal_minutes': d.dailyGoalMinutes,
+      'guardian_name': d.guardianName,
+      'guardian_phone': d.guardianPhone,
     };
   }
 
@@ -98,20 +102,22 @@ class ProfileService {
     return null;
   }
 
-  /// Edit name / school / daily goal / class from Settings (the ONLY
-  /// place class may change). Merges into the saved profile, tries a
-  /// Supabase upsert when configured, and always keeps the local copy
-  /// so the edit is never lost. Returns false only when Supabase was
-  /// configured but the upsert failed. Guardian keys stay local only:
-  /// the local copy may carry them (see createProfile) but the
-  /// profiles table has no such columns, so they are stripped before
-  /// the upsert instead of failing it (profile_source builds the
-  /// remote map from the real column list, with an avatar retry).
+  /// Edit name / school / daily goal / class / guardian from
+  /// Settings (the ONLY place class may change). Merges into the
+  /// saved profile, tries a Supabase upsert when configured, and
+  /// always keeps the local copy so the edit is never lost. Returns
+  /// false only when Supabase was configured but the upsert failed.
+  /// Guardian keys are profiles columns since migration 014, so they
+  /// flow through the remote map like name/school (profile_source
+  /// builds the remote map from the real column list, with an avatar
+  /// retry). Null params leave the field untouched.
   Future<bool> updateProfileFields({
     String? fullName,
     String? schoolName,
     int? dailyGoalMinutes,
     int? schoolClass,
+    String? guardianName,
+    String? guardianPhone,
     // Batch 2, item 6: picture keys. avatarUrl sets the remote URL;
     // clearAvatarUrl drops it (new picture kept local-only);
     // clearAvatar drops both picture keys (remove-photo action).
@@ -127,6 +133,8 @@ class ProfileService {
       current['daily_goal_minutes'] = dailyGoalMinutes;
     }
     if (schoolClass != null) current['school_class'] = schoolClass;
+    if (guardianName != null) current['guardian_name'] = guardianName;
+    if (guardianPhone != null) current['guardian_phone'] = guardianPhone;
     if (clearAvatar) {
       current.remove('avatar_local_path');
       current.remove('avatar_url');
@@ -153,8 +161,8 @@ class ProfileService {
   /// session (falling back to the signed-in user, then 'demo-user').
   /// Local save always happens first in effect: the local copy holds
   /// every wizard field, including guardian name/phone, which the
-  /// profiles table cannot hold. Supabase is attempted when
-  /// configured (profiles upsert + parent_links insert for guardian);
+  /// profiles table holds too since migration 014. Supabase is
+  /// attempted when configured (profiles upsert, guardian included);
   /// on failure the local copy is kept and the result reports
   /// supabasePending instead of failing registration. Never throws.
   Future<ProfileSaveResult> createProfile(
@@ -198,14 +206,10 @@ class ProfileService {
       );
     }
     try {
+      // profiles upsert only: parent_links is history from migration
+      // 014 on and is no longer written (its latest row per student
+      // was backfilled into the guardian columns by the migration).
       await client.from('profiles').upsert(remote);
-      if (d.guardianName.isNotEmpty || d.guardianPhone.isNotEmpty) {
-        await client.from('parent_links').insert({
-          'student_id': effectiveId,
-          'guardian_name': d.guardianName,
-          'guardian_phone': d.guardianPhone,
-        });
-      }
       final ok = await saveLocal();
       profileSupabasePendingNotifier.value = false;
       return ProfileSaveResult(

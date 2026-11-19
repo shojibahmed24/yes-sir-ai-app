@@ -15,6 +15,8 @@ const Map<String, String> bookPageViewerStringsBn = {
   'noIndexedQuestion': 'এই পৃষ্ঠার কোনো ইনডেক্স করা প্রশ্ন এখনো নেই',
   'pagePlaceholder': 'বইয়ের আসল পৃষ্ঠার লেখা এখনো এই রিডারে আসেনি — শুধু ইনডেক্স করা প্রশ্ন থাকলে তা দেখানো হয়।',
   'bookmarked': 'বুকমার্ক সংরক্ষিত হয়েছে',
+  'pageLabel': 'পৃষ্ঠা {n}',
+  'class6Label': 'ক্লাস ৬',
   'bookmarkRemoved': 'বুকমার্ক বাতিল হয়েছে',
 };
 const Map<String, String> bookPageViewerStringsEn = {
@@ -33,5 +35,7 @@ const Map<String, String> bookPageViewerStringsEn = {
   'noIndexedQuestion': 'No indexed question for this page yet',
   'pagePlaceholder': 'The book\'s actual page text is not in this reader yet — only an indexed question is shown when one exists.',
   'bookmarked': 'Bookmark saved',
+  'pageLabel': 'Page {n}',
+  'class6Label': 'Class 6',
   'bookmarkRemoved': 'Bookmark removed',
 };

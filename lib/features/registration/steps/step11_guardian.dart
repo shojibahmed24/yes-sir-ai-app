@@ -26,6 +26,13 @@ class _Step11GuardianState extends State<Step11Guardian> with RegLangMixin {
       text: registrationDataNotifier.value.guardianPhone);
   String? _error;
 
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    super.dispose();
+  }
+
   void _saveAndGo() {
     // Phase 17 (L6): optional guardian phone, if written, gets the
     // same basic 01… check as Step 7; empty stays allowed (optional).
@@ -81,7 +88,10 @@ class _Step11GuardianState extends State<Step11Guardian> with RegLangMixin {
               keyboardType: TextInputType.phone),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppTheme.error)),
+            Text(_error!,
+                style: TextStyle(
+                    color: AppTheme.errorTextFor(Theme.of(context).brightness == Brightness.dark),
+                    fontWeight: FontWeight.w600)),
           ],
         ],
       ),

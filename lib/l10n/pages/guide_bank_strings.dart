@@ -31,10 +31,15 @@ const Map<String, String> guideBankStringsBn = {
   'modelTestsTitle': 'গাইড মডেল টেস্ট',
   'modelTestsEntrySub': 'গাইডের মডেল টেস্ট সেট — টাইমড পরীক্ষা',
   'modelTestsEmpty': 'এই বিষয়ের গাইড মডেল টেস্ট এখনো যোগ হয়নি',
+  'modelTestsUnavailable':
+      'সার্ভারে পৌঁছানো যায়নি, আর সংরক্ষিত সেটও নেই। আবার চেষ্টা করো।',
+  'modelTestNoKeyed': 'এই সেটে চাবিযুক্ত MCQ পাওয়া যায়নি।',
   'modelTestStart': 'শুরু করুন',
   'unkeyedExcludedSuffix': 'টি প্রশ্নের চাবি নেই — স্কোরিং থেকে বাদ',
   'answerUnavailable': 'এই গাইড প্রশ্নের উত্তর এখনো যুক্ত হয়নি',
   'answerFailed': 'ব্যাখ্যা তৈরি করা যায়নি',
+  'explanationKeyMismatch':
+      'এআই ব্যাখ্যাটি গাইডের উত্তরের সঙ্গে মেলেনি, তাই দেখানো হয়নি। উপরে গাইডের সঠিক উত্তর চিহ্নিত আছে।',
   'retry': 'আবার চেষ্টা করুন',
   'guideQuestions': 'গাইড প্রশ্ন',
   'marksWord': 'নম্বর',
@@ -44,6 +49,11 @@ const Map<String, String> guideBankStringsBn = {
   'practiceWorkNote': 'এটা অনুশীলনের জন্য, পাঠ্যবইয়ের সমাধান নয়',
   'solutionAvailable': 'সমাধান আছে',
   'explanationLoading': 'ব্যাখ্যা তৈরি হচ্ছে…',
+  // On-demand (2026-11-03 fix): the explanation button + the
+  // honest note for an MCQ whose options never arrived.
+  'viewExplanation': 'ব্যাখ্যা দেখুন',
+  'explanationUnavailableOptions':
+      'এই প্রশ্নের অপশন পাওয়া যায়নি, তাই AI ব্যাখ্যা তৈরি করা যাচ্ছে না। প্রশ্ন আর চাবি থাকলে চ্যাটে জিজ্ঞেস করো।',
   // Server search (whole guide, 2026-10-31): searching note and
   // the honest fallback note when the server search fails and
   // the list falls back to chapter-local filtering.
@@ -64,7 +74,10 @@ const Map<String, String> guideBankStringsBn = {
   // Step 6 (creative grouped view + ask-AI restore): stimulus
   // header title + the button that opens grounded chat.
   'stimulusTitle': 'উদ্দীপক',
+  'passageSource': 'প্যাসেজের উৎস',
   'askAi': 'AI-কে জিজ্ঞাসা কর',
+  // Phase 3: link to the linked bank model row (Q10-12 rows).
+  'modelAnswer': 'মডেল উত্তর',
   // MCQ try-first options card (2026-11-01): options render
   // with math; the student picks before the key reveals.
   'optionsTitle': 'অপশন',
@@ -108,10 +121,14 @@ const Map<String, String> guideBankStringsEn = {
   'modelTestsTitle': 'Guide Model Tests',
   'modelTestsEntrySub': 'Guide model-test sets — timed exams',
   'modelTestsEmpty': 'No guide model tests added for this subject yet',
+  'modelTestsUnavailable': 'Server unreachable and no cached sets. Try again.',
+  'modelTestNoKeyed': 'No keyed MCQs found in this set.',
   'modelTestStart': 'Start',
   'unkeyedExcludedSuffix': ' questions have no key — excluded from scoring',
   'answerUnavailable': 'This guide question is not connected yet',
   'answerFailed': 'Explanation could not be generated',
+  'explanationKeyMismatch':
+      'The AI explanation did not match the guide answer, so it is withheld. The guide answer is marked above.',
   'retry': 'Try again',
   'guideQuestions': 'Guide questions',
   'marksWord': 'marks',
@@ -119,6 +136,11 @@ const Map<String, String> guideBankStringsEn = {
   'practiceWorkNote': 'For practice only, not the textbook solution',
   'solutionAvailable': 'Solution available',
   'explanationLoading': 'Generating explanation…',
+  // On-demand (2026-11-03 fix): the explanation button + the
+  // honest note for an MCQ whose options never arrived.
+  'viewExplanation': 'View explanation',
+  'explanationUnavailableOptions':
+      'The options for this question could not be found, so an AI explanation cannot be generated. Ask in chat if the question and key are shown.',
   'verbatimGuideTitle': 'Guide answer',
   'verbatimCorrectedTitle': 'Corrected answer',
   'verbatimCorrectedNote': 'The printed guide answer was wrong',
@@ -130,7 +152,9 @@ const Map<String, String> guideBankStringsEn = {
   'explainDetailed': 'Explain in detail',
   'explainSteps': 'Explain step by step',
   'stimulusTitle': 'Stimulus',
+  'passageSource': 'Passage source',
   'askAi': 'Ask AI',
+  'modelAnswer': 'Model answer',
   'optionsTitle': 'Options',
   'optionsTryHint': 'Pick an option — the correct answer reveals after',
   'optionsCorrect': 'Correct!',

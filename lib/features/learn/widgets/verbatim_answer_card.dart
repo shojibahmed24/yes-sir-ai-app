@@ -13,7 +13,7 @@
 // to show.
 import 'package:flutter/material.dart';
 
-import 'guide_math_text.dart';
+import 'guide_translated_math_text.dart';
 
 class VerbatimAnswerCard extends StatelessWidget {
   const VerbatimAnswerCard({
@@ -27,6 +27,7 @@ class VerbatimAnswerCard extends StatelessWidget {
     required this.explanationShown,
     required this.onExplainDetailed,
     required this.onExplainSteps,
+    this.translate = false,
   });
 
   /// 'guide' | 'corrected' | 'none' (server verbatimKind).
@@ -39,6 +40,11 @@ class VerbatimAnswerCard extends StatelessWidget {
   final bool explanationShown;
   final VoidCallback onExplainDetailed;
   final VoidCallback onExplainSteps;
+
+  /// True only for the English flow (set by the answer body
+  /// from subjectId): other subjects always render the
+  /// original, whatever the translator switch says.
+  final bool translate;
 
   bool get _hasVerbatim =>
       (kind == 'guide' || kind == 'corrected') && text.isNotEmpty;
@@ -121,10 +127,13 @@ class VerbatimAnswerCard extends StatelessWidget {
                 // Math-rendered (no longer selectable: RichText
                 // with math spans cannot select; rendering
                 // correctness wins over copy-paste here).
-                GuideMathText(
+                // Translated in the English flow when the
+                // translator switch is on, original otherwise.
+                GuideTranslatedMathText(
                   text: text,
                   fontSize: fontSize,
                   color: onSurface,
+                  translate: translate,
                 ),
               ],
             ),

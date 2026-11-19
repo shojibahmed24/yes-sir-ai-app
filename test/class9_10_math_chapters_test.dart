@@ -14,8 +14,11 @@ void main() {
 
   test('no chapter title is empty or whitespace-only', () {
     for (final entry in class9_10MathChapterTitles.entries) {
-      expect(entry.value.trim(), isNotEmpty,
-          reason: 'chapter ${entry.key} title must not be empty');
+      expect(
+        entry.value.trim(),
+        isNotEmpty,
+        reason: 'chapter ${entry.key} title must not be empty',
+      );
     }
   });
 
@@ -37,22 +40,35 @@ void main() {
     });
   });
 
-  test('pilot-only lesson titles are non-empty and never overlap ch. 2', () {
-    for (final entry in pilotOnlyLessonTitles.entries) {
-      expect(entry.value.trim(), isNotEmpty,
-          reason: 'lesson ${entry.key} title must not be empty');
-      expect(entry.key.startsWith('2.'), isFalse,
-          reason: 'pilot-only map must not contain chapter-2 lessons');
+  test('guide lesson titles are non-empty and never overlap ch. 2', () {
+    for (final entry in guideLessonTitles.entries) {
+      expect(
+        entry.value.trim(),
+        isNotEmpty,
+        reason: 'lesson ${entry.key} title must not be empty',
+      );
+      expect(
+        entry.key.startsWith('2.'),
+        isFalse,
+        reason: 'guide map must not contain chapter-2 lessons',
+      );
     }
-    expect(pilotOnlyLessonTitles['3.1'], 'বর্গ সংবলিত সূত্রাবলি ও প্রয়োগ');
-    expect(pilotOnlyLessonTitles['3.3'], 'উৎপাদকে বিশ্লেষণ');
-    expect(pilotOnlyLessonTitles['7.1'], 'ত্রিভুজ অঙ্কন');
-    expect(pilotOnlyLessonTitles['7.2'], 'চতুর্ভুজ অঙ্কন');
-    expect(pilotOnlyLessonTitles['8.1'], 'বৃত্তের জ্যা ও ব্যাস সংক্রান্ত উপপাদ্য');
-    expect(pilotOnlyLessonTitles['8.5'],
-        'বৃত্ত সম্পর্কীয় সম্পাদ্য ও বৃত্তের স্পর্শক অঙ্কন');
-    expect(pilotOnlyLessonTitles['9.1'],
-        'ত্রিকোণমিতিক অনুপাত ও অনুপাতের সম্পর্ক');
-    expect(pilotOnlyLessonTitles['9.2'], 'বিভিন্ন কোণের ত্রিকোণমিতিক অনুপাত');
+    expect(guideLessonTitles['3.1'], 'বর্গ সংবলিত সূত্রাবলি ও প্রয়োগ');
+    expect(guideLessonTitles['3.3'], 'উৎপাদকে বিশ্লেষণ');
+    expect(guideLessonTitles['7.1'], 'ত্রিভুজ অঙ্কন');
+    expect(guideLessonTitles['7.2'], 'চতুর্ভুজ অঙ্কন');
+    expect(guideLessonTitles['8.1'], 'বৃত্তের জ্যা ও ব্যাস সংক্রান্ত উপপাদ্য');
+    expect(
+      guideLessonTitles['8.5'],
+      'বৃত্ত সম্পর্কীয় সম্পাদ্য ও বৃত্তের স্পর্শক অঙ্কন',
+    );
+    expect(guideLessonTitles['9.1'], 'ত্রিকোণমিতিক অনুপাত ও অনুপাতের সম্পর্ক');
+    expect(guideLessonTitles['9.2'], 'বিভিন্ন কোণের ত্রিকোণমিতিক অনুপাত');
+    expect(guideLessonTitles['11.1'], 'বীজগাণিতিক অনুপাত ও সমানুপাত');
+    expect(guideLessonTitles['11.2'], 'ধারাবাহিক অনুপাত ও সমানুপাতিক ভাগ');
+    expect(guideLessonTitles['16.1'], 'ত্রিভুজক্ষেত্রের ক্ষেত্রফল');
+    expect(guideLessonTitles['16.4'], 'আয়তাকার ঘনবস্তু');
+    // Appendix is not a numbered lesson, so it has no entry.
+    expect(guideLessonTitles.containsKey('পরিশিষ্ট'), isFalse);
   });
 }

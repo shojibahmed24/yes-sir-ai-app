@@ -1,17 +1,17 @@
-// State + resolution for the new search screen (Step 3). The
-// screen widget only renders; this controller owns class/subject
-// /source/chapter/lesson/type state, chapter loading, and the
-// direct-jump resolution. Navigation stays in the screen: jump()
-// returns a SearchFlowJumpResult, never a BuildContext.
+// State + resolution for the search screen: the widget only
+// renders; this controller owns picks and chapter loading.
+// jump() lives in search_flow_jump.dart (extension, same
+// pattern as SearchFlowListQuery) to keep this file under
+// the 250-line cap.
 import 'package:flutter/material.dart';
 
 import '../../core/models/backend_models.dart';
 import '../../core/services/books_service.dart';
-import '../../core/services/guide_bank_service.dart';
-import '../../core/services/guide_flow_list_service.dart';
+import '../../core/services/picker_cache_service.dart';
 import '../../core/services/profile_service.dart';
-import '../../core/services/textbook_chapter_service.dart';
-import 'lesson_selection.dart';
+import 'search_flow_bangla_papers.dart';
+import 'search_flow_chapter_fetch.dart';
+import 'search_flow_list_query.dart';
 import 'search_flow_types.dart';
 
 class SearchFlowController {
@@ -31,9 +31,20 @@ class SearchFlowController {
   String source = 'textbook';
   List<(int, String)> chapters = [];
   bool chaptersLoading = true;
+  int _chaptersGeneration = 0;
   int? chapter;
   String? lesson;
   SearchFlowType? type;
+
+  /// English guide section pick (Paper-I only). Null = none
+  /// picked; reset on subject/source change, never stale.
+  String? section;
+
+  /// 1st-Paper section pick (goddo/poddo/uponnas); null = none
+  /// picked, so the lesson picker shows all 18 lessons.
+  String? banglaSection;
+  String get effectiveSubjectId => banglaPaperSubject(subjectId);
+  int get effectiveClass => banglaPaperClass(subjectId, source, schoolClass);
   final numberCtrl = TextEditingController();
   bool jumping = false;
 
@@ -41,12 +52,10 @@ class SearchFlowController {
 
   void _notify() => onChanged();
 
-  SubjectInfo? get subject {
-    for (final s in subjects) {
-      if (s.id == subjectId) return s;
-    }
-    return null;
-  }
+  /// English guide section mode: the section picker replaces
+  /// the type dropdown (Math's 5-type dropdown is untouched).
+  bool get englishGuideSectionMode =>
+      source == 'guide' && subjectId == 'english';
 
   Map<String, String> get lessons => source == 'guide'
       ? lessonsForChapter(subjectId, schoolClass, chapter ?? 0)
@@ -57,13 +66,13 @@ class SearchFlowController {
     final saved =
         await profileService.loadSchoolClass().catchError((_) => null);
     final cls = initialSchoolClass ?? saved ?? 6;
-    final list = await booksService.subjectsAsync(cls, bn)
-        .catchError((_) => <SubjectInfo>[]);
+    subjects = splitBanglaSubjects(await booksService.subjectsAsync(cls, bn)
+        .catchError((_) => <SubjectInfo>[]));
     schoolClass = cls;
-    subjects = list;
-    subjectId = list.any((s) => s.id == initialSubjectId)
-        ? initialSubjectId
-        : (list.isNotEmpty ? list.first.id : 'math');
+    final initial = normalizeBanglaSubject(initialSubjectId);
+    subjectId = subjects.any((s) => s.id == initial)
+        ? initial
+        : (subjects.isNotEmpty ? subjects.first.id : 'math');
     applySubject(subjectId);
   }
 
@@ -72,6 +81,8 @@ class SearchFlowController {
     source = (subject?.locked ?? false) ? 'guide' : 'textbook';
     chapter = null;
     lesson = null;
+    section = null;
+    banglaSection = null;
     _notify();
     loadChapters();
   }
@@ -79,10 +90,11 @@ class SearchFlowController {
   Future<void> changeClass(int cls, bool bn) async {
     bangla = bn;
     schoolClass = cls;
-    subjects = await booksService.subjectsAsync(cls, bn)
-        .catchError((_) => <SubjectInfo>[]);
-    applySubject(subjects.any((x) => x.id == subjectId)
-        ? subjectId
+    subjects = splitBanglaSubjects(await booksService.subjectsAsync(cls, bn)
+        .catchError((_) => <SubjectInfo>[]));
+    final current = normalizeBanglaSubject(subjectId);
+    applySubject(subjects.any((x) => x.id == current)
+        ? current
         : (subjects.isNotEmpty ? subjects.first.id : 'math'));
   }
 
@@ -90,132 +102,68 @@ class SearchFlowController {
     source = value;
     chapter = null;
     lesson = null;
+    section = null;
+    banglaSection = null;
     _notify();
     loadChapters();
   }
 
+  /// Cache-first (stale-while-revalidate): saved chapters
+  /// render instantly, then a fresh fetch overwrites them in
+  /// the background. A newer load supersedes an older one
+  /// (generation guard), so rapid subject changes never land
+  /// a stale list. Unreachable + no cache keeps the old
+  /// behavior: verified titles for textbook, empty for guide.
+  /// Unreachable + cache keeps the cached chapters.
   Future<void> loadChapters() async {
+    final gen = ++_chaptersGeneration;
+    final bn = bangla;
+    final subj = effectiveSubjectId;
+    final cls = effectiveClass;
+    final src = source;
+    final kind = src == 'guide'
+        ? pickerCacheKindGuideChapters
+        : pickerCacheKindTextbookChapters;
+    final key = pickerCacheKey(cls, subj, bn ? 'bn' : 'en', kind);
     chaptersLoading = true;
     _notify();
-    final bn = bangla;
-    final subj = subjectId;
-    final cls = schoolClass;
-    List<(int, String)> out = [];
-    if (source == 'guide') {
-      final map = await guideBankService
-          .fetchGuideChapters(subj, schoolClass: cls)
-          .catchError((_) => null);
-      final numbers = (map?.keys.toList() ?? [])..sort();
-      out = [
-        for (final n in numbers)
-          (n, verifiedChapterTitle(subj, cls, n) ?? ''),
-      ];
-    } else {
-      final db = await booksService
-          .chaptersForSubjectAsync(cls, subj, bn)
-          .catchError((_) => null);
-      if (db != null && db.isNotEmpty) {
-        out = [
-          for (final c in db) (c.number, c.title(bn)),
-        ];
-      } else {
-        out = [
-          for (var n = 1; n <= 17; n++)
-            if (verifiedChapterTitle(subj, cls, n) != null)
-              (n, verifiedChapterTitle(subj, cls, n)!),
-        ];
+    var showedCache = false;
+    final cached = await pickerCacheService.read(key);
+    if (gen == _chaptersGeneration && cached != null) {
+      final decoded = decodeChapterTuples(cached);
+      if (decoded != null) {
+        chapters = decoded;
+        chaptersLoading = false;
+        showedCache = true;
+        _notify();
       }
     }
-    chapters = out;
+    final out = await pickerCacheService
+        .dedupe(
+          'fetch:$key',
+          () => fetchSearchFlowChapterTuples(
+            source: src,
+            subject: subj,
+            schoolClass: cls,
+            bangla: bn,
+          ),
+        )
+        .catchError((_) => null);
+    if (gen != _chaptersGeneration) return;
+    if (out == null) {
+      if (showedCache) {
+        chaptersLoading = false;
+        _notify();
+        return;
+      }
+      chapters = src == 'guide'
+          ? []
+          : searchFlowChapterFallback(subj, cls);
+    } else {
+      chapters = out;
+      await pickerCacheService.write(key, encodeChapterTuples(out));
+    }
     chaptersLoading = false;
     _notify();
-  }
-
-  /// Query string for the list route (no navigation here).
-  String listQuery({int? questionNumber}) {
-    final q = <String, String>{
-      'subject': subjectId,
-      'class': '$schoolClass',
-      'source': source,
-      'chapter': '${chapter ?? 0}',
-      'type': type!.name,
-      if (lesson != null) 'lesson': lesson!,
-      if (questionNumber != null) 'questionNumber': '$questionNumber',
-    };
-    return q.entries.map((e) => '${e.key}=${e.value}').join('&');
-  }
-
-  /// Direct jump, scoped to type + lesson + chapter + source.
-  /// Guide: positional (no printed number exists — see
-  /// guide_flow_list_service). Textbook: the existing chapter
-  /// list path, matched on printed problem number; one hit opens
-  /// the lesson, several hits open the matched-only list.
-  Future<SearchFlowJumpResult> jump(Map<String, String> s, bool bn) async {
-    if (chapter == null || type == null) {
-      return const SearchFlowJumpResult(kind: SearchFlowJumpKind.message);
-    }
-    jumping = true;
-    _notify();
-    final number = normalizeQuestionNumber(numberCtrl.text);
-    SearchFlowJumpResult finish(SearchFlowJumpResult r) {
-      jumping = false;
-      return r;
-    }
-    if (number == null) {
-      return finish(SearchFlowJumpResult(
-          kind: SearchFlowJumpKind.message,
-          message: s['jumpNotFoundBody']));
-    }
-    if (source == 'guide') {
-      final jump = await guideFlowListService.jumpToPosition(
-          subject: subjectId, schoolClass: schoolClass, chapter: chapter!,
-          type: type!, lesson: lesson, position: number);
-      switch (jump.outcome) {
-        case GuideFlowJumpOutcome.found:
-          return finish(SearchFlowJumpResult(
-              kind: SearchFlowJumpKind.guideQuestion,
-              question: jump.question));
-        case GuideFlowJumpOutcome.notFound:
-          return finish(SearchFlowJumpResult(
-              kind: SearchFlowJumpKind.message,
-              message: s['jumpOutOfRangeBody']));
-        case GuideFlowJumpOutcome.filterPending:
-          return finish(SearchFlowJumpResult(
-              kind: SearchFlowJumpKind.message,
-              message: s['filterPendingBody']));
-        case GuideFlowJumpOutcome.unavailable:
-          return finish(SearchFlowJumpResult(
-              kind: SearchFlowJumpKind.message,
-              message: s['unavailableBody']));
-      }
-    }
-    final rows = await textbookChapterService.fetchChapter(
-        subjectId, schoolClass, chapter!, bn);
-    if (rows == null) {
-      return finish(SearchFlowJumpResult(
-          kind: SearchFlowJumpKind.message,
-          message: s['unavailableBody']));
-    }
-    final matched = rows
-        .where((r) =>
-            searchFlowTextbookMatches(type!, r.questionType) &&
-            r.problem == number)
-        .toList();
-    if (matched.isEmpty) {
-      return finish(SearchFlowJumpResult(
-          kind: SearchFlowJumpKind.message,
-          message: s['jumpNotFoundBody']));
-    }
-    if (matched.length == 1) {
-      final q = matched.first;
-      return finish(SearchFlowJumpResult(
-          kind: SearchFlowJumpKind.lesson,
-          lesson: LessonSelection(
-              subject: subjectId, chapter: chapter!, page: q.page,
-              problem: q.problem ?? 0, questionId: q.id,
-              schoolClass: schoolClass)));
-    }
-    return finish(
-        const SearchFlowJumpResult(kind: SearchFlowJumpKind.list));
   }
 }

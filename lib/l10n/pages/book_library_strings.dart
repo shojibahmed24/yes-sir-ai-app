@@ -14,6 +14,7 @@ const Map<String, String> bookLibraryStringsBn = {
   'continueNoBook': 'এখনো কোনো বই খোলা হয়নি — প্রথম বইটি খোলো',
   'loading': 'বই লোড হচ্ছে…',
   'noBooks': 'এই ক্লাসের কোনো বই এখনো ডাটাবেজে পাওয়া যায়নি',
+  'class6Meta': 'ক্লাস ৬ · এনসিটিবি',
 };
 const Map<String, String> bookLibraryStringsEn = {
   'title': 'Book Library',
@@ -30,4 +31,5 @@ const Map<String, String> bookLibraryStringsEn = {
   'continueNoBook': 'No book opened yet — open the first book',
   'loading': 'Loading books…',
   'noBooks': 'No books for this class were found in the database yet',
+  'class6Meta': 'Class 6 · NCTB',
 };

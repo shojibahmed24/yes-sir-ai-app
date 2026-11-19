@@ -23,6 +23,13 @@ class LessonStyleResult {
   final String? fallbackText;
   final String? keyMismatchKey;
   final String source; // live | demo | unverified
+
+  /// Attribution from the Edge response for a live AI
+  /// result (see GenResult); 'unknown' otherwise. The
+  /// screen passes it to LessonAnswerBody, never the
+  /// selected provider.
+  final String aiProvider;
+  final String? aiModel;
   const LessonStyleResult({
     required this.outcome,
     this.displayText,
@@ -30,6 +37,8 @@ class LessonStyleResult {
     this.fallbackText,
     this.keyMismatchKey,
     required this.source,
+    this.aiProvider = 'unknown',
+    this.aiModel,
   });
 }
 
@@ -53,6 +62,8 @@ Future<LessonStyleResult> runLessonStyle({
         outcome: 'ok',
         solution: attempt.solution,
         source: 'live',
+        aiProvider: attempt.aiProvider,
+        aiModel: attempt.aiModel,
       );
     }
     if (attempt.status == StructuredStatus.keyMismatch) {
@@ -67,6 +78,8 @@ Future<LessonStyleResult> runLessonStyle({
         outcome: 'ok',
         fallbackText: attempt.rawText,
         source: 'live',
+        aiProvider: attempt.aiProvider,
+        aiModel: attempt.aiModel,
       );
     }
     // Structured unavailable: fall through to the legacy path.

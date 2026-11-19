@@ -20,6 +20,7 @@ class GuideToggle extends StatelessWidget {
     // textbook | guide choice reads at a glance in both modes.
     return SegmentedButton<String>(
       style: SegmentedButton.styleFrom(
+        minimumSize: const Size(0, 48),
         selectedBackgroundColor:
             Theme.of(context).colorScheme.primary.withValues(alpha: 0.18),
       ),

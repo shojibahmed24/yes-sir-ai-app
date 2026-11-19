@@ -16,6 +16,7 @@ import '../../l10n/pages/parent_strings.dart';
 import '../../theme/app_theme.dart';
 import 'parent_pin_store.dart';
 import 'parent_session.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class ParentPinScreen extends StatefulWidget {
   const ParentPinScreen({super.key});
@@ -33,8 +34,7 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
 
   bool get _settingUp => _hasPin == false;
   bool get _confirming => _firstPin != null;
-  bool get _locked =>
-      _lockoutUntil != null && DateTime.now().isBefore(_lockoutUntil!);
+  bool get _locked => _lockoutUntil != null && DateTime.now().isBefore(_lockoutUntil!);
 
   @override
   void initState() {
@@ -61,7 +61,11 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
       if (DateTime.now().isAfter(until)) {
         _lockTimer?.cancel();
         await parentPinStore.clearFailures();
-        if (mounted) setState(() { _lockoutUntil = null; _error = null; });
+        if (mounted)
+          setState(() {
+            _lockoutUntil = null;
+            _error = null;
+          });
       } else {
         setState(() {});
       }
@@ -77,19 +81,26 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
   Future<void> _onComplete(String entered) async {
     final s = isBangla ? parentStringsBn : parentStringsEn;
     if (_settingUp && !_confirming) {
-      setState(() { _firstPin = entered; _pin = ''; _error = null; });
+      setState(() {
+        _firstPin = entered;
+        _pin = '';
+        _error = null;
+      });
       return;
     }
     if (_settingUp && _confirming) {
       if (entered != _firstPin) {
-        setState(() { _firstPin = null; _pin = ''; _error = s['pinMismatch']!; });
+        setState(() {
+          _firstPin = null;
+          _pin = '';
+          _error = s['pinMismatch']!;
+        });
         return;
       }
       await parentPinStore.setPin(entered);
       parentSession.markVerified();
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(s['pinSet']!)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s['pinSet']!)));
       context.push('/parent-dashboard');
       return;
     }
@@ -104,12 +115,10 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
       if (until != null) {
         _startLockTimer(until);
       } else {
-        final left =
-            ParentPinStore.maxAttempts - await parentPinStore.failedCount();
+        final left = ParentPinStore.maxAttempts - await parentPinStore.failedCount();
         setState(() {
           _pin = '';
-          _error =
-              '${s['pinWrong']!} ${s['pinAttemptsLeft']!.replaceAll('{n}', '$left')}';
+          _error = '${s['pinWrong']!} ${s['pinAttemptsLeft']!.replaceAll('{n}', '$left')}';
         });
       }
     }
@@ -136,11 +145,7 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
       builder: (c) => AlertDialog(
         title: Text(s['pinForgotBlockedTitle']!),
         content: Text(s['pinForgotBlockedBody']!),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(c),
-              child: Text(s['pinForgotBlockedOk']!)),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(c), child: Text(s['pinForgotBlockedOk']!))],
       ),
     );
   }
@@ -149,13 +154,11 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
   Widget build(BuildContext context) {
     final s = isBangla ? parentStringsBn : parentStringsEn;
     if (_hasPin == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const ThemedScaffold(body: Center(child: CircularProgressIndicator()));
     }
-    final sub = _settingUp
-        ? (_confirming ? s['pinConfirmSub']! : s['pinSetupSub']!)
-        : s['pinSub']!;
+    final sub = _settingUp ? (_confirming ? s['pinConfirmSub']! : s['pinSetupSub']!) : s['pinSub']!;
     final errorText = _locked ? _lockedText(s) : _error;
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -171,44 +174,45 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(Icons.lock, size: 56, color: AppTheme.primary),
-            const SizedBox(height: 12),
-            Text(sub,
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Icon(Icons.lock, size: 56, color: AppTheme.primary),
+              const SizedBox(height: 12),
+              Text(sub, style: Theme.of(context).textTheme.bodyLarge, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
                   4,
                   (i) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppTheme.primary)),
-                        alignment: Alignment.center,
-                        child: Text(i < _pin.length ? '•' : '',
-                            style: const TextStyle(fontSize: 28)),
-                      )),
-            ),
-            const SizedBox(height: 8),
-            if (errorText != null)
-              Text(errorText,
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.primary),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(i < _pin.length ? '•' : '', style: const TextStyle(fontSize: 28)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (errorText != null)
+                Text(
+                  errorText,
                   style: const TextStyle(color: AppTheme.error),
-                  textAlign: TextAlign.center)
-            else
-              Text(s['pinHint']!,
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            Expanded(
-              child: GridView.count(
+                  textAlign: TextAlign.center,
+                )
+              else
+                Text(s['pinHint']!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 3,
-                childAspectRatio: 1.6,
+                childAspectRatio: 1.25,
                 children: [
                   for (final d in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'])
                     if (d.isEmpty)
@@ -217,18 +221,16 @@ class _ParentPinScreenState extends State<ParentPinScreen> {
                       Padding(
                         padding: const EdgeInsets.all(4),
                         child: ElevatedButton(
-                            onPressed: _locked ? null : () => _press(d),
-                            child: Text(d == 'back' ? '⌫' : d,
-                                style: const TextStyle(fontSize: 20))),
+                          onPressed: _locked ? null : () => _press(d),
+                          child: Text(d == 'back' ? '⌫' : d, style: const TextStyle(fontSize: 20)),
+                        ),
                       ),
                 ],
               ),
-            ),
-            if (!_settingUp)
-              TextButton(onPressed: _forgot, child: Text(s['pinForgot']!)),
-            Text(s['pinSecure']!,
-                style: Theme.of(context).textTheme.bodySmall),
-          ],
+              if (!_settingUp) TextButton(onPressed: _forgot, child: Text(s['pinForgot']!)),
+              Text(s['pinSecure']!, style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
         ),
       ),
     );

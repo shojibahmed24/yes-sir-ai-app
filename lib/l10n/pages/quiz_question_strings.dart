@@ -17,14 +17,27 @@ const Map<String, String> quizQuestionStringsBn = {
   'selectFirst': 'আগে একটি উত্তর বেছে নাও',
   'correctMsg': 'সঠিক উত্তর!',
   'wrongMsg': 'ভুল হয়েছে — সঠিক উত্তরটি দেখো',
+  'multiKeyHint':
+      'এই প্রশ্নের একাধিক সঠিক উত্তর থাকতে পারে — যেকোনো একটা বেছে নিলেই হবে।',
+  'acceptedAnswersLabel': 'গ্রহণযোগ্য উত্তর:',
   'aiLoading': 'স্যারের ব্যাখ্যা আনা হচ্ছে…',
   'aiLive': 'লাইভ AI ব্যাখ্যা (বই থেকে যাচাইকৃত)',
+  'aiAttributionUnknown':
+      'AI: জানা যায়নি — সার্ভার আপডেট হয়নি, OpenRouter চলতে পারে',
   'aiDemo': 'ডেমো ব্যাখ্যা — বই থেকে যাচাইকৃত, লাইভ AI নয়',
   'aiDemoBank': 'ডেমো ব্যাখ্যা — বইয়ের ইনডেক্সে এখনো যাচাই হয়নি',
   'notIndexed': 'এই প্রশ্নটি বইয়ের ইনডেক্সে পাওয়া যায়নি।',
   'askExact': 'হুবহু প্রশ্নটি সার্চে লেখো অথবা বইয়ের ছবি দাও।',
   'aiServerKeyMissing': 'AI সার্ভারে চালু হয়নি — সার্ভারের চাবি এখনো বসানো হয়নি।',
   'elapsed': 'সময়',
+  'quizSourceGuide': 'গাইড',
+  'quizSourceBank': 'ব্যাংক',
+  'quizCountSuffix': 'টি প্রশ্ন',
+  'quizShortNote':
+      'গাইডে {n}টি প্রশ্ন কম পড়েছে — পুরো ২০টির সেট চাইলে ব্যাংক-সেট নিন।',
+  'quizBankButton': 'ব্যাংক-সেট নিন',
+  'quizGuideMissing':
+      'গাইডে এই প্রশ্নের সারি পাওয়া যায়নি — চাবি/সমাধান যাচাই করা যায়নি।',
 };
 const Map<String, String> quizQuestionStringsEn = {
   'title': 'Quiz Question',
@@ -44,8 +57,13 @@ const Map<String, String> quizQuestionStringsEn = {
   'selectFirst': 'Choose an answer first',
   'correctMsg': 'Correct answer!',
   'wrongMsg': 'Wrong — see the correct answer',
+  'multiKeyHint':
+      'More than one answer may be correct — any one earns full marks.',
+  'acceptedAnswersLabel': 'Accepted answers:',
   'aiLoading': 'Fetching the teacher explanation…',
   'aiLive': 'Live AI explanation (verified against the book)',
+  'aiAttributionUnknown':
+      'AI: unknown — server has not been updated yet, OpenRouter may have answered',
   'aiDemo': 'Demo explanation — verified against the book, not live AI',
   'aiDemoBank': 'Demo explanation — not yet verified against the book index',
   'notIndexed': 'This question was not found in the book index.',
@@ -53,4 +71,12 @@ const Map<String, String> quizQuestionStringsEn = {
   'aiServerKeyMissing':
       'AI is not enabled on the server yet — the server key has not been set.',
   'elapsed': 'Time',
+  'quizSourceGuide': 'Guide',
+  'quizSourceBank': 'Bank',
+  'quizCountSuffix': 'questions',
+  'quizShortNote':
+      'The guide is short by {n} questions — take the bank set for a full 20-question set.',
+  'quizBankButton': 'Use bank set',
+  'quizGuideMissing':
+      'This question\'s guide row was not found — key/solution could not be verified.',
 };

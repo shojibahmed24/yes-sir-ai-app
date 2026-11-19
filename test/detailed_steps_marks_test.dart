@@ -10,6 +10,7 @@ import 'package:yes_sir_ai/core/services/chat_marks.dart';
 import 'package:yes_sir_ai/core/services/marks_budget.dart';
 import 'package:yes_sir_ai/core/services/structured_parse.dart';
 import 'package:yes_sir_ai/features/learn/widgets/solution_renderer.dart';
+import 'package:yes_sir_ai/l10n/language_provider.dart';
 
 const s = {
   'solutionSummary': 'সারাংশ',
@@ -35,6 +36,7 @@ Widget renderer(StructuredSolution solution) => MaterialApp(
             fontSize: 16,
             s: s,
             marksPrinted: false,
+            isMcq: true,
           ),
         ),
       ),
@@ -158,6 +160,16 @@ void main() {
       await tester.pumpWidget(renderer(stepped));
       await tester.pump();
       expect(find.text('সারাংশ'), findsOneWidget);
+    });
+
+    testWidgets('step numbers use Bengali digits in the Bangla UI',
+        (tester) async {
+      languageNotifier.value = const Locale('bn');
+      addTearDown(() => languageNotifier.value = const Locale('en'));
+      await tester.pumpWidget(renderer(stepped));
+      await tester.pump();
+      expect(find.text('১'), findsOneWidget);
+      expect(find.text('২'), findsOneWidget);
     });
   });
 }

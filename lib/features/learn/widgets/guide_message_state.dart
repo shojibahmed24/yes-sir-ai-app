@@ -18,22 +18,26 @@ class GuideMessageState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // R8: a long body must scroll instead of overflowing below
+    // the fold (the button with it).
     return Padding(
       padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: Theme.of(context).textTheme.headlineMedium),
-          if (body.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(body),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.headlineMedium),
+            if (body.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(body),
+            ],
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: onPressed,
+              child: Text(buttonLabel),
+            ),
           ],
-          const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: onPressed,
-            child: Text(buttonLabel),
-          ),
-        ],
+        ),
       ),
     );
   }

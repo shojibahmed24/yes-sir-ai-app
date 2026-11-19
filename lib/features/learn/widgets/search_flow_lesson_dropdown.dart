@@ -31,12 +31,14 @@ class SearchFlowLessonDropdown extends StatelessWidget {
         border: const OutlineInputBorder(),
       ),
       value: value,
+      isExpanded: true,
       items: [
         DropdownMenuItem<String>(value: null, child: Text(allLabel)),
         for (final e in lessons.entries)
           DropdownMenuItem<String>(
             value: e.key,
-            child: Text('${e.key} · ${e.value}'),
+            child: Text('${e.key} · ${e.value}',
+                maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
       ],
       onChanged: onChanged,

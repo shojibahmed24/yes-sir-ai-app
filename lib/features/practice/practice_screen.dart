@@ -13,6 +13,7 @@ import 'package:yes_sir_ai/core/services/practice_service.dart';
 import 'package:yes_sir_ai/core/services/profile_service.dart';
 import 'package:yes_sir_ai/core/services/progress_service.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
+import 'package:yes_sir_ai/features/practice/widgets/guide_fallback_dialog.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/guide_bank_strings.dart';
@@ -58,8 +59,25 @@ class _PracticeScreenState extends State<PracticeScreen> {
               subject: subject, schoolClass: schoolClass, bangla: bangla)
           .timeout(const Duration(seconds: 60));
       PracticeSession.selectedSubject = subject;
-      PracticeSession.quizItems = gen.items;
-      PracticeSession.quizSource = gen.source.name;
+      PracticeSession.quizShortfall = gen.guideShortfall;
+      PracticeSession.quizSeedKey = gen.seedKey;
+      if (!context.mounted) return;
+      if (gen.items.isEmpty) {
+        // Guide empty: ask, never silently substitute the bank.
+        // Generation is DONE, so the spinner stops here — the
+        // dialog is an idle user choice, not busy work.
+        if (mounted) setState(() => _startingDaily = false);
+        final useBank = await showGuideFallbackDialog(context);
+        if (!context.mounted) return;
+        if (!useBank) return;
+        PracticeSession.quizItems = practiceService.dailyQuizFor(
+            subject, seedKey: gen.seedKey, count: 20);
+        PracticeSession.quizSource = 'bankFallback';
+        PracticeSession.quizShortfall = 0;
+      } else {
+        PracticeSession.quizItems = gen.items;
+        PracticeSession.quizSource = gen.source.name;
+      }
       PracticeSession.quizIsRevision = false;
       if (!context.mounted) return;
       navigated = true;
@@ -81,8 +99,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   /// Random practice set for one subject: guide MCQs first
-  /// (seen questions excluded, refills when the pool runs dry),
-  /// bank fallback when fewer than 5 guide items resolve.
+  /// (seen questions excluded, refills when the pool runs dry).
+  /// A short guide set ships with its shortfall; an empty guide
+  /// set asks the user about a bank set (never silent).
   /// Same hardening as _startDaily (parent follow-up): the old
   /// shape had no loading state, no try/catch and no timeout, so
   /// the by-subject cards could look dead exactly like the daily
@@ -106,8 +125,25 @@ class _PracticeScreenState extends State<PracticeScreen> {
               subject: subject, schoolClass: schoolClass, bangla: bangla)
           .timeout(const Duration(seconds: 60));
       PracticeSession.selectedSubject = subject;
-      PracticeSession.quizItems = gen.items;
-      PracticeSession.quizSource = gen.source.name;
+      PracticeSession.quizShortfall = gen.guideShortfall;
+      PracticeSession.quizSeedKey = gen.seedKey;
+      if (!context.mounted) return;
+      if (gen.items.isEmpty) {
+        // Guide empty: ask, never silently substitute the bank.
+        // Generation is DONE, so the spinner stops here — the
+        // dialog is an idle user choice, not busy work.
+        if (mounted) setState(() => _startingSubject = null);
+        final useBank = await showGuideFallbackDialog(context);
+        if (!context.mounted) return;
+        if (!useBank) return;
+        PracticeSession.quizItems = practiceService.dailyQuizFor(
+            subject, seedKey: gen.seedKey, count: 20);
+        PracticeSession.quizSource = 'bankFallback';
+        PracticeSession.quizShortfall = 0;
+      } else {
+        PracticeSession.quizItems = gen.items;
+        PracticeSession.quizSource = gen.source.name;
+      }
       PracticeSession.quizIsRevision = false;
       if (!context.mounted) return;
       navigated = true;
@@ -131,6 +167,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
   void _startRevision(BuildContext context, List<QuizItem> items) {
     PracticeSession.quizItems = items;
     PracticeSession.quizSource = 'bankFallback';
+    PracticeSession.quizShortfall = 0;
+    PracticeSession.quizSeedKey = '';
     PracticeSession.quizIsRevision = true;
     context.go('/quiz');
   }

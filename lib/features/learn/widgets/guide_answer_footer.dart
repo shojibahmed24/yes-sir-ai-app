@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/guide_bank_model.dart';
+import 'guide_model_link_button.dart';
 import 'guide_report_button.dart';
 
 class GuideAnswerFooter extends StatelessWidget {
@@ -51,10 +52,16 @@ class GuideAnswerFooter extends StatelessWidget {
               onPressed: onAskAi,
               icon: const Icon(Icons.chat_bubble_outline),
               label: Text(s['askAi']!)),
+        if (question.modelQuestionId != null &&
+            question.modelQuestionId!.isNotEmpty)
+          GuideModelLinkButton(
+            modelQuestionId: question.modelQuestionId!,
+            label: s['modelAnswer']!,
+          ),
         const SizedBox(height: 16),
         Row(
           children: [
-            Text(s['reportTitle']!),
+            Expanded(child: Text(s['reportTitle']!)),
             GuideReportButton(
               question: question,
               subjectId: subjectId,

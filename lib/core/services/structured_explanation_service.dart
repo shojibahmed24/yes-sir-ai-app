@@ -8,9 +8,12 @@
 //    bad draft — one strict retry; if still identical, the
 //    solution is kept and the renderer hides the duplicate
 //    summary card (never two copies of the same text).
-//  - Key gate: MCQ/short drafts must match the stored printed
-//    key; on mismatch the draft is discarded (caller shows the
-//    key instead) — never the reverse.
+//  - Key gate: an MCQ draft must name the SAME OPTION as the
+//    stored printed key — by label or option text, never by
+//    exact string (2026-11-03: the old raw-string gate threw
+//    away agreeing drafts written in the other label system).
+//    On a genuine different-option mismatch the draft is
+//    discarded (caller shows the key instead) — never the reverse.
 //  - Hidden grounding: guideUnitText goes into the prompt ONLY
 //    and is never returned for display.
 //  - Fallback: unparseable twice => failed, but a truncated-JSON
@@ -24,29 +27,16 @@ import 'dart:convert';
 
 import '../models/backend_models.dart';
 import '../models/solution_model.dart';
+export '../models/solution_model.dart' show StructuredAttempt, StructuredStatus;
 import 'app_config.dart';
 import 'edge_post.dart';
+import 'explanation_script_guard.dart';
 import 'explanation_service.dart';
 import 'marks_budget.dart';
 import 'openrouter_client.dart';
 import 'structured_parse.dart';
 import 'structured_prompts.dart';
 import 'supabase_client.dart';
-
-enum StructuredStatus { ok, keyMismatch, failed }
-
-class StructuredAttempt {
-  final StructuredStatus status;
-  final StructuredSolution? solution;
-  final String rawText;
-  final String storedKey;
-  const StructuredAttempt({
-    required this.status,
-    this.solution,
-    this.rawText = '',
-    this.storedKey = '',
-  });
-}
 
 class StructuredExplanationService {
   /// [marksOverride] is the chat worker's user-stated marks
@@ -86,6 +76,10 @@ class StructuredExplanationService {
       ctx: ctx, style: style, bangla: bangla, budget: budget,
       userQuestion: userQuestion, strict: false,
     );
+    // A garbled ok (mixed-script or foreign-script words) is
+    // failed, so the trimmed retry below runs instead of
+    // showing the garbage to the student.
+    attempt = _sanitized(attempt);
     if (attempt.status == StructuredStatus.failed) {
       // 2026-11-01: a failed first attempt on a long Bengali
       // prompt is (per live probes) a slow-model timeout/drop,
@@ -120,6 +114,18 @@ class StructuredExplanationService {
       // A still-duplicate retry is kept, not discarded: the
       // renderer hides the duplicate summary card instead.
       if (retry.status == StructuredStatus.ok) attempt = retry;
+    }
+    // Backstop: a garbled ok from any retry path never leaves
+    // this method as ok — the UI shows the honest note.
+    return _sanitized(attempt);
+  }
+
+  /// Maps a garbled ok attempt to failed; everything else passes.
+  StructuredAttempt _sanitized(StructuredAttempt attempt) {
+    if (attempt.status == StructuredStatus.ok &&
+        attempt.solution != null &&
+        solutionHasScriptGarbage(attempt.solution!)) {
+      return const StructuredAttempt(status: StructuredStatus.failed);
     }
     return attempt;
   }
@@ -159,6 +165,8 @@ class StructuredExplanationService {
       return StructuredAttempt(
         status: StructuredStatus.failed,
         rawText: looksJson ? salvageTruncatedJsonText(cleaned) : cleaned,
+        aiProvider: gen.provider,
+        aiModel: gen.model,
       );
     }
     // Strict contract first; a single bad step falls back to the
@@ -170,13 +178,20 @@ class StructuredExplanationService {
       return const StructuredAttempt(status: StructuredStatus.failed);
     }
     if (ctx.answerKey.isNotEmpty &&
-        !solutionMatchesKey(solution, ctx.answerKey)) {
+        !solutionMatchesKey(solution, ctx.answerKey, ctx.options)) {
       return StructuredAttempt(
         status: StructuredStatus.keyMismatch,
         storedKey: ctx.answerKey,
+        aiProvider: gen.provider,
+        aiModel: gen.model,
       );
     }
-    return StructuredAttempt(status: StructuredStatus.ok, solution: solution);
+    return StructuredAttempt(
+      status: StructuredStatus.ok,
+      solution: solution,
+      aiProvider: gen.provider,
+      aiModel: gen.model,
+    );
   }
 
   /// Guide Mode G resolution (Edge Function, code only — the
@@ -236,7 +251,14 @@ class StructuredExplanationService {
       verbatimKind: '${res['verbatimKind'] ?? 'none'}',
       verbatimText: '${res['verbatimText'] ?? ''}',
       correctionNote: '${res['correctionNote'] ?? ''}',
+      guideExplanation: '${res['guideExplanation'] ?? ''}',
       guideError: res['guideError'] == true,
+      // 2026-11-03 fix: Mode G now returns the exact option texts
+      // + the row's own stimulus; both ride into the prompt
+      // (verbatim options, labeled stimulus block). Absent = [].
+      options: ((res['options'] as List?) ?? []).map((e) => '$e').toList(),
+      stimulusText: '${res['stimulusText'] ?? ''}',
+      stimulusRef: '${res['stimulusRef'] ?? ''}',
       fallbackChunkText: fallback is Map && fallback['text'] is String
           ? fallback['text'] as String
           : '',

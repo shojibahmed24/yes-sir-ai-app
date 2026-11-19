@@ -50,7 +50,7 @@ class OnboardingShell extends StatelessWidget {
               child: Text(
                 stepLabel,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppTheme.primary,
+                      color: AppTheme.primaryDark,
                     ),
               ),
             ),

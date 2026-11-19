@@ -1,5 +1,6 @@
 // Local fallback store (DEMO mode + offline cache).
 // Uses SharedPreferences so DEMO data survives a restart and is not lost.
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'saved_sync_service.dart';
 
@@ -23,6 +24,43 @@ class LocalStore {
   static Future<List<String>> savedQuestions() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList(_savedKey) ?? const [];
+  }
+
+  /// Overwrites the saved-question list wholesale. Used ONLY by the
+  /// sign-in restore (server pull unions with local, then writes
+  /// once) — never by save/unsave, which sync one id at a time.
+  static Future<void> setSavedQuestions(List<String> ids) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_savedKey, ids);
+  }
+
+  /// Cached server progress row (streak/chapters/average) written by
+  /// the sign-in restore, so a fresh install still shows progress
+  /// when the server is unreachable at summary time. Live server
+  /// data always wins over this cache; it is only an offline
+  /// fallback, never a second source of truth.
+  static const _serverProgressKey = 'ys_server_progress_json';
+
+  static Future<void> saveServerProgress(Map<String, int> row) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_serverProgressKey, jsonEncode(row));
+  }
+
+  static Future<Map<String, int>?> readServerProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString(_serverProgressKey);
+    if (json == null) return null;
+    try {
+      final decoded = jsonDecode(json);
+      if (decoded is! Map<String, dynamic>) return null;
+      return {
+        'streak_days': (decoded['streak_days'] as num?)?.toInt() ?? 0,
+        'chapters_done': (decoded['chapters_done'] as num?)?.toInt() ?? 0,
+        'average_score': (decoded['average_score'] as num?)?.toInt() ?? 0,
+      };
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Saves [id]; returns true only when it was newly added.
@@ -128,6 +166,9 @@ class LocalStore {
       // PracticeStore: saved attempts + activity dates.
       'ys_attempts_json',
       'ys_activity_dates',
+      // Cached server progress row (per-account, must not leak
+      // to the next account like the other keys above).
+      _serverProgressKey,
       // Notifications read/cleared state (per-account view state).
       'ys_notif_read',
       'ys_notif_cleared',

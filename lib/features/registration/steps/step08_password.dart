@@ -24,6 +24,13 @@ class _Step08PasswordState extends State<Step08Password> with RegLangMixin {
   final _confirm = TextEditingController();
   String? _error;
 
+  @override
+  void dispose() {
+    _pw.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
   void _next() {
     final s = isBangla ? regStep08Bn : regStep08En;
     if (_pw.text != _confirm.text) {
@@ -73,7 +80,10 @@ class _Step08PasswordState extends State<Step08Password> with RegLangMixin {
               style: Theme.of(context).textTheme.bodySmall),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppTheme.error)),
+            Text(_error!,
+                style: TextStyle(
+                    color: AppTheme.errorTextFor(Theme.of(context).brightness == Brightness.dark),
+                    fontWeight: FontWeight.w600)),
           ],
         ],
       ),

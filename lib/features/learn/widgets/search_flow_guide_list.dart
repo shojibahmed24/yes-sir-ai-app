@@ -1,8 +1,9 @@
 // Guide portion of the new type list (Step 5). Creative rows are
 // GROUPED by stimulus_id into one row per question; other types
-// render one row per bank row. Grouping is per loaded page: a
-// stimulus group split across a 20-row page boundary renders as
-// two groups until the next page loads (known interim limit).
+// render one row per bank row. Grouping is per loaded page:
+// set lists are group-paged by the screen (visibleSetRows), so
+// their groups never split; server-paged lists keep the known
+// interim limit of a group split across a page boundary.
 // Practice-work lists carry the warning banner. The parent owns
 // paging state and the paywall gate; this widget only renders.
 import 'package:flutter/material.dart';
@@ -14,6 +15,12 @@ import '../search_flow_types.dart';
 import 'digits.dart';
 import 'guide_creative_groups.dart';
 import 'guide_question_row.dart';
+
+// Re-exported for search_flow_list_screen (at the 250-line cap:
+// it cannot add its own import for the loading shimmer, nor for
+// the set slice).
+export 'guide_list_loading_shimmer.dart';
+export '../search_flow_set_slice.dart';
 
 class SearchFlowGuideListView extends StatelessWidget {
   const SearchFlowGuideListView({
@@ -53,22 +60,25 @@ class SearchFlowGuideListView extends StatelessWidget {
   /// first part's list index (paywall gate), ALL currently
   /// loaded parts of the stimulus, and the stimulus text.
   final void Function(
-      int firstIndex, List<GuideBankQuestion> parts, String stimulusText)?
-      onOpenGroup;
+    int firstIndex,
+    List<GuideBankQuestion> parts,
+    String stimulusText,
+  )?
+  onOpenGroup;
   final VoidCallback onLoadMore;
 
   @override
   Widget build(BuildContext context) {
-    final entries = [
-      for (var i = 0; i < rows.length; i++) (i, rows[i]),
-    ];
+    final entries = [for (var i = 0; i < rows.length; i++) (i, rows[i])];
     final groups = type == SearchFlowType.creative
         ? groupQuestionRows(entries)
-        : [for (final e in entries) GroupedRows(stimulusId: null, parts: [e])];
+        : [
+            for (final e in entries) GroupedRows(stimulusId: null, parts: [e]),
+          ];
     final showing = total != null
         ? s['showingTotal']!
-            .replaceAll('{total}', numStr(total!, bn))
-            .replaceAll('{shown}', numStr(rows.length, bn))
+              .replaceAll('{total}', numStr(total!, bn))
+              .replaceAll('{shown}', numStr(rows.length, bn))
         : s['showingOf']!.replaceAll('{shown}', numStr(rows.length, bn));
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -94,10 +104,11 @@ class SearchFlowGuideListView extends StatelessWidget {
           // Step 7 (Fix A): a creative group opens worker E's
           // grouped view with ALL currently loaded parts; any
           // other row keeps the single-question path. Known
-          // limit kept, not hidden: a group split across a
-          // 20-row page boundary still renders as two groups
-          // until the next page loads (grouping above runs
-          // over all loaded rows, so loading more merges
+          // limit kept, not hidden (server-paged lists only;
+          // set lists page by whole groups): a group split
+          // across a 20-row page boundary still renders as two
+          // groups until the next page loads (grouping above
+          // runs over all loaded rows, so loading more merges
           // them); tapping the first half before that opens
           // only that half — groups are never merged across
           // rows that have not been loaded, so no wrong
@@ -105,8 +116,10 @@ class SearchFlowGuideListView extends StatelessWidget {
           GuideQuestionRow(
             question: g.parts.first.$2,
             locked: !guideBankService.isUnlocked(
-                isPremium: isPremium, index: g.parts.first.$1,
-                freeLimit: AppConfig.freeGuideLimit),
+              isPremium: isPremium,
+              index: g.parts.first.$1,
+              freeLimit: AppConfig.freeGuideLimit,
+            ),
             s: gs,
             subjectId: subjectId,
             chapterNumber: chapterNumber,
@@ -115,11 +128,9 @@ class SearchFlowGuideListView extends StatelessWidget {
               if (type == SearchFlowType.creative &&
                   g.stimulusId != null &&
                   openGroup != null) {
-                openGroup(
-                  g.parts.first.$1,
-                  [for (final p in g.parts) p.$2],
-                  g.parts.first.$2.stimulusText ?? '',
-                );
+                openGroup(g.parts.first.$1, [
+                  for (final p in g.parts) p.$2,
+                ], g.parts.first.$2.stimulusText ?? '');
               } else {
                 onOpen(g.parts.first.$1, g.parts.first.$2);
               }
@@ -128,10 +139,7 @@ class SearchFlowGuideListView extends StatelessWidget {
         ],
         if (hasMore) ...[
           const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: onLoadMore,
-            child: Text(s['loadMore']!),
-          ),
+          OutlinedButton(onPressed: onLoadMore, child: Text(s['loadMore']!)),
         ],
       ],
     );

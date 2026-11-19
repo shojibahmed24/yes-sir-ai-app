@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/help_about_strings.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -15,7 +16,7 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = isBangla ? aboutStringsBn : aboutStringsEn;
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -24,7 +25,7 @@ class AboutScreen extends StatelessWidget {
         title: Text(s['title']!),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         children: [
           const CircleAvatar(
               radius: 40, child: Text('🤖', style: TextStyle(fontSize: 36))),

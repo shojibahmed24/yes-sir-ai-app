@@ -64,11 +64,20 @@ class GeneratedSet {
   final QuestionSource source;
   final String seedKey;
   final int bookQuestionsIndexed;
+
+  /// Phase 2 (plan §2 step 2): how many of the 20 guide
+  /// questions are missing (0 = full set, or a bank set where
+  /// the field is meaningless). The caller NEVER fills this
+  /// silently from the bank — it shows the shortfall with an
+  /// explicit bank button, and 20 here (empty guide set) means
+  /// "ask the user" instead of starting anything.
+  final int guideShortfall;
   const GeneratedSet({
     required this.items,
     required this.source,
     required this.seedKey,
     this.bookQuestionsIndexed = 0,
+    this.guideShortfall = 0,
   });
 }
 

@@ -4,7 +4,9 @@
 // marks never get an invented badge.
 import 'package:flutter/material.dart';
 
+import '../../../core/data/english_redesign.dart';
 import '../../../core/models/solution_model.dart';
+import '../../../l10n/language_provider.dart';
 import 'solution_blocks.dart';
 import 'solution_formula_box.dart';
 
@@ -59,9 +61,13 @@ class SolutionStepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onSurface = Theme.of(context).colorScheme.onSurface;
+    // Serial numbers follow the app's locale: Bengali digits in
+    // the Bangla UI (like model-test names and sub-numbers),
+    // Latin digits in the English UI.
+    final bn = languageNotifier.value.languageCode == 'bn';
     final badge = showMarks && step.sectionMarks != null
         ? '${step.sectionLabel != null ? '${step.sectionLabel} · ' : ''}'
-              '${step.sectionMarks} $marksWord'
+            '${bn ? bnDigits(step.sectionMarks!) : step.sectionMarks} $marksWord'
         : null;
     return Card(
       child: Padding(
@@ -75,7 +81,7 @@ class SolutionStepCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 14,
                   child: Text(
-                    '${step.n}',
+                    bn ? bnDigits(step.n) : '${step.n}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),

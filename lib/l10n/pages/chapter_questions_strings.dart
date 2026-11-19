@@ -24,6 +24,9 @@ const Map<String, String> chapterQuestionsStringsBn = {
   'classLabel': 'শ্রেণি',
   'pageWord': 'পৃষ্ঠা',
   'questionWord': 'প্রশ্ন',
+  // AppBar-title fallback when the chapter title never loads
+  // (M4): {n} is the chapter number, already localised.
+  'chapterFallback': 'অধ্যায় {n}',
   'backToSearch': 'খোঁজায় ফিরুন',
   'pageNotInVersion':
       'পৃষ্ঠা {page} এই অধ্যায়ের এই সংস্করণে নেই, নিচের তালিকা থেকে প্রশ্নটি বেছে নিন',
@@ -53,6 +56,9 @@ const Map<String, String> chapterQuestionsStringsEn = {
   'classLabel': 'Class',
   'pageWord': 'Page',
   'questionWord': 'Question',
+  // AppBar-title fallback when the chapter title never loads
+  // (M4): {n} is the chapter number, already localised.
+  'chapterFallback': 'Chapter {n}',
   'backToSearch': 'Back to search',
   'pageNotInVersion':
       'Page {page} is not in this version of the chapter — pick the question from the list below',

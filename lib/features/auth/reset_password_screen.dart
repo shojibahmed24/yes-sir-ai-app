@@ -64,7 +64,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 FadeSlide(
                   child: Text(s['step']!,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.primary,
+                            color: AppTheme.primaryDark,
                           )),
                 ),
                 const SizedBox(height: 8),

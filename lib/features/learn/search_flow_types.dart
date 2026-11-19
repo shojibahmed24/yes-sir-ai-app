@@ -10,6 +10,7 @@
 import '../../core/data/class9_10_math_chapters.dart';
 import '../../core/models/guide_bank_model.dart';
 import 'lesson_selection.dart';
+import 'widgets/digits.dart';
 
 /// Jump outcome for the search screen's "সরাসরি উত্তর" button.
 /// The controller resolves; the screen navigates. Keeping the
@@ -39,12 +40,26 @@ class SearchFlowJumpResult {
 /// The 5 dropdown options — identical in textbook and guide mode.
 /// There is deliberately NO "all questions" option: a list always
 /// loads one type, 20 at a time.
-enum SearchFlowType {
-  mcq,
-  short,
-  creative,
-  practiceWork,
-  textbookExercise,
+enum SearchFlowType { mcq, short, creative, practiceWork, textbookExercise }
+
+/// Dropdown label for a search-flow type (moved from the screen so
+/// the screen stays under the line cap).
+String searchFlowTypeLabel(SearchFlowType t, Map<String, String> s) => {
+  SearchFlowType.mcq: s['typeMcq']!,
+  SearchFlowType.short: s['typeShort']!,
+  SearchFlowType.creative: s['typeCreative']!,
+  SearchFlowType.practiceWork: s['typePracticeWork']!,
+  SearchFlowType.textbookExercise: s['typeTextbookExercise']!,
+}[t]!;
+
+/// Chapter dropdown label (moved from the screen so the screen
+/// stays under the line cap). Empty title => the chapter label
+/// plus the number alone, never an invented title.
+String searchFlowChapterLabel(
+    int n, String title, bool bn, Map<String, String> s) {
+  final num = numStr(n, bn);
+  if (title.isEmpty) return "${s['chapterLabel']} $num";
+  return '$num · $title';
 }
 
 /// Guide-bank `section` value for a dropdown option (guide mode).
@@ -139,20 +154,41 @@ int? normalizeQuestionNumber(String input) {
 }
 
 /// Lessons actually present for a chapter, as
-/// lesson-code -> title. TODAY only class 9-10 math chapter 2 has
-/// DB-backed lesson rows (2.1 / 2.2); every other chapter returns
-/// empty, and the search screen SKIPS the lesson step entirely
-/// for it. Pilot-file-only lessons (ch 3/7/8/9) are deliberately
-/// NOT included: they are not in the DB yet, so presenting them
-/// would promise rows that do not exist.
+/// lesson-code -> title. Class 9-10 math guide chapters 2, 3, 7, 8,
+/// 9, 11, 16 have DB-backed lesson rows (math import 2026-11-01;
+/// keys match the live DB lesson values verbatim), so the search
+/// screen shows the lesson dropdown for them. Every other chapter
+/// returns empty, and the screen SKIPS the lesson step entirely
+/// for it.
+/// Deliberately excluded, with rows still reachable via the
+/// dropdown's 'সব লেসন' all-option:
+/// - Chapter 17: its only DB lesson value is '17' (whole chapter),
+///   so there are no sub-lessons to pick from.
+/// - 'পরিশিষ্ট' (chapter-3 appendix): not a numbered lesson, so it
+///   has no dropdown entry; its rows appear under 'সব লেসন'.
 Map<String, String> lessonsForChapter(
-    String subject, int schoolClass, int chapter) {
-  if (subject == 'math' &&
-      (schoolClass == 9 || schoolClass == 10) &&
-      chapter == 2) {
-    return chapter2LessonTitles;
+  String subject,
+  int schoolClass,
+  int chapter,
+) {
+  if (subject != 'math' || (schoolClass != 9 && schoolClass != 10)) {
+    return const {};
   }
-  return const {};
+  switch (chapter) {
+    case 2:
+      return chapter2LessonTitles;
+    case 3:
+    case 7:
+    case 8:
+    case 9:
+    case 11:
+    case 16:
+      return Map.fromEntries(
+        guideLessonTitles.entries.where((e) => e.key.startsWith('$chapter.')),
+      );
+    default:
+      return const {};
+  }
 }
 
 /// Verified chapter title for the new search UI, or null when no

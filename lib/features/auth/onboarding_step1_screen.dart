@@ -68,11 +68,14 @@ class OnboardingStep1Screen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
-        Text(value,
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
-                ?.copyWith(color: AppTheme.primary)),
+        Flexible(
+          child: Text(value,
+              textAlign: TextAlign.right,
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(color: AppTheme.primaryDark)),
+        ),
       ],
     );
   }
@@ -85,7 +88,7 @@ class OnboardingStep1Screen extends StatelessWidget {
           color: AppTheme.primary.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(text, textAlign: TextAlign.center),
+        child: Text(text, textAlign: TextAlign.center, maxLines: 2),
       ),
     );
   }

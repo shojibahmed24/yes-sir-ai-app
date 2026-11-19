@@ -153,7 +153,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 FadeSlide(
                   child: Text(s['step']!,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.primary,
+                            color: AppTheme.primaryDark,
                           )),
                 ),
                 const SizedBox(height: 8),
@@ -197,9 +197,11 @@ class _OtpScreenState extends State<OtpScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    AuthTextLink(
-                      label: s['changeNumber']!,
-                      onPressed: () => context.go(widget.returnTo),
+                    Flexible(
+                      child: AuthTextLink(
+                        label: s['changeNumber']!,
+                        onPressed: () => context.go(widget.returnTo),
+                      ),
                     ),
                     AuthTextLink(label: s['resend']!, onPressed: _resend),
                   ],

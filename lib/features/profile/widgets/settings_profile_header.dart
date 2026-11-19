@@ -49,8 +49,7 @@ class _SettingsProfileHeaderState extends State<SettingsProfileHeader> {
   }
 
   void _snack(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _pick(ImageSource source) async {
@@ -70,9 +69,7 @@ class _SettingsProfileHeaderState extends State<SettingsProfileHeader> {
       case PictureOutcome.picked:
         // Notifier already refreshed _profile; just report honestly:
         // uploaded=true only when Storage really accepted the file.
-        _snack(result.uploaded
-            ? s['pictureSaved']!
-            : s['pictureSavedLocal']!);
+        _snack(result.uploaded ? s['pictureSaved']! : s['pictureSavedLocal']!);
     }
   }
 
@@ -84,16 +81,8 @@ class _SettingsProfileHeaderState extends State<SettingsProfileHeader> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: Text(s['pictureGallery']!),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: Text(s['pictureCamera']!),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
-            ),
+            ListTile(leading: const Icon(Icons.photo_library), title: Text(s['pictureGallery']!), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
+            ListTile(leading: const Icon(Icons.camera_alt), title: Text(s['pictureCamera']!), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
           ],
         ),
       ),
@@ -117,55 +106,37 @@ class _SettingsProfileHeaderState extends State<SettingsProfileHeader> {
     final name = ProfileFields.name(_profile);
     final localPath = ProfileFields.localPicture(_profile);
     final remoteUrl = ProfileFields.remotePicture(_profile);
-    final hasPicture = (localPath != null && localPath.isNotEmpty) ||
-        (remoteUrl != null && remoteUrl.isNotEmpty);
+    final hasPicture = (localPath != null && localPath.isNotEmpty) || (remoteUrl != null && remoteUrl.isNotEmpty);
     // Honest DEMO/upload-failed note: a picture with no remote URL
     // lives on this device only.
-    final note =
-        hasPicture && remoteUrl == null ? s['pictureLocalOnlyNote']! : null;
+    final note = hasPicture && remoteUrl == null ? s['pictureLocalOnlyNote']! : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            ProfileAvatar(
-              name: name,
-              localPath: localPath,
-              remoteUrl: remoteUrl,
-              radius: 28,
-            ),
+            ProfileAvatar(name: name, localPath: localPath, remoteUrl: remoteUrl, radius: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name.isEmpty ? s['student']! : name,
-                      style: Theme.of(context).textTheme.headlineMedium),
-                  Text(widget.classText,
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(name.isEmpty ? s['student']! : name, style: Theme.of(context).textTheme.headlineMedium),
+                  Text(widget.classText, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        Row(
+        Wrap(
+          spacing: 8,
           children: [
-            TextButton.icon(
-              onPressed: _busy ? null : _chooseSource,
-              icon: const Icon(Icons.camera_alt, size: 18),
-              label:
-                  Text(_busy ? s['pictureSaving']! : s['changePicture']!),
-            ),
-            if (hasPicture)
-              TextButton(
-                onPressed: _busy ? null : _remove,
-                child: Text(s['removePicture']!),
-              ),
+            TextButton.icon(onPressed: _busy ? null : _chooseSource, icon: const Icon(Icons.camera_alt, size: 18), label: Text(_busy ? s['pictureSaving']! : s['changePicture']!)),
+            if (hasPicture) TextButton(onPressed: _busy ? null : _remove, child: Text(s['removePicture']!)),
           ],
         ),
-        if (note != null)
-          Text(note, style: Theme.of(context).textTheme.bodySmall),
+        if (note != null) Text(note, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

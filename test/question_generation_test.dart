@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yes_sir_ai/core/models/backend_models.dart';
+import 'package:yes_sir_ai/core/services/model_test_service.dart';
 import 'package:yes_sir_ai/core/services/practice_service.dart';
 import 'package:yes_sir_ai/core/services/progress_service.dart';
 import 'package:yes_sir_ai/core/services/question_generation.dart';
@@ -56,7 +57,7 @@ void main() {
   });
 
   test('model tests keep fixed counts and english stays locked', () {
-    final tests = practiceService.modelTests();
+    final tests = modelTestService.modelTests();
     expect(tests.firstWhere((t) => t.id == 'mt-math').items.length, 10);
     expect(tests.firstWhere((t) => t.id == 'mt-science').items.length, 8);
     final en = tests.firstWhere((t) => t.id == 'mt-english');
@@ -64,12 +65,16 @@ void main() {
     expect(en.items, isEmpty);
   });
 
-  test('generateDailyQuiz falls back to the labelled bank', () async {
+  test('generateDailyQuiz with no guide returns an empty guide set',
+      () async {
     SharedPreferences.setMockInitialValues({});
     final gen = await practiceService.generateDailyQuiz(
         subject: 'math', schoolClass: 6, bangla: true);
-    expect(gen.items.length, 5);
-    expect(gen.source, QuestionSource.bankFallback);
+    // No server in tests -> guide empty -> the SCREEN asks
+    // about a bank set; the service never substitutes silently.
+    expect(gen.items, isEmpty);
+    expect(gen.source, QuestionSource.guide);
+    expect(gen.guideShortfall, 20);
     expect(gen.bookQuestionsIndexed, 0); // no server in tests
   });
 

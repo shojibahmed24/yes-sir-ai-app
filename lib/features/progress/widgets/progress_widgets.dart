@@ -5,6 +5,7 @@ class StreakRow extends StatelessWidget {
   const StreakRow({super.key, required this.days, required this.label, this.active});
   final List<String> days;
   final String label;
+
   /// Per-day activity, same length as [days]; null = unknown (grey).
   final List<bool>? active;
   @override
@@ -12,14 +13,36 @@ class StreakRow extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [const Icon(Icons.local_fire_department, color: AppTheme.amber), const SizedBox(width: 8), Expanded(child: Text(label, style: Theme.of(context).textTheme.headlineMedium))]),
-          const SizedBox(height: 12),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: days.asMap().entries.map((e) {
-            final on = active == null || e.key >= active!.length ? false : active![e.key];
-            return Column(children: [CircleAvatar(radius: 16, backgroundColor: on ? AppTheme.success : AppTheme.inkMuted.withValues(alpha: 0.3), child: Icon(on ? Icons.check : Icons.close, size: 16, color: Colors.white)), const SizedBox(height: 4), Text(e.value, style: Theme.of(context).textTheme.bodySmall)]);
-          }).toList()),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.local_fire_department, color: AppTheme.amber),
+                const SizedBox(width: 8),
+                Expanded(child: Text(label, style: Theme.of(context).textTheme.headlineMedium)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: days.asMap().entries.map((e) {
+                final on = active == null || e.key >= active!.length ? false : active![e.key];
+                return Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: on ? AppTheme.success : AppTheme.inkMuted.withValues(alpha: 0.3),
+                      child: Icon(on ? Icons.check : Icons.close, size: 16, color: Colors.white),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(e.value, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11)),
+                  ],
+                );
+              }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -36,14 +59,25 @@ class GoalRing extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(children: [
-          SizedBox(width: 72, height: 72, child: Stack(alignment: Alignment.center, children: [
-            SizedBox.expand(child: CircularProgressIndicator(value: v, strokeWidth: 8, color: AppTheme.amber, backgroundColor: AppTheme.inkMuted.withValues(alpha: 0.3))),
-            Text('$done/$goal', style: Theme.of(context).textTheme.headlineMedium),
-          ])),
-          const SizedBox(width: 16),
-          Expanded(child: Text(label, style: Theme.of(context).textTheme.headlineMedium)),
-        ]),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 88,
+              height: 88,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox.expand(
+                    child: CircularProgressIndicator(value: v, strokeWidth: 8, color: AppTheme.amber, backgroundColor: AppTheme.inkMuted.withValues(alpha: 0.3)),
+                  ),
+                  Text('$done/$goal', style: Theme.of(context).textTheme.headlineMedium),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: Text(label, style: Theme.of(context).textTheme.headlineMedium)),
+          ],
+        ),
       ),
     );
   }

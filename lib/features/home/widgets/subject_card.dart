@@ -58,7 +58,7 @@ class SubjectCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text('$chapters $chaptersLabel', style: Theme.of(context).textTheme.bodySmall),
-              if (locked) Text(lockedLabel, style: const TextStyle(color: AppTheme.error)),
+              if (locked) Text(lockedLabel, style: TextStyle(color: AppTheme.errorTextFor(dark))),
               if (!locked) ...[
                 const SizedBox(height: 8),
                 LinearProgressIndicator(value: progress, color: accent),

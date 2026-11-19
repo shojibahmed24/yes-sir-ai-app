@@ -94,7 +94,7 @@ class AuthTextLink extends StatelessWidget {
         style: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: AppTheme.primary,
+          color: AppTheme.primaryDark,
         ),
       ),
     );

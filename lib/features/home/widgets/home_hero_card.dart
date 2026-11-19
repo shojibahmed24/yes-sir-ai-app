@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
+import '../home_design.dart';
 
 /// Continue-learning hero card ("আগের পড়া চালিয়ে যাও").
 ///
@@ -37,7 +38,7 @@ class HomeHeroCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: dark ? AppTheme.heroGradientDark : AppTheme.heroGradient,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(HomeDesign.cardRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: dark ? 0.30 : 0.12),
@@ -47,7 +48,7 @@ class HomeHeroCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -57,19 +58,19 @@ class HomeHeroCard extends StatelessWidget {
                 context,
               ).textTheme.headlineMedium?.copyWith(color: fg),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               subject,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: sub),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               topic,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: fg),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               progressLabel,
               style: Theme.of(
@@ -77,13 +78,16 @@ class HomeHeroCard extends StatelessWidget {
               ).textTheme.bodySmall?.copyWith(color: sub),
             ),
             const SizedBox(height: 12),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AppTheme.primaryDark,
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.primaryDark,
+                ),
+                onPressed: onContinue ?? () => context.go('/lesson'),
+                child: Text(continueLabel),
               ),
-              onPressed: onContinue ?? () => context.go('/lesson'),
-              child: Text(continueLabel),
             ),
           ],
         ),

@@ -25,6 +25,15 @@ const Map<String, String> chatStringsBn = {
   'aiFailed': 'লাইভ উত্তর আনা যায়নি। বইয়ের যাচাইকৃত লেখা থাকলে সেটাই দেখানো হচ্ছে।',
   'guideNotFound':
       'এই গাইড প্রশ্নটি খুঁজে পাওয়া যায়নি। গাইড-উত্তর স্ক্রিন থেকে আবার চেষ্টা করো — আন্দাজে উত্তর দেওয়া হবে না।',
+  // Honest guide-chat states (2026-11-03 chat fix): shown
+  // INSTEAD of a model call, never built from a wrong passage.
+  'guideChatNoContext':
+      'এই প্রশ্নের লেখা পাওয়া যায়নি, তাই চ্যাটে ব্যাখ্যা দেওয়া যাচ্ছে না। গাইড-উত্তর স্ক্রিন থেকে আবার চেষ্টা করো — আন্দাজে উত্তর দেওয়া হবে না।',
+  'guideChatNoOptions':
+      'এই MCQ-এর অপশন পাওয়া যায়নি, তাই চ্যাটে ব্যাখ্যা দেওয়া যাচ্ছে না — অপশন ছাড়া উত্তর বানানো হবে না। গাইড-উত্তর স্ক্রিনে অপশনগুলো দেখে আবার চেষ্টা করো।',
+  'chatForQuestion': 'এই প্রশ্নের জন্য চ্যাট',
+  'showMore': 'আরও দেখুন',
+  'showLess': 'কম দেখুন',
   'aiServerKeyMissing': 'AI সার্ভারে চালু হয়নি — সার্ভারের চাবি এখনো বসানো হয়নি।',
   'demoReply': 'ডেমো উত্তর — লাইভ AI নয়',
   'aiThinking': 'ভাবছি…',
@@ -51,6 +60,15 @@ const Map<String, String> chatStringsEn = {
   'aiFailed': 'The live answer could not be fetched. Showing the verified book text if one exists.',
   'guideNotFound':
       'This guide question could not be found. Try again from the guide answer screen — no answer will be guessed.',
+  // Honest guide-chat states (2026-11-03 chat fix): shown
+  // INSTEAD of a model call, never built from a wrong passage.
+  'guideChatNoContext':
+      'The text of this question could not be found, so no chat explanation can be given. Try again from the guide answer screen — no answer will be guessed.',
+  'guideChatNoOptions':
+      'The options for this MCQ could not be found, so no chat explanation can be given — no answer will be built without options. Check the options on the guide answer screen and try again.',
+  'chatForQuestion': 'Chat for this question',
+  'showMore': 'See more',
+  'showLess': 'See less',
   'aiServerKeyMissing':
       'AI is not enabled on the server yet — the server key has not been set.',
   'demoReply': 'Demo reply — not live AI',

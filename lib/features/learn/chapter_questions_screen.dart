@@ -18,8 +18,10 @@ import '../../l10n/pages/chapter_questions_strings.dart';
 import 'lesson_selection.dart';
 import 'widgets/chapter_questions_parts.dart';
 import 'widgets/digits.dart';
+import 'widgets/guide_list_loading_shimmer.dart';
 import 'widgets/mock_data.dart';
 import 'widgets/textbook_filter.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class ChapterQuestionsScreen extends StatefulWidget {
   const ChapterQuestionsScreen({
@@ -118,27 +120,19 @@ class _ChapterQuestionsScreenState extends State<ChapterQuestionsScreen> {
         final s = bn ? chapterQuestionsStringsBn : chapterQuestionsStringsEn;
         final title = _chapterTitle.isNotEmpty
             ? _chapterTitle
-            : '${bn ? 'অধ্যায়' : 'Chapter'} ${numStr(widget.chapterNumber, bn)}';
-        return Scaffold(
+            : s['chapterFallback']!
+                .replaceAll('{n}', numStr(widget.chapterNumber, bn));
+        return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.go('/search'),
             ),
-            title: Text(
-                '${subjectNameFor(widget.subjectId, bn)} · $title'),
+            title: Text('${subjectNameFor(widget.subjectId, bn)} · $title',
+                maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
           body: _loading
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 12),
-                      Text(s['loading']!),
-                    ],
-                  ),
-                )
+              ? const GuideListLoadingShimmer()
               : _unavailable
                   ? ChapterMessage(
                       title: s['unavailableTitle']!,

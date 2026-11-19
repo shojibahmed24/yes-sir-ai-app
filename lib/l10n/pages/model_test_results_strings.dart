@@ -20,6 +20,7 @@ const Map<String, String> modelTestResultsStringsBn = {
   'timeUp': 'সময় শেষ হয়েছিল — উত্তর স্বয়ংক্রিয়ভাবে জমা হয়েছে।',
   'timeUsed': 'ব্যবহৃত সময়',
   'allCorrect': 'সব উত্তর সঠিক — দারুণ!',
+  'grade': 'গ্রেড',
 };
 const Map<String, String> modelTestResultsStringsEn = {
   'title': 'Model Test Results',
@@ -42,4 +43,5 @@ const Map<String, String> modelTestResultsStringsEn = {
   'timeUp': 'Time ran out — answers were submitted automatically.',
   'timeUsed': 'Time used',
   'allCorrect': 'All answers correct — excellent!',
+  'grade': 'Grade',
 };

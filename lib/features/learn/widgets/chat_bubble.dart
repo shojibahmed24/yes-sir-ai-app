@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/pages/chat_strings.dart';
 import '../../../theme/app_theme.dart';
 import 'solution_blocks.dart';
 
@@ -46,7 +47,11 @@ class ChatBubble extends StatelessWidget {
             : CrossAxisAlignment.start,
         children: [
           Container(
-            constraints: const BoxConstraints(maxWidth: 300),
+            // R12: 300dp fixed overflowed on 320dp-wide phones
+            // (300 + padding > screen). 80% of the screen width
+            // keeps the bubble inside on every width.
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.8),
             margin: const EdgeInsets.symmetric(vertical: 6),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -78,7 +83,13 @@ class ChatBubble extends StatelessWidget {
                 isSaved ? Icons.bookmark : Icons.bookmark_border,
                 size: 16,
               ),
-              label: Text(saveLabel ?? 'Save'),
+              // M4: no hardcoded fallback — the chat screen passes
+              // saveLabel; this locale-aware fallback only covers
+              // callers that do not (e.g. tests).
+              label: Text(saveLabel ??
+                  (Localizations.localeOf(context).languageCode == 'bn'
+                      ? chatStringsBn['saveQ']!
+                      : chatStringsEn['saveQ']!)),
             ),
         ],
       ),

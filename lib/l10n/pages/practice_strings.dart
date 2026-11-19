@@ -2,8 +2,8 @@
 const Map<String, String> practiceStringsBn = {
   'title': 'প্র্যাকটিস',
   'dailyQuiz': 'দৈনিক কুইজ',
-  'dailyCount': '৫টি প্রশ্ন',
-  'bankNote': 'গাইড MCQ (না থাকলে অনুশীলন ব্যাংক) · বইয়ের প্রশ্ন নয়',
+  'dailyCount': '২০টি প্রশ্ন',
+  'bankNote': 'গাইড MCQ (কম পড়লে নোট + ব্যাংক-বোতাম) · বইয়ের প্রশ্ন নয়',
   'weakTitle': 'দুর্বল টপিক রিভিশন',
   'weakNone': 'এখনো কোনো ভুল নেই — কুইজ দিয়ে শুরু করো',
   'weakUnavailable': 'ভুল উত্তর আছে, কিন্তু রিভিশন প্রশ্ন পাওয়া যায়নি',
@@ -24,8 +24,8 @@ const Map<String, String> practiceStringsBn = {
 const Map<String, String> practiceStringsEn = {
   'title': 'Practice',
   'dailyQuiz': 'Daily Quiz',
-  'dailyCount': '5 questions',
-  'bankNote': 'Guide MCQs (practice bank fallback) · not book questions',
+  'dailyCount': '20 questions',
+  'bankNote': 'Guide MCQs (shortfall note + bank button) · not book questions',
   'weakTitle': 'Weak Topic Revision',
   'weakNone': 'No mistakes yet — start with a quiz',
   'weakUnavailable': 'Wrong answers exist, but no revision questions could be loaded',

@@ -7,26 +7,82 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yes_sir_ai/core/models/backend_models.dart';
+import 'package:yes_sir_ai/core/services/guide_grade_bands.dart';
+import 'package:yes_sir_ai/core/services/model_test_service.dart';
+import 'package:yes_sir_ai/core/services/model_test_set_service.dart';
+import 'package:yes_sir_ai/core/services/resolve_school_class.dart';
 import 'package:yes_sir_ai/core/services/practice_service.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/model_test_results_strings.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class ModelTestResultsScreen extends StatelessWidget {
   const ModelTestResultsScreen({super.key});
 
-  Future<(Attempt?, List<QuizItem>)> _load() async {
+  Future<(Attempt?, List<QuizItem>, _RunGrade?)> _load() async {
     final session = PracticeSession.lastAttempt;
     if (session != null && session.kind == 'model') {
-      return (session, PracticeSession.lastItems);
+      final items = PracticeSession.lastItems;
+      return (session, items, await _banglaGrade(session, items));
     }
     final attempts = await PracticeStore.loadAttempts();
     final models = attempts.where((a) => a.kind == 'model').toList();
-    if (models.isEmpty) return (null, <QuizItem>[]);
+    if (models.isEmpty) return (null, <QuizItem>[], null);
     final last = models.last;
-    final test = practiceService.modelTests().where((t) => t.id == last.testId).toList();
-    return (last, test.isEmpty ? practiceService.modelMath() : test.first.items);
+    final test = modelTestService.modelTests().where((t) => t.id == last.testId).toList();
+    return (last, test.isEmpty ? practiceService.modelMath() : test.first.items, null);
+  }
+
+  /// Bangla guide-set grade for the just-finished run, only when
+  /// every input is genuine: a Bangla guide attempt (testId
+  /// 'guide:<setId>'), bands from the sets action, printed
+  /// per-row marks from the set rows, and a run covering the
+  /// bands' full scale (run max == bands' max). Anything
+  /// missing, null, or mismatched renders nothing — a grade is
+  /// never guessed. Saved-path revisits show no grade: skipped
+  /// items are not stored, so the run's scale cannot be
+  /// re-validated there. Any fetch failure also yields null,
+  /// so a grade problem can never break the results screen.
+  Future<_RunGrade?> _banglaGrade(Attempt attempt, List<QuizItem> items) async {
+    try {
+      if (attempt.subject != 'bangla' || !attempt.testId.startsWith('guide:')) return null;
+      final setId = attempt.testId.substring('guide:'.length);
+      if (setId.isEmpty || items.isEmpty) return null;
+      final schoolClass = await resolveSchoolClass();
+      final infos = await modelTestSetService.fetchSetsFromServer('bangla', schoolClass: schoolClass);
+      if (infos == null) return null;
+      final matches = infos.where((i) => i.setId == setId).toList();
+      if (matches.isEmpty) return null;
+      final bands = matches.first.gradeBands;
+      if (bands == null || bands.isEmpty) return null;
+      final rows = await modelTestSetService.fetchSetRows('bangla', setId, schoolClass: schoolClass);
+      if (rows == null) return null;
+      final marksById = <String, int>{};
+      for (final r in rows) {
+        if (r.marks != null) marksById[r.id] = r.marks!;
+      }
+      var total = 0;
+      var max = 0;
+      for (final q in items) {
+        final m = marksById[q.id];
+        if (m == null) return null;
+        max += m;
+        final a = attempt.answers[q.id];
+        if (a != null && q.isCorrect(a)) total += m;
+      }
+      var bandMax = 0;
+      for (final r in bands.values) {
+        if (r.length == 2 && r[1] > bandMax) bandMax = r[1];
+      }
+      if (max != bandMax) return null;
+      final letter = gradeForScore(bands, total);
+      if (letter == null) return null;
+      return _RunGrade(letter, total, max);
+    } catch (_) {
+      return null;
+    }
   }
 
   String _fmt(int sec) => '${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}';
@@ -41,7 +97,7 @@ class ModelTestResultsScreen extends StatelessWidget {
       // Cleared at once: revisiting results later must not re-show it.
       final timeUp = PracticeSession.timeUpAutoSubmit;
       PracticeSession.timeUpAutoSubmit = false;
-      return Scaffold(
+      return ThemedScaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -49,10 +105,11 @@ class ModelTestResultsScreen extends StatelessWidget {
           ),
           title: Text(s['title']!),
         ),
-        body: FutureBuilder<(Attempt?, List<QuizItem>)>(future: _load(), builder: (context, snap) {
+        body: FutureBuilder<(Attempt?, List<QuizItem>, _RunGrade?)>(future: _load(), builder: (context, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final attempt = snap.data!.$1;
           final items = snap.data!.$2;
+          final grade = snap.data!.$3;
           if (attempt == null) {
             return ListView(padding: const EdgeInsets.all(16), children: [
               Text(s['noResult']!, style: Theme.of(context).textTheme.headlineMedium),
@@ -66,7 +123,7 @@ class ModelTestResultsScreen extends StatelessWidget {
           final weak = <String>{};
           for (final q in items) {
             final a = attempt.answers[q.id];
-            if (a != null && a != q.correctIndex) weak.add(practiceService.chapterOf(q.id, bangla));
+            if (a != null && !q.isCorrect(a)) weak.add(practiceService.chapterOf(q.id, bangla));
           }
           return ListView(padding: const EdgeInsets.all(16), children: [
             if (timeUp)
@@ -81,12 +138,18 @@ class ModelTestResultsScreen extends StatelessWidget {
             if (timeUp) const SizedBox(height: 12),
             ScoreHeader(score: '${attempt.correct} / ${attempt.total}', total: '${attempt.percent}% • +${attempt.xp} XP', message: s['message']!),
             const SizedBox(height: 12),
+            if (grade != null)
+              Card(
+                  child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text("${s['grade']!}: ${grade.letter} (${grade.total}/${grade.max})"))),
+            if (grade != null) const SizedBox(height: 12),
             Row(children: [
-              Expanded(child: PracticeCard(title: '${s['correct']!}: ${attempt.correct}')),
+              Expanded(child: PracticeCard(title: '${attempt.correct}', subtitle: s['correct']!)),
               const SizedBox(width: 8),
-              Expanded(child: PracticeCard(title: '${s['wrong']!}: $wrong')),
+              Expanded(child: PracticeCard(title: '$wrong', subtitle: s['wrong']!)),
               const SizedBox(width: 8),
-              Expanded(child: PracticeCard(title: '${s['skipped']!}: $skipped')),
+              Expanded(child: PracticeCard(title: '$skipped', subtitle: s['skipped']!)),
             ]),
             const SizedBox(height: 12),
             Text("${s['timeUsed']!}: ${_fmt(attempt.seconds)}", style: Theme.of(context).textTheme.bodySmall),
@@ -111,13 +174,13 @@ class ModelTestResultsScreen extends StatelessWidget {
               final flaggedMark = attempt.flagged.contains(q.id) ? " · ${s['flaggedLabel']!}" : '';
               final sub = (a == null
                   ? s['skippedLabel']!
-                  : "${s['yourAnswer']!}: ${q.options[a]} · ${s['correctAnswer']!}: ${q.options[q.correctIndex]}") + flaggedMark;
-              return PracticeCard(title: bangla ? q.questionBn : q.questionEn, subtitle: sub,
-                  icon: a == null ? Icons.remove_circle_outline : (a == q.correctIndex ? Icons.check_circle : Icons.cancel));
+                  : "${s['yourAnswer']!}: ${q.options[a]} · ${s['correctAnswer']!}: ${q.acceptedOptionTexts.join(' / ')}") + flaggedMark;
+              return PracticeCard(title: bangla ? q.questionBn : q.questionEn, subtitle: sub, maxTitleLines: null,
+                  icon: a == null ? Icons.remove_circle_outline : (q.isCorrect(a) ? Icons.check_circle : Icons.cancel));
             }()),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: () {
-              final test = practiceService.modelTests().where((t) => t.id == attempt.testId).toList();
+              final test = modelTestService.modelTests().where((t) => t.id == attempt.testId).toList();
               if (test.isNotEmpty) {
                 PracticeSession.modelTestId = test.first.id;
                 PracticeSession.modelSubject = test.first.subject;
@@ -135,4 +198,12 @@ class ModelTestResultsScreen extends StatelessWidget {
       );
     });
   }
+}
+
+/// One graded Bangla guide run: the printed grade letter plus
+/// the mark total it came from, so the grade is checkable.
+class _RunGrade {
+  final String letter;
+  final int total, max;
+  const _RunGrade(this.letter, this.total, this.max);
 }

@@ -7,16 +7,42 @@
 // call moved server-side. GenResult.keyMissing tells callers the
 // Edge secret is not set, so the UI shows an honest error instead
 // of a fabricated answer. Null text = call failed / empty reply.
+// Provider option (2026-11-04): saved provider (openrouter
+// default, or gemini) is sent to Edge Mode GEN with every call.
+// Class/file name unchanged: still the single choke point for
+// all AI text; only the provider field was added.
+// Attribution (2026-11-04): GenResult now also carries the
+// provider + model the Edge response itself reported. A
+// response without those fields (stale deploy) stays
+// 'unknown' — never inferred from the saved setting.
 import 'dart:convert';
 import 'dart:io';
 
 import '../models/backend_models.dart';
+import 'ai_provider_service.dart';
 import 'app_config.dart';
+import 'structured_prompts.dart';
 
+/// Attribution from the Edge response itself — never the
+/// provider the user merely selected. 'unknown' means the
+/// Edge deploy predates attribution (it answered, but did
+/// not say with what); callers must show that honestly,
+/// never guess 'gemini' from the saved setting.
 class GenResult {
   final String? text;
   final bool keyMissing;
-  const GenResult({this.text, this.keyMissing = false});
+
+  /// 'openrouter' | 'gemini' | 'unknown'.
+  final String provider;
+
+  /// Model that actually answered, or null when unknown.
+  final String? model;
+  const GenResult({
+    this.text,
+    this.keyMissing = false,
+    this.provider = 'unknown',
+    this.model,
+  });
 }
 
 class OpenRouterClient {
@@ -45,6 +71,20 @@ class OpenRouterClient {
       ..writeln('Chapter ${ctx.chapterNumber}: ${ctx.chapterTitle}')
       ..writeln('Page ${ctx.page}, Question ${ctx.problem}')
       ..writeln('Book question (verbatim): ${ctx.questionText}');
+    // 2026-11-03 chat fix: the old prompt carried ONLY the
+    // question line (plus chapter chunks) — no options, no key,
+    // and a stimulus fused into the question text. A bare-word
+    // MCQ ("shriek") therefore read as "only stimulus given, no
+    // question". Every field is now its own labeled block via
+    // the shared helpers (same wording as the structured prompt).
+    final stimBlock = stimulusPromptBlock(ctx);
+    if (stimBlock.isNotEmpty) userContent.write(stimBlock);
+    userContent.write(optionsPromptBlock(ctx));
+    if (ctx.answerKey.isNotEmpty) {
+      final correct = ctx.correctOptionText;
+      userContent.writeln('Verified correct answer: ${ctx.answerKey}'
+          '${correct == null ? '' : " — exact text: '$correct'"}');
+    }
     // Phase 3 chunk grounding: at most 3 chunks, each cited
     // with its own book page range. Chunks are OCR chapter
     // text for context only — never quoted to the student
@@ -79,10 +119,16 @@ class OpenRouterClient {
     return _generate(
       systemPrompt: 'You are a school teacher. Explain ONLY the '
           'given textbook question, in the requested style, in '
-          '${bangla ? 'Bangla' : 'English'}. Write every math '
+          '${bangla ? 'Bangla' : 'English'}. '
+          '${bangla ? 'Write EVERYTHING in Bangla, in easy simple '
+          'words a class 9 student understands. ' : ''}'
+          'Write every math '
           'formula in LaTeX wrapped in \$...\$ delimiters so it '
           'renders as typeset math, never caret-text. Use only the book '
           'context given. Do not invent a different question. '
+          'When options are listed, quote them EXACTLY as '
+          'written; never paraphrase, substitute, or invent '
+          'option wording. '
           'Never claim chapter-text grounding when no chapter '
           'text was given. If the context is not enough to '
           'answer, say so plainly instead of guessing. '
@@ -101,7 +147,8 @@ class OpenRouterClient {
 
   /// POST prompts to Edge Mode GEN. Non-200 / bad body / empty
   /// text = generic failure; the Edge's 'openrouter-key-missing'
-  /// error maps to keyMissing so callers report it honestly.
+  /// and 'gemini-key-missing' errors map to keyMissing so
+  /// callers report them honestly.
   /// Per-call cap (2026-11-01 diagnosis): one GEN call is capped
   /// at 55s total, so a slow free-model call fails fast enough
   /// for the caller's trimmed retry to still run inside the
@@ -115,6 +162,9 @@ class OpenRouterClient {
   }) async {
     final url = AppConfig.explainEndpoint;
     if (url.isEmpty) return const GenResult();
+    // Saved provider (openrouter default); a failed read also
+    // yields openrouter inside the service, never a crash.
+    final provider = await aiProviderService.load();
     final client = HttpClient();
     try {
       return await _generateInner(
@@ -122,6 +172,7 @@ class OpenRouterClient {
         url: url,
         systemPrompt: systemPrompt,
         userPrompt: userPrompt,
+        provider: provider,
       ).timeout(const Duration(seconds: 55));
     } catch (_) {
       return const GenResult();
@@ -135,6 +186,7 @@ class OpenRouterClient {
     required String url,
     required String systemPrompt,
     required String userPrompt,
+    required String provider,
   }) async {
     final req = await client.postUrl(Uri.parse(url));
     req.headers.set('Authorization', 'Bearer ${AppConfig.supabaseAnonKey}');
@@ -144,18 +196,28 @@ class OpenRouterClient {
       'generate': true,
       'systemPrompt': systemPrompt,
       'userPrompt': userPrompt,
+      'provider': provider,
     })));
     final res = await req.close();
     final body = await res.transform(utf8.decoder).join();
     final data = jsonDecode(body);
     if (data is Map<String, dynamic>) {
-      if (data['error'] == 'openrouter-key-missing') {
+      if (data['error'] == 'openrouter-key-missing' ||
+          data['error'] == 'gemini-key-missing') {
         return const GenResult(keyMissing: true);
       }
       if (res.statusCode == 200 && data['generated'] == true) {
         final text = data['text'];
         if (text is String && text.isNotEmpty) {
-          return GenResult(text: text);
+          final provider = data['provider'];
+          final model = data['model'];
+          return GenResult(
+            text: text,
+            provider: provider is String && provider.isNotEmpty
+                ? provider
+                : 'unknown',
+            model: model is String && model.isNotEmpty ? model : null,
+          );
         }
       }
     }

@@ -38,6 +38,12 @@ class AppConfig {
   static const emailConfirmationRedirectTo =
       'com.yessirai.app://email-confirmed';
 
+  /// Deep-link target for the Google OAuth callback. Same scheme
+  /// filter as the other two links (see AndroidManifest.xml), so
+  /// the browser returns to the app and the SDK emits signedIn.
+  /// Must also be allow-listed in Supabase Auth URL Configuration.
+  static const googleOAuthRedirectTo = 'com.yessirai.app://login-callback';
+
   /// Guide bank gate (FREE since user order 2026-10-30; premium
   /// decision deferred): how many guide questions per chapter a
   /// free user may open. -1 = free-open (whole bank, no paywall);

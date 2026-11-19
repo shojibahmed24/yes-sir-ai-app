@@ -12,6 +12,7 @@ import 'package:yes_sir_ai/features/learn/widgets/solution_blocks.dart';
 import 'package:yes_sir_ai/features/learn/widgets/solution_renderer.dart';
 import 'package:yes_sir_ai/features/learn/widgets/solution_source_chips.dart';
 import 'package:yes_sir_ai/theme/app_theme.dart';
+import 'package:yes_sir_ai/theme/app_tokens.dart';
 
 double _lum(Color c) {
   double ch(int v) {
@@ -58,6 +59,7 @@ Widget _renderer(Key key) => MaterialApp(
             fontSize: 16,
             s: _s,
             marksPrinted: false,
+            isMcq: true,
             questionText: 'মূল প্রশ্নের লেখা এখানে।',
             questionLabel: 'বইয়ের প্রশ্ন (হুবহু)',
             explanationLabel: 'AI ব্যাখ্যা (বইয়ের ভিত্তিতে)',
@@ -194,10 +196,10 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('বইয়ের প্রশ্ন (হুবহু)').first);
     await tester.pump();
-    expect(find.text('মূল প্রশ্নের লেখা এখানে।'), findsOneWidget);
+    expect(find.text('মূল প্রশ্নের লেখা এখানে।', findRichText: true), findsOneWidget);
     await tester.pumpWidget(_renderer(const ValueKey('q2')));
     await tester.pump();
-    expect(find.text('মূল প্রশ্নের লেখা এখানে।'), findsNothing);
+    expect(find.text('মূল প্রশ্নের লেখা এখানে।', findRichText: true), findsNothing);
     final rich = tester.widgetList<RichText>(find.byType(RichText));
     expect(
       rich.any((w) => w.text.toPlainText().contains('সারাংশের লেখা')),
@@ -222,7 +224,7 @@ void main() {
     final light = AppTheme.light();
     final dark = AppTheme.dark();
     expect(light.cardTheme.color, AppTheme.card);
-    expect(dark.cardTheme.color, const Color(0xFF334155));
+    expect(dark.cardTheme.color, DarkPalette.surface);
     expect(
       light.textButtonTheme.style?.foregroundColor?.resolve({}),
       AppTheme.primaryDark,

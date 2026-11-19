@@ -36,6 +36,9 @@ class _Step09OtpState extends State<Step09Otp> with RegLangMixin {
 
   @override
   void dispose() {
+    for (final c in _boxes) {
+      c.dispose();
+    }
     _cooldownTimer?.cancel();
     super.dispose();
   }
@@ -108,7 +111,10 @@ class _Step09OtpState extends State<Step09Otp> with RegLangMixin {
             ),
           ),
           if (_error != null)
-            Text(_error!, style: const TextStyle(color: AppTheme.error)),
+            Text(_error!,
+                style: TextStyle(
+                    color: AppTheme.errorTextFor(Theme.of(context).brightness == Brightness.dark),
+                    fontWeight: FontWeight.w600)),
         ],
       ),
     );

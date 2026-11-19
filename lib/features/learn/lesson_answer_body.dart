@@ -35,6 +35,8 @@ class LessonAnswerBody extends StatelessWidget {
     required this.marksPrinted,
     required this.onStyle,
     required this.onPractice,
+    this.aiProvider = 'unknown',
+    this.aiModel,
   });
   final Map<String, String> s;
   final LessonSelection sel;
@@ -55,6 +57,12 @@ class LessonAnswerBody extends StatelessWidget {
   final bool marksPrinted;
   final void Function(String style) onStyle;
   final void Function() onPractice;
+
+  /// Attribution from the Edge response for the AI text
+  /// rendered here (see GenResult); 'unknown' on a stale
+  /// deploy. Never the selected provider.
+  final String aiProvider;
+  final String? aiModel;
 
   List<String> _chips() {
     if (!showSourceChips) return [];
@@ -113,6 +121,7 @@ class LessonAnswerBody extends StatelessWidget {
         // C3: renderer state resets when the question changes.
         key: ValueKey('lesson:${sel.key}:$questionText'),
         solution: solution,
+        isMcq: false, // Lesson problems are never MCQ.
         fallbackText: fallbackText,
         sourceChips: _chips(),
         fontSize: fontSize,
@@ -125,6 +134,8 @@ class LessonAnswerBody extends StatelessWidget {
         explanationLabel: isGuide
             ? s['sourceAiExplanation']!
             : s['sourceAiBook']!,
+        aiProvider: aiProvider,
+        aiModel: aiModel,
       );
     }
     if (displayText != null) {

@@ -51,6 +51,13 @@ class _Step07ContactState extends State<Step07Contact> with RegLangMixin {
       TextEditingController(text: registrationDataNotifier.value.email);
   String? _error;
 
+  @override
+  void dispose() {
+    _phone.dispose();
+    _email.dispose();
+    super.dispose();
+  }
+
   // Phase 17 (L6): basic format checks only — no SMS/email is
   // actually sent from this step. Phone: 11 digits starting 01, or
   // +880 followed by a 1… number (digits only, spaces/dashes ignored).
@@ -114,7 +121,10 @@ class _Step07ContactState extends State<Step07Contact> with RegLangMixin {
               keyboardType: TextInputType.emailAddress),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppTheme.error)),
+            Text(_error!,
+                style: TextStyle(
+                    color: AppTheme.errorTextFor(Theme.of(context).brightness == Brightness.dark),
+                    fontWeight: FontWeight.w600)),
           ],
         ],
       ),

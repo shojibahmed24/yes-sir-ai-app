@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yes_sir_ai/core/models/guide_bank_model.dart';
 import 'package:yes_sir_ai/core/services/structured_explanation_service.dart';
 import 'package:yes_sir_ai/features/learn/widgets/guide_answer_body.dart';
+import 'package:yes_sir_ai/features/learn/widgets/guide_explanation_section.dart';
 import 'package:yes_sir_ai/l10n/pages/guide_bank_strings.dart';
 import 'package:yes_sir_ai/l10n/pages/lesson_strings.dart';
 
@@ -38,7 +39,13 @@ GuideAnswerBody buildBody({
     stepsOnly: false,
     onExplainDetailed: () {},
     onExplainSteps: () {},
-    onRetry: () {},
+    explanation: ExplanationSectionInput(
+      requested: true,
+      pending: false,
+      unavailable: false,
+      onRequest: () {},
+      onRetry: () {},
+    ),
     subjectId: 'math',
     chapterNumber: 1,
     bn: true,

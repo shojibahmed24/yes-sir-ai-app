@@ -12,6 +12,7 @@ import 'package:yes_sir_ai/features/practice/practice_store.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/saved_questions_strings.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class SavedQuestionsScreen extends StatefulWidget {
   const SavedQuestionsScreen({super.key});
@@ -40,17 +41,17 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
       final s = locale.languageCode == 'bn' ? savedQuestionsStringsBn : savedQuestionsStringsEn;
       final bangla = locale.languageCode == 'bn';
       if (_loading) {
-        return Scaffold(appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/profile')), title: Text(s['title']!)), body: const Center(child: CircularProgressIndicator()));
+        return ThemedScaffold(appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/profile')), title: Text(s['title']!)), body: const Center(child: CircularProgressIndicator()));
       }
       if (_ids.isEmpty) {
-        return Scaffold(appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/profile')), title: Text(s['title']!)), body: ListView(padding: const EdgeInsets.all(16), children: [
+        return ThemedScaffold(appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/profile')), title: Text(s['title']!)), body: ListView(padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom), children: [
           Text(s['empty']!, style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 8), Text(s['emptySub']!),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: () => context.go('/practice'), child: Text(s['startPractice']!)),
         ]));
       }
-      return Scaffold(
+      return ThemedScaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -58,7 +59,7 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
           ),
           title: Text(s['title']!),
         ),
-        body: ListView(padding: const EdgeInsets.all(16), children: [
+        body: ListView(padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom), children: [
           Text('${_ids.length} ${s['savedSuffix']!}', style: Theme.of(context).textTheme.bodyMedium),
           // Phase 16 (M10): honest sync label. Cloud sync is
           // attempted only with a signed-in Supabase user; without
@@ -97,17 +98,17 @@ class _SavedCard extends StatelessWidget {
         // (SolutionBlocks consumes ** and | but not ``` fences).
         content: SingleChildScrollView(
           child: SolutionBlocks(
-            text: ('${bangla ? q.questionBn : q.questionEn}\n\n${s['solution']!}: ${q.options[q.correctIndex]}\n${practiceService.explanation(id, bangla)}')
+            text: ('${bangla ? q.questionBn : q.questionEn}\n\n${s['solution']!}: ${q.acceptedOptionTexts.join(' / ')}\n${practiceService.explanation(id, bangla)}')
                 .split('\n')
                 .where((line) => !line.trim().startsWith('```'))
                 .join('\n'),
             fontSize: 16,
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(s['close']!))],
       )),
       // H4: a Row of two buttons cannot shrink under PracticeCard's
-      // 140px trailing cap (it would overflow sideways), so stack the
+      // 150px trailing cap (it would overflow sideways), so stack the
       // two actions vertically; the widest button fits inside the cap.
       trailing: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [
         if (q != null) TextButton(onPressed: () {

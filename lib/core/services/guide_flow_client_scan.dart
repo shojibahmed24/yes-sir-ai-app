@@ -126,3 +126,55 @@ Future<GuideFlowJump> guideFlowClientJump({
   return const GuideFlowJump(
       question: null, outcome: GuideFlowJumpOutcome.notFound);
 }
+
+/// D1 (Phase-5) page fallback: the new server echoes a type
+/// section but reports total 0 — the chapter may still hold
+/// rows of that type with section NULL (class 7/8). Returns
+/// the client-scan page, or null when the fallback does not
+/// apply (lesson lists keep the server answer — the scan
+/// cannot filter by lesson).
+Future<GuideFlowPage?> guideFlowTypeFallbackPage({
+  required GuideFlowPost fetch,
+  required String subject,
+  required int schoolClass,
+  required int chapter,
+  required SearchFlowType type,
+  required String? lesson,
+  required int? total,
+  required String typeSection,
+  required int scanOffset,
+}) async {
+  if (total != 0 || lesson != null || typeSection.isEmpty) return null;
+  return guideFlowClientPage(
+      fetch: fetch,
+      subject: subject,
+      schoolClass: schoolClass,
+      chapter: chapter,
+      type: type,
+      lesson: lesson,
+      scanOffset: scanOffset);
+}
+
+/// D1 (Phase-5) jump fallback: same empty-type case as the
+/// page fallback, for positional jumps. Returns null when
+/// the fallback does not apply.
+Future<GuideFlowJump?> guideFlowTypeFallbackJump({
+  required GuideFlowPost fetch,
+  required String subject,
+  required int schoolClass,
+  required int chapter,
+  required SearchFlowType type,
+  required String? lesson,
+  required String typeSection,
+  required int position,
+}) async {
+  if (lesson != null || typeSection.isEmpty) return null;
+  return guideFlowClientJump(
+      fetch: fetch,
+      subject: subject,
+      schoolClass: schoolClass,
+      chapter: chapter,
+      type: type,
+      lesson: lesson,
+      position: position);
+}

@@ -10,18 +10,22 @@
 // been chosen yet. Null class shows an honest choose-class state
 // instead of pretending Class 6.
 //
-// Step-4 tile-count fix (server wins): the grid is stateful and
-// revalidates in the background on every mount — it shows the
-// cached list immediately, then drops the cache entry, refetches
-// from the server, and REPLACES the list when the fresh result
-// differs. A stale or partial cached guideChapterCount can
-// therefore never survive past one home visit. (Companion fix:
-// subjectsAsync never caches an incomplete guide enrichment.)
+// Cache-once grid: on mount it shows the PERSISTED last-good
+// list instantly (no spinner, no server fetch). A fresh fetch
+// happens only on first-ever load, on profile-class change, or
+// on an explicit refresh (Subjects screen) — never on every
+// mount, never periodically. A failed refresh keeps the old list
+// silently and must never produce the empty state; the honest
+// load-failed state (with retry) renders only when no saved list
+// exists and the fetch fails. (Companion rules: only complete
+// enrichments are persisted; DEMO fallbacks never are.)
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/models/backend_models.dart';
 import '../../../core/services/books_service.dart';
+import '../../../l10n/pages/home_strings.dart';
 import '../../../theme/staggered_list.dart';
+import '../home_design.dart';
 import 'home_subject_tile.dart';
 
 /// Home-visible subjects: every unlocked subject, plus locked
@@ -35,14 +39,26 @@ import 'home_subject_tile.dart';
 List<SubjectInfo> visibleHomeSubjects(List<SubjectInfo> all) =>
     all.where((x) => !x.locked || x.hasGuide).toList();
 
-/// Tile subtitle: guide-only subjects show their GUIDE chapter
-/// count (labelled as guide, never passed off as textbook
-/// chapters); textbook subjects show their textbook count.
+/// Tile subtitle: guide-only subjects show their GUIDE count
+/// (chapters, else model-test sets, else a generic guide note —
+/// labelled as guide, never passed off as textbook chapters);
+/// textbook subjects show their textbook count.
 String _tileLabel(SubjectInfo s, bool bn) {
   if (s.locked && s.hasGuide) {
+    if (s.guideSetCount > 0) {
+      final suffix = bn
+          ? homeStringsBn['guideSets']!
+          : homeStringsEn['guideSets']!;
+      return bn ? '${s.guideSetCount}$suffix' : '${s.guideSetCount} $suffix';
+    }
+    if (s.guideChapterCount > 0) {
+      return bn
+          ? '${s.guideChapterCount}টি গাইড অধ্যায়'
+          : '${s.guideChapterCount} guide chapters';
+    }
     return bn
-        ? '${s.guideChapterCount}টি গাইড অধ্যায়'
-        : '${s.guideChapterCount} guide chapters';
+        ? homeStringsBn['guideAvailable']!
+        : homeStringsEn['guideAvailable']!;
   }
   return bn ? '${s.chapterCount}টি অধ্যায়' : '${s.chapterCount} chapters';
 }
@@ -52,10 +68,13 @@ bool _sameSubjects(List<SubjectInfo> a, List<SubjectInfo> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     final x = a[i], y = b[i];
-    if (x.id != y.id || x.nameBn != y.nameBn || x.locked != y.locked ||
+    if (x.id != y.id ||
+        x.nameBn != y.nameBn ||
+        x.locked != y.locked ||
         x.hasGuide != y.hasGuide ||
         x.chapterCount != y.chapterCount ||
-        x.guideChapterCount != y.guideChapterCount) {
+        x.guideChapterCount != y.guideChapterCount ||
+        x.guideSetCount != y.guideSetCount) {
       return false;
     }
   }
@@ -72,6 +91,7 @@ class HomeSubjectGrid extends StatefulWidget {
     required this.chooseClassTitle,
     required this.chooseClassBody,
     required this.chooseClassAction,
+    this.service,
   });
   final bool bn;
   final int? schoolClass;
@@ -81,12 +101,16 @@ class HomeSubjectGrid extends StatefulWidget {
   final String chooseClassBody;
   final String chooseClassAction;
 
+  /// Overridable for tests; production uses the global service.
+  final BooksService? service;
+
   @override
   State<HomeSubjectGrid> createState() => _HomeSubjectGridState();
 }
 
 class _HomeSubjectGridState extends State<HomeSubjectGrid> {
   List<SubjectInfo>? _subjects;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -100,6 +124,7 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
     if (oldWidget.schoolClass != widget.schoolClass ||
         oldWidget.bn != widget.bn) {
       _subjects = null;
+      _loadFailed = false;
       _load();
     }
   }
@@ -107,19 +132,33 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
   Future<void> _load() async {
     final cls = widget.schoolClass;
     if (cls == null) return;
-    // First paint: cached list if any (fast), then background
-    // revalidation — the fresh server list replaces the cached
-    // one whenever it differs, so a stale count never persists.
-    final first = await booksService.subjectsAsync(cls, widget.bn)
-        .catchError((_) => <SubjectInfo>[]);
+    final svc = widget.service ?? booksService;
+    // Cache-once: a saved list shows instantly and no server
+    // fetch runs at all on this mount.
+    final cached = await svc.loadPersistedSubjects(cls, widget.bn);
     if (!mounted) return;
-    setState(() => _subjects = first);
-    booksService.invalidateSubjectsCache(cls, widget.bn);
-    final fresh = await booksService.subjectsAsync(cls, widget.bn)
-        .catchError((_) => <SubjectInfo>[]);
+    if (cached != null && cached.isNotEmpty) {
+      setState(() {
+        _subjects = cached;
+        _loadFailed = false;
+      });
+      return;
+    }
+    // First-ever load (or a class with no saved list): fetch.
+    // A failure keeps _subjects null so the honest load-failed
+    // state renders — never the DEMO fallback disguised as
+    // "no subjects".
+    final result = await svc.fetchSubjectsFresh(cls, widget.bn);
     if (!mounted) return;
-    if (!_sameSubjects(first, fresh)) {
-      setState(() => _subjects = fresh);
+    if (result.kind == SubjectsFetchKind.failed) {
+      if (_subjects == null) setState(() => _loadFailed = true);
+      return;
+    }
+    if (_subjects == null || !_sameSubjects(_subjects!, result.subjects)) {
+      setState(() {
+        _subjects = result.subjects;
+        _loadFailed = false;
+      });
     }
   }
 
@@ -145,7 +184,26 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
       );
     }
     final subjects = _subjects;
-    if (subjects == null) return Text(widget.loadingLabel);
+    if (subjects == null) {
+      // Load-failed state: no saved list AND the fetch failed.
+      // This is a load failure, never "no subjects" — the server
+      // never said the class has no subjects.
+      if (_loadFailed) {
+        final strings = widget.bn ? homeStringsBn : homeStringsEn;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(strings['subjectsLoadFailed']!),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _load,
+              child: Text(strings['subjectsRetry']!),
+            ),
+          ],
+        );
+      }
+      return Text(widget.loadingLabel);
+    }
     final visible = visibleHomeSubjects(subjects);
     if (visible.isEmpty) return Text(widget.noSubjectsLabel);
     // Batch 2, item 2: the old GridView fixed every tile height
@@ -159,23 +217,23 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
     return StaggeredList(
       children: [
         for (var r = 0; r < visible.length; r += 2) ...[
-          if (r > 0) const SizedBox(height: 12),
+          if (r > 0) const SizedBox(height: HomeDesign.cardGap),
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
                   child: HomeSubjectTile(
-                    name: visible[r].name(widget.bn),
+                    name: paperSubjectName(visible[r].id, visible[r].name(widget.bn), widget.bn, widget.schoolClass),
                     chaptersLabel: _tileLabel(visible[r], widget.bn),
                     subjectId: visible[r].id,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: HomeDesign.cardGap),
                 if (r + 1 < visible.length)
                   Expanded(
                     child: HomeSubjectTile(
-                      name: visible[r + 1].name(widget.bn),
+                      name: paperSubjectName(visible[r + 1].id, visible[r + 1].name(widget.bn), widget.bn, widget.schoolClass),
                       chaptersLabel: _tileLabel(visible[r + 1], widget.bn),
                       subjectId: visible[r + 1].id,
                     ),

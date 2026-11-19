@@ -1,10 +1,11 @@
-// Quiz resilience: a failing book probe or guide fetch must NEVER
-// abort the quiz — the labelled bank fallback runs instead, and
-// only a (local, sync, ~never-failing) bank failure may surface
-// as an error. Guide throw/hang are injected through the
-// PracticeService seam methods, so guide_quiz_service.dart itself
-// is untouched. Scoring, pool filtering and the 5-item size are
-// asserted unchanged (guide path returns its own items verbatim).
+// Quiz resilience (Phase 2, plan §2 step 2 — the silent bank
+// fallback is GONE): a failing book probe or guide fetch must
+// NEVER abort the quiz future, but it must also NEVER silently
+// substitute the bank. The service returns an empty guide set
+// with shortfall 20 (the screen asks the user about a bank
+// set); a short guide set ships verbatim with its shortfall.
+// Guide throw/hang are injected through the PracticeService
+// seam methods, so guide_quiz_service.dart itself is untouched.
 // NOTE on busy flags: the screens' private _startingDaily /
 // _startingSubject flags cannot be driven to a throw from a widget
 // test (the real guide singleton + profile read do not throw in
@@ -98,63 +99,72 @@ class _GuideFullService extends PracticeService {
 }
 
 void main() {
-  test('book-probe throw still yields a quiz, count 0', () async {
+  test('book-probe throw still completes: empty guide set, ask', () async {
     final gen = await _ProbeThrowingService().generateDailyQuiz(
         subject: 'math', schoolClass: 6, bangla: true);
-    expect(gen.items.length, 5);
-    expect(gen.source, QuestionSource.bankFallback);
+    expect(gen.items, isEmpty);
+    expect(gen.source, QuestionSource.guide);
+    expect(gen.guideShortfall, 20);
     expect(gen.bookQuestionsIndexed, 0);
   });
 
-  test('guide throw yields bank fallback, 5 items', () async {
+  test('guide throw yields an empty guide set, never silent bank',
+      () async {
     final gen = await _GuideThrowingService().generateDailyQuiz(
         subject: 'math', schoolClass: 6, bangla: true);
-    expect(gen.items.length, 5);
-    expect(gen.source, QuestionSource.bankFallback);
+    expect(gen.items, isEmpty);
+    expect(gen.source, QuestionSource.guide);
+    expect(gen.guideShortfall, 20);
   });
 
-  test('guide hang yields bank fallback via the service timeout',
+  test('guide hang yields an empty guide set via the timeout',
       () async {
     final gen = await _GuideHangingService().generateDailyQuiz(
         subject: 'math', schoolClass: 6, bangla: true,
         guideTimeout: const Duration(milliseconds: 100));
-    expect(gen.items.length, 5);
-    expect(gen.source, QuestionSource.bankFallback);
+    expect(gen.items, isEmpty);
+    expect(gen.source, QuestionSource.guide);
+    expect(gen.guideShortfall, 20);
   });
 
-  test('guide < 5 items yields bank fallback, never a short quiz',
-      () async {
+  test('guide 2 items ships verbatim with shortfall 18', () async {
     final gen = await _GuidePartialService().generateDailyQuiz(
         subject: 'math', schoolClass: 6, bangla: true);
-    expect(gen.items.length, 5);
-    expect(gen.source, QuestionSource.bankFallback);
+    expect(gen.items.map((q) => q.id).toList(), ['g0', 'g1']);
+    expect(gen.source, QuestionSource.guide);
+    expect(gen.guideShortfall, 18);
   });
 
-  test('guide >= 5 items still wins, verbatim, scoring untouched',
+  test('guide 5 items still wins, verbatim, scoring untouched',
       () async {
     final gen = await _GuideFullService().generateDailyQuiz(
         subject: 'math', schoolClass: 6, bangla: true);
     expect(gen.source, QuestionSource.guide);
     expect(gen.items.map((q) => q.id).toList(),
         ['g0', 'g1', 'g2', 'g3', 'g4']);
+    expect(gen.guideShortfall, 15);
     expect(gen.items.every((q) => q.correctIndex == 0), isTrue);
     expect(gen.items.every((q) => q.options.length == 4), isTrue);
   });
 
-  test('subject practice: guide throw yields bank fallback', () async {
+  test('subject practice: guide throw yields an empty guide set',
+      () async {
     final gen = await _GuideThrowingService().generatePracticeQuiz(
         subject: 'math', schoolClass: 6, bangla: true);
-    expect(gen.items.length, 5);
-    expect(gen.source, QuestionSource.bankFallback);
+    expect(gen.items, isEmpty);
+    expect(gen.source, QuestionSource.guide);
+    expect(gen.guideShortfall, 20);
     expect(gen.bookQuestionsIndexed, 0);
   });
 
-  test('subject practice: guide hang yields bank fallback', () async {
+  test('subject practice: guide hang yields an empty guide set',
+      () async {
     final gen = await _GuideHangingService().generatePracticeQuiz(
         subject: 'math', schoolClass: 6, bangla: true,
         guideTimeout: const Duration(milliseconds: 100));
-    expect(gen.items.length, 5);
-    expect(gen.source, QuestionSource.bankFallback);
+    expect(gen.items, isEmpty);
+    expect(gen.source, QuestionSource.guide);
+    expect(gen.guideShortfall, 20);
   });
 
   test('progress string exists in both locales', () {
@@ -162,7 +172,8 @@ void main() {
     expect(practiceStringsEn['preparingGuide'], isNotEmpty);
   });
 
-  testWidgets('edited daily button still lands on a 5-item quiz',
+  testWidgets(
+      'edited daily button asks before a bank set, then lands on a 5-item quiz',
       (WidgetTester t) async {
     SharedPreferences.setMockInitialValues({});
     PracticeSession.selectedSubject = 'math';
@@ -188,6 +199,11 @@ void main() {
     await t.pumpWidget(MaterialApp.router(routerConfig: router));
     await t.pumpAndSettle();
     await t.tap(find.text('কুইজ শুরু করো'));
+    await t.pumpAndSettle();
+    // No server in tests -> guide empty -> the dialog asks
+    // before any bank set starts (never silent substitution).
+    expect(find.text('ব্যাংক-সেট দিয়ে শুরু করো'), findsOneWidget);
+    await t.tap(find.text('ব্যাংক-সেট দিয়ে শুরু করো'));
     await t.pumpAndSettle();
     expect(find.textContaining('QUIZ 5 items'), findsOneWidget);
   });

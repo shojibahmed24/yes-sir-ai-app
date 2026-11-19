@@ -1,6 +1,7 @@
 // Route: /home — HomeDashboard, Stitch home_dashboard_1 + _2.
-// REAL behaviour: hero continues the LAST saved lesson (or Search
-// when none exists); stats are LearnStore lesson/chapter counts
+// REAL behaviour: hero continues the LAST saved lesson (or the
+// new search flow when none exists); stats are LearnStore
+// lesson/chapter counts
 // plus LocalStore's saved count (the Saved/Profile source — 0
 // fresh, never invented); the subject grid uses the profile
 // class. NOTE: no bKash here — deliberately absent, Play only.
@@ -11,7 +12,10 @@ import '../../core/widgets/double_back_exit.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/home_strings.dart';
 import '../learn/lesson_selection.dart';
+import 'home_continue_route.dart';
 import 'home_data.dart';
+import 'home_design.dart';
+import 'home_lower_sections.dart';
 import '../learn/widgets/digits.dart';
 import '../learn/widgets/mock_data.dart';
 import 'widgets/home_top_bar.dart';
@@ -24,8 +28,6 @@ import '../../theme/themed_scaffold.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  String _subjectName(String id, bool bn) => subjectNameFor(id, bn);
 
   // Class stamp: saved profile class when available; null = no
   // class known — downstream resolves from it, never a silent 6.
@@ -62,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                   final last = _parseKey(sum?.lastLessonKey, data?.schoolClass);
                   final heroSubject = last == null
                       ? s['noLessonYet']!
-                      : '${_subjectName(last.subject, bn)} · '
+                      : '${subjectNameFor(last.subject, bn)} · '
                             '${bn ? 'অধ্যায়' : 'Chapter'} '
                             '${numStr(last.chapter, bn)} · '
                             '${bn ? 'পৃষ্ঠা' : 'Page'} '
@@ -72,7 +74,7 @@ class HomeScreen extends StatelessWidget {
                       : '${bn ? 'প্রশ্ন' : 'Question'} '
                             '${numStr(last.problem, bn)}';
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(HomeDesign.screenPadding),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -81,16 +83,16 @@ class HomeScreen extends StatelessWidget {
                           greeting: s['greeting']!,
                           classChip: s['classChip']!,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: HomeDesign.tightGap),
                         Text(
                           s['todayGoal']!,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: HomeDesign.blockGap),
                         // Phase 16 (M1): typed text goes to /search
                         // as ?q= via HomeSearchField, not discarded.
                         HomeSearchField(hint: s['searchHint']),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: HomeDesign.blockGap),
                         HomeHeroCard(
                           title: s['continueLearning']!,
                           subject: heroSubject,
@@ -100,16 +102,15 @@ class HomeScreen extends StatelessWidget {
                               : '${numStr(sum?.lessonsOpened ?? 0, bn)} '
                                     '${s['lessonsOpened']!}',
                           continueLabel: s['continue']!,
-                          onContinue: () {
-                            if (last != null) {
-                              LessonSelectionHolder.set(last);
-                              context.go('/lesson');
-                            } else {
-                              context.go('/search');
-                            }
-                          },
+                          // Continue opens the NEW search flow
+                          // (subject/class prefilled when known),
+                          // never the old /lesson or /search
+                          // screens that dead-end class 9.
+                          onContinue: () => context.go(
+                            homeContinueRoute(last),
+                          ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: HomeDesign.blockGap),
                         // Batch 2, item 3: saved = LocalStore (the
                         // Saved/Profile source, not LearnStore's
                         // diverging area2 list); chapters = opened.
@@ -124,15 +125,20 @@ class HomeScreen extends StatelessWidget {
                           ],
                           bangla: bn,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: HomeDesign.sectionGap),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              s['subjects']!,
-                              style: Theme.of(context).textTheme.headlineMedium,
+                            Flexible(
+                              child: Text(
+                                s['subjects']!,
+                                style: Theme.of(context).textTheme.headlineMedium,
+                              ),
                             ),
                             TextButton(
+                              style: TextButton.styleFrom(
+                                minimumSize: const Size(64, 48),
+                              ),
                               onPressed: () => context.go('/home/subjects'),
                               child: Text(s['seeAll']!),
                             ),
@@ -153,77 +159,34 @@ class HomeScreen extends StatelessWidget {
                             chooseClassBody: s['chooseClassBody']!,
                             chooseClassAction: s['chooseClassAction']!,
                           ),
-                        const SizedBox(height: 20),
-                        Text(
-                          s['weakChapters']!,
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        if (last == null)
-                          Text(s['noWeakYet']!)
-                        else
-                          Card(
-                            child: ListTile(
-                              title: Text(
-                                '${_subjectName(last.subject, bn)} · '
-                                '${bn ? 'অধ্যায়' : 'Chapter'} '
-                                '${numStr(last.chapter, bn)}',
-                              ),
-                              subtitle: Text(s['practiceAgain']!),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () {
-                                LessonSelectionHolder.set(last);
-                                context.go('/lesson');
-                              },
-                            ),
-                          ),
-                        const SizedBox(height: 12),
-                        Text(
-                          s['recommendations']!,
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        if (last == null)
-                          Text(s['noDataYet']!)
-                        else
-                          Card(
-                            child: ListTile(
-                              title: Text(heroTopic),
-                              subtitle: Text(heroSubject),
-                              onTap: () {
-                                LessonSelectionHolder.set(last);
-                                context.go('/lesson');
-                              },
-                            ),
-                          ),
-                        const SizedBox(height: 12),
-                        Text(
-                          s['recentBooks']!,
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        if (sum == null || sum.recentBooks.isEmpty)
-                          Text(s['noRecentBook']!)
-                        else
-                          ...sum.recentBooks.map((e) {
+                        const SizedBox(height: HomeDesign.sectionGap),
+                        HomeLowerSections(
+                          bn: bn,
+                          s: s,
+                          last: last,
+                          heroSubject: heroSubject,
+                          heroTopic: heroTopic,
+                          recentBooks: sum?.recentBooks ?? const [],
+                          onOpenLesson: () {
+                            if (last != null) {
+                              LessonSelectionHolder.set(last);
+                              context.go('/lesson');
+                            }
+                          },
+                          onOpenBook: (e) {
                             final parts = e.split('|');
-                            final title = bn && parts.length > 1
-                                ? parts[1]
-                                : (parts.length > 2 ? parts[2] : e);
-                            return Card(
-                              child: ListTile(
-                                title: Text(title),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () {
-                                  if (parts.isNotEmpty) {
-                                    BookSelectionHolder.set(
-                                      parts[0],
-                                      'class6-${parts[0]}-${bn ? 'bn' : 'en'}',
-                                      1,
-                                    );
-                                  }
-                                  context.go('/books/viewer');
-                                },
-                              ),
-                            );
-                          }),
+                            if (parts.isNotEmpty) {
+                              BookSelectionHolder.set(
+                                parts[0],
+                                'class6-${parts[0]}-${bn ? 'bn' : 'en'}',
+                                1,
+                              );
+                            }
+                            context.go('/books/viewer');
+                          },
+                          onSearch: () => context.go('/search-flow'),
+                          onSeeSubjects: () => context.go('/home/subjects'),
+                        ),
                       ],
                     ),
                   );

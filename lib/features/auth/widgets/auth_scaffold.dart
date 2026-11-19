@@ -112,7 +112,9 @@ class AuthScaffold extends StatelessWidget {
     return GestureDetector(
       onTap: () => setLanguage(code),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        constraints: const BoxConstraints(minHeight: 48),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: active ? AppTheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(24),

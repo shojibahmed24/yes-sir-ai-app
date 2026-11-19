@@ -12,6 +12,7 @@ import 'learn_store.dart';
 import 'lesson_selection.dart';
 import 'widgets/digits.dart';
 import 'widgets/mock_data.dart';
+import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class NoMatchScreen extends StatefulWidget {
   const NoMatchScreen({super.key});
@@ -60,10 +61,10 @@ class _NoMatchScreenState extends State<NoMatchScreen> {
         final query = sel.queryText.isNotEmpty
             ? sel.queryText
             : '$subjectName · '
-                '${bn ? 'অধ্যায়' : 'Chapter'} ${numStr(sel.chapter, bn)} · '
-                '${bn ? 'পৃষ্ঠা' : 'Page'} ${numStr(sel.page, bn)} · '
-                '${bn ? 'প্রশ্ন' : 'Question'} ${numStr(sel.problem, bn)}';
-        return Scaffold(
+                '${s['metaChapter']!} ${numStr(sel.chapter, bn)} · '
+                '${s['metaPage']!} ${numStr(sel.page, bn)} · '
+                '${s['metaQuestion']!} ${numStr(sel.problem, bn)}';
+        return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
@@ -109,7 +110,10 @@ class _NoMatchScreenState extends State<NoMatchScreen> {
                 OutlinedButton.icon(
                   onPressed: () => _saveNote(s),
                   icon: const Icon(Icons.photo_camera_outlined),
-                  label: Text(s['sendPhoto']!),
+                  // M6: distinct label — this saves a note ABOUT
+                  // the photo (upload is not wired yet), not a
+                  // generic note like the button below.
+                  label: Text(s['savePhotoNote']!),
                 ),
                 const SizedBox(height: 4),
                 TextButton(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../theme/app_theme.dart';
 import '../../../l10n/language_provider.dart';
+import '../../../l10n/pages/reg_scaffold_strings.dart';
 
 class RegScaffold extends StatelessWidget {
   final int step;
@@ -109,14 +110,20 @@ class RegScaffold extends StatelessWidget {
             child: Text(
               isBangla ? 'English' : 'বাংলা',
               style: const TextStyle(
-                color: AppTheme.primary,
+                color: AppTheme.primaryDark,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
         ],
       ),
-      body: TweenAnimationBuilder<double>(
+      body: SafeArea(
+        // R3: gesture-navigation phones hide the bottom "Next"
+        // button behind the system bar without this. Top is
+        // already handled by the AppBar, so only bottom is needed.
+        top: false,
+        bottom: true,
+        child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0.15, end: 0),
         duration: const Duration(milliseconds: 300),
         builder: (context, offset, childWidget) {
@@ -137,7 +144,8 @@ class RegScaffold extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Step $step / 13',
+                (isBangla ? regScaffoldBn : regScaffoldEn)['step']!
+                    .replaceFirst('{n}', '$step'),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
@@ -183,7 +191,8 @@ class RegScaffold extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _skip(context),
                     icon: const Icon(Icons.skip_next, size: 18),
-                    label: Text(isBangla ? 'Skip করো' : 'Skip'),
+                    label: Text((isBangla ? regScaffoldBn : regScaffoldEn)[
+                        'skip']!),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.inkSecondary,
                       side: const BorderSide(color: AppTheme.inkSecondary),
@@ -194,6 +203,7 @@ class RegScaffold extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
     // System back follows the visible back (go() stack has no entry

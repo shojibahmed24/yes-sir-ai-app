@@ -41,6 +41,9 @@ const Map<String, String> searchStringsBn = {
   // Phase 16 (M1): text typed on Home, shown here, not discarded.
   'homeSearch': 'হোম থেকে খোঁজা:',
   'homeSearchSub': 'এই লেখাটি সরাসরি মেলানো যায় না — নিচের ৪ ধাপে বিষয়, অধ্যায়, পৃষ্ঠা ও প্রশ্ন বেছে সমাধান দেখো।',
+  // Current-selection label template (M4): {chapter} {page}
+  // {problem} are the live selector values, never hardcoded.
+  'selectionLabel': 'অধ্যায় {chapter} পৃষ্ঠা {page} প্রশ্ন {problem}',
 };
 const Map<String, String> searchStringsEn = {
   'title': 'Find a textbook solution',
@@ -79,4 +82,6 @@ const Map<String, String> searchStringsEn = {
   'checking': 'Checking…',
   'homeSearch': 'Searched from Home:',
   'homeSearchSub': 'This text cannot be matched directly — use the 4 steps below (subject, chapter, page, question) to see the solution.',
+  // Current-selection label template (M4).
+  'selectionLabel': 'Chapter {chapter}, page {page}, question {problem}',
 };

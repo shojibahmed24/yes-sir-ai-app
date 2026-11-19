@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yes_sir_ai/core/models/guide_bank_model.dart';
 import 'package:yes_sir_ai/features/learn/widgets/guide_answer_body.dart';
+import 'package:yes_sir_ai/features/learn/widgets/guide_explanation_section.dart';
 import 'package:yes_sir_ai/features/learn/widgets/guide_creative_answer_view.dart';
 import 'package:yes_sir_ai/features/learn/widgets/guide_creative_part_loader.dart';
 import 'package:yes_sir_ai/features/learn/widgets/guide_creative_parts.dart';
@@ -46,7 +47,17 @@ void main() {
         fakePart('k', 'ক) নকল ক অংশ', 2),
       ]);
       expect(parts.map((p) => p.id).toList(), ['k', 'u']);
-      expect(creativePartLabel(parts[1], 1), 'খ');
+      expect(creativePartLabel(1), 'খ');
+    });
+
+    test('marks order fixes misleading first letters', () {
+      final parts = orderedCreativeParts([
+        fakePart('kha', 'আ দিয়ে শুরু নকল প্রশ্ন', 2),
+        fakePart('ka', 'খ দিয়ে শুরু নকল প্রশ্ন', 1),
+      ]);
+      expect(parts.map((p) => p.id).toList(), ['ka', 'kha']);
+      expect(creativePartLabel(0), 'ক');
+      expect(creativePartLabel(1), 'খ');
     });
   });
 
@@ -100,11 +111,19 @@ void main() {
       expect(find.text('খ-এর নকল গাইড উত্তর', findRichText: true), findsNothing);
     });
 
+    testWidgets('part chips show each part\'s marks', (tester) async {
+      await tester.pumpWidget(buildView());
+      await tester.pump();
+      expect(find.text('ক · ২'), findsOneWidget);
+      expect(find.text('খ · ৪'), findsOneWidget);
+      expect(find.text('গ · ৪'), findsOneWidget);
+    });
+
     testWidgets('switching to খ shows খ answer, stimulus stays',
         (tester) async {
       await tester.pumpWidget(buildView());
       await tester.pump();
-      await tester.tap(find.text('খ'));
+      await tester.tap(find.text('খ · ৪'));
       await tester.pump();
       expect(find.text('নকল উদ্দীপক লেখা', findRichText: true), findsOneWidget);
       expect(find.text('খ) নকল খ অংশ', findRichText: true), findsOneWidget);
@@ -122,7 +141,7 @@ void main() {
       expect(
           find.text(guideBankStringsBn['explainSteps']!), findsOneWidget);
       expect(find.text(guideBankStringsBn['askAi']!), findsOneWidget);
-      await tester.tap(find.text('গ'));
+      await tester.tap(find.text('গ · ৪'));
       await tester.pump();
       expect(find.text(guideBankStringsBn['explainDetailed']!),
           findsOneWidget);
@@ -155,7 +174,13 @@ void main() {
               stepsOnly: false,
               onExplainDetailed: () {},
               onExplainSteps: () {},
-              onRetry: () {},
+              explanation: ExplanationSectionInput(
+      requested: true,
+      pending: false,
+      unavailable: false,
+      onRequest: () {},
+      onRetry: () {},
+    ),
               onAskAi: onAskAi,
               subjectId: 'math',
               chapterNumber: 1,

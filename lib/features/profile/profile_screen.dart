@@ -88,8 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _earnedMedals(ProgressSummary sum) {
     final quizCount = sum.attempts.where((a) => a.kind == 'quiz').length;
     final modelCount = sum.attempts.where((a) => a.kind == 'model').length;
-    final perfect =
-        sum.attempts.any((a) => a.total > 0 && a.correct == a.total);
+    final perfect = sum.attempts.any((a) => a.total > 0 && a.correct == a.total);
     final genius = sum.totalAnswered >= 5 && sum.averageScore >= 90;
     var earned = 0;
     if (quizCount >= 1) earned++;
@@ -116,114 +115,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final school = (_profile?['school_name'] as String?) ?? '';
     final cls = _profile?['school_class'];
     final displayName = name.isEmpty ? s['student']! : name;
-    final classInfo = cls == null
-        ? s['classInfo']!
-        : (isBangla ? 'ক্লাস $cls' : 'Class $cls') +
-            (school.isEmpty ? '' : ' • $school');
+    final classInfo = cls == null ? s['classInfo']! : ('${s['classLabel']!} $cls') + (school.isEmpty ? '' : ' • $school');
     // Real stored id only (profile_service: 'id' = Supabase userId,
     // or 'demo-user' in local DEMO). Empty / no profile = no ID line
     // at all: never show an invented student number.
     final rawId = (_profile?['id'] as String?)?.trim() ?? '';
     return ThemedScaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')),
         title: Text(s['title']!),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         children: [
-          ProfileAvatar(
-            name: name,
-            localPath: ProfileFields.localPicture(_profile),
-            remoteUrl: ProfileFields.remotePicture(_profile),
-            radius: 40,
-          ),
+          ProfileAvatar(name: name, localPath: ProfileFields.localPicture(_profile), remoteUrl: ProfileFields.remotePicture(_profile), radius: 40),
           const SizedBox(height: 12),
-          Text(displayName,
-              style: Theme.of(context).textTheme.headlineMedium,
-              textAlign: TextAlign.center),
-          Text(classInfo,
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center),
-          if (rawId.isNotEmpty)
-            Text('${s['studentIdPrefix']!} $rawId',
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center),
+          Text(displayName, style: Theme.of(context).textTheme.headlineMedium, textAlign: TextAlign.center),
+          Text(classInfo, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+          if (rawId.isNotEmpty) Text('${s['studentIdPrefix']!} $rawId', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                  child: _StatCard(
-                      icon: Icons.local_fire_department,
-                      label: s['streak']!.replaceFirst(
-                          '{n}', numStr(_streakDays, isBangla)))),
+                child: _StatCard(icon: Icons.local_fire_department, label: s['streak']!.replaceFirst('{n}', numStr(_streakDays, isBangla))),
+              ),
               const SizedBox(width: 12),
               Expanded(
-                  child: _StatCard(
-                      icon: Icons.emoji_events,
-                      label: s['medals']!.replaceFirst(
-                          '{n}', numStr(_medals, isBangla)))),
+                child: _StatCard(icon: Icons.emoji_events, label: s['medals']!.replaceFirst('{n}', numStr(_medals, isBangla))),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Card(
-              child: ListTile(
-                  leading: const Icon(Icons.bookmark),
-                  title: Text(s['saved']!.replaceFirst(
-                      '{n}', numStr(_savedCount, isBangla))),
-                  subtitle: Text(s['weekTime']!))),
-          const SizedBox(height: 16),
-          ProfileMenuTile(
-              icon: Icons.person,
-              title: s['myInfo']!,
-              subtitle: s['myInfoSub']!,
-              onTap: () => context.push('/settings')),
-          ProfileMenuTile(
-              icon: Icons.bookmark_added,
-              title: s['savedQ']!,
-              subtitle: s['savedQSub']!,
-              onTap: () => context.push('/saved')),
-          ProfileMenuTile(
-              icon: Icons.supervisor_account,
-              title: s['parentMode']!,
-              subtitle: s['parentModeSub']!,
-              onTap: () => context.push('/parent-pin')),
-          ProfileMenuTile(
-              icon: Icons.workspace_premium,
-              title: s['premium']!,
-              subtitle: s['premiumSub']!,
-              onTap: () => context.push('/premium')),
-          ProfileMenuTile(
-              icon: Icons.notifications_outlined,
-              title: s['notifications']!,
-              subtitle: s['notificationsSub']!,
-              onTap: () => context.push('/notifications')),
-          ProfileMenuTile(
-              icon: Icons.info_outline,
-              title: s['about']!,
-              subtitle: s['aboutSub']!,
-              onTap: () => context.push('/about')),
-          ProfileMenuTile(
-              icon: Icons.help_center,
-              title: s['help']!,
-              subtitle: s['helpSub']!,
-              onTap: () => context.push('/help')),
-          ProfileMenuTile(
-            icon: Icons.logout,
-            title: s['signOut']!,
-            subtitle: s['signOutSub']!,
-            onTap: _signOut,
+            child: ListTile(leading: const Icon(Icons.bookmark), title: Text(s['saved']!.replaceFirst('{n}', numStr(_savedCount, isBangla))), subtitle: Text(s['weekTime']!)),
           ),
           const SizedBox(height: 16),
-          Text(s['quote']!,
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center),
-          Text(s['version']!,
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center),
+          ProfileMenuTile(icon: Icons.person, title: s['myInfo']!, subtitle: s['myInfoSub']!, onTap: () => context.push('/settings')),
+          ProfileMenuTile(icon: Icons.bookmark_added, title: s['savedQ']!, subtitle: s['savedQSub']!, onTap: () => context.push('/saved')),
+          ProfileMenuTile(icon: Icons.supervisor_account, title: s['parentMode']!, subtitle: s['parentModeSub']!, onTap: () => context.push('/parent-pin')),
+          ProfileMenuTile(icon: Icons.workspace_premium, title: s['premium']!, subtitle: s['premiumSub']!, onTap: () => context.push('/premium')),
+          ProfileMenuTile(icon: Icons.notifications_outlined, title: s['notifications']!, subtitle: s['notificationsSub']!, onTap: () => context.push('/notifications')),
+          ProfileMenuTile(icon: Icons.info_outline, title: s['about']!, subtitle: s['aboutSub']!, onTap: () => context.push('/about')),
+          ProfileMenuTile(icon: Icons.help_center, title: s['help']!, subtitle: s['helpSub']!, onTap: () => context.push('/help')),
+          ProfileMenuTile(icon: Icons.logout, title: s['signOut']!, subtitle: s['signOutSub']!, onTap: _signOut),
+          const SizedBox(height: 16),
+          Text(s['quote']!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+          Text(s['version']!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
         ],
       ),
     );
@@ -237,12 +174,16 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-        child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(children: [
-              Icon(icon, color: AppTheme.amber),
-              const SizedBox(height: 8),
-              Text(label, textAlign: TextAlign.center)
-            ])));
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Icon(icon, color: AppTheme.amber),
+            const SizedBox(height: 8),
+            Text(label, textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
   }
 }

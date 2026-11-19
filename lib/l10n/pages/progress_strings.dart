@@ -45,3 +45,7 @@ const Map<String, String> progressStringsEn = {
   'questions': 'questions',
   'startPractice': 'Start Practice',
 };
+
+// Weekday short names for the 7-day streak row (M4 audit fix).
+const List<String> progressWeekdaysBn = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি'];
+const List<String> progressWeekdaysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
