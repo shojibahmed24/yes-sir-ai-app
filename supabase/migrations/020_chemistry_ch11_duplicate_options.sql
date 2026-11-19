@@ -54,10 +54,10 @@ WHERE id = 'che-ch11-mcq-bank-315';
 SELECT id,
        options,
        answer_key,
-       (SELECT count(DISTINCT v) FROM jsonb_array_elements_text(
+       (SELECT count(DISTINCT x) FROM jsonb_array_elements_text(
           CASE jsonb_typeof(options)
             WHEN 'array' THEN options
             ELSE (SELECT jsonb_agg(value ORDER BY key) FROM jsonb_each(options))
-          END)) AS distinct_options
+          END) AS t(x)) AS distinct_options
 FROM guide_questions
 WHERE id IN ('che-ch11-mcq-bank-309', 'che-ch11-mcq-bank-315');
