@@ -89,6 +89,18 @@ ONLY in the supplied guide books. Package: `com.yessirai.app`.
    honestly: what changed (files), test results, and what still needs the
    user's decision.
 
+## Superpowers skills (installed 2026-11-20)
+
+- Global OpenCode V2 plugin: `superpowers@git+https://github.com/obra/superpowers.git`;
+  the skills are available through the native `skill` tool.
+- For substantial work use the matching skill: `brainstorming` before new
+  features, `writing-plans` for multi-step work, `executing-plans` (inline —
+  cheapest) for implementation, `test-driven-development`,
+  `systematic-debugging`, and `verification-before-completion`.
+- Token budget: prefer `executing-plans` over subagent-heavy flows; do not
+  re-read files or repeat completed work; keep the final report short (files,
+  analyze, test counts, commit, decisions).
+
 ## HARD RULES — never break these
 
 - Every Dart file MAX 250 lines (target 150–200). Split widgets if over.
