@@ -13,10 +13,10 @@ import '../../l10n/pages/bangla_second_strings.dart';
 import 'bangla_second_types.dart';
 import 'global_picker_model.dart';
 import 'global_picker_type_nodes.dart';
+import 'lesson_hub_nodes.dart';
 import 'search_flow_bangla_papers.dart';
 import 'search_flow_browse_extras.dart';
 import 'search_flow_controller.dart';
-import 'search_flow_lesson_counts.dart';
 import 'search_flow_types.dart';
 import 'set_display_labels.dart';
 import 'widgets/digits.dart';
@@ -117,9 +117,7 @@ GlobalPickerTree buildGlobalPickerTree({
           id: 'set-only-note',
           title: s['setOnlyChaptersNote']!.replaceFirst(
             '{chapters}',
-            setOnlyChapters[c.subjectId]!
-                .map((n) => numStr(n, bn))
-                .join(', '),
+            setOnlyChapters[c.subjectId]!.map((n) => numStr(n, bn)).join(', '),
           ),
           subtitle: s['setLabel']!,
           kind: GlobalPickerNodeKind.setsGroup,
@@ -159,26 +157,15 @@ GlobalPickerTree buildGlobalPickerTree({
         final lessons = lessonsForChapter(c.subjectId, c.schoolClass, n);
         // No lesson rows for this chapter: go straight to the types.
         if (lessons.isEmpty) return typesOf(n, null);
-        return [
-          GlobalPickerNode(
-            id: 'lesson:$n:all',
-            title: s['lessonAll']!,
-            subtitle: lessonCountsLine(extras.lessonCounts.of(n, null), s, bn),
-            kind: GlobalPickerNodeKind.lesson,
-            hasChildren: true,
-            pick: GlobalPickerPick.chapterLesson(n, null),
-          ),
-          for (final e in lessons.entries)
-            GlobalPickerNode(
-              id: 'lesson:$n:${e.key}',
-              title: e.key == e.value ? e.key : '${e.key} · ${e.value}',
-              subtitle:
-                  lessonCountsLine(extras.lessonCounts.of(n, e.key), s, bn),
-              kind: GlobalPickerNodeKind.lesson,
-              hasChildren: true,
-              pick: GlobalPickerPick.chapterLesson(n, e.key),
-            ),
-        ];
+        return lessonHubNodes(
+          subject: c.effectiveSubjectId,
+          schoolClass: c.effectiveClass,
+          chapter: n,
+          lessons: lessons,
+          counts: extras.lessonCounts,
+          s: s,
+          bn: bn,
+        );
       case GlobalPickerNodeKind.lesson:
         final scope = globalPickerParseScope(node.id);
         return scope == null ? const [] : typesOf(scope.$1, scope.$2);

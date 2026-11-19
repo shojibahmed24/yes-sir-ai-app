@@ -33,7 +33,8 @@ class GuideAnswerBody extends StatefulWidget {
     required this.q,
     required this.attempt,
     required this.keyText,
-    this.correctOptionIndex, this.acceptedIndices,
+    this.correctOptionIndex,
+    this.acceptedIndices,
     required this.chips,
     required this.fontSize,
     required this.onFontSmaller,
@@ -48,7 +49,8 @@ class GuideAnswerBody extends StatefulWidget {
     required this.onExplainDetailed,
     required this.onExplainSteps,
     required this.explanation,
-    this.showStimulus = true, this.onAskAi,
+    this.showStimulus = true,
+    this.onAskAi,
     required this.subjectId,
     required this.chapterNumber,
     required this.bn,
@@ -115,8 +117,10 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
   /// Try-first applies only to a keyed MCQ with options: the
   /// answer area stays hidden until the student picks.
   bool get _tryFirst =>
-      _q.questionType == 'mcq' && _q.options.isNotEmpty &&
-      widget.correctOptionIndex != null && widget.correctOptionIndex! >= 0 &&
+      _q.questionType == 'mcq' &&
+      _q.options.isNotEmpty &&
+      widget.correctOptionIndex != null &&
+      widget.correctOptionIndex! >= 0 &&
       widget.correctOptionIndex! < _q.options.length;
 
   bool get _mcqNoOptions => _q.questionType == 'mcq' && _q.options.isEmpty;
@@ -137,6 +141,7 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
           fontSize: fontSize,
           s: widget.s,
           color: onVariant,
+          bn: widget.bn,
           showStimulus: widget.showStimulus,
         ),
         const SizedBox(height: 8),
@@ -158,7 +163,8 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: GuideMcqOptionsCard(
-              key: ValueKey('mcq:${_q.id}'), options: _q.options,
+              key: ValueKey('mcq:${_q.id}'),
+              options: _q.options,
               correctOptionIndex: _tryFirst ? widget.correctOptionIndex : null,
               acceptedIndices: _tryFirst ? widget.acceptedIndices : null,
               fontSize: fontSize,
@@ -178,7 +184,8 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
               fontSize: fontSize,
               ls: widget.ls,
             )
-          else if (_q.questionType == 'mcq' && !_mcqNoOptions) // MCQ-only: creative/short rows have no key concept, so a missing key never shows the note there.
+          else if (_q.questionType == 'mcq' &&
+              !_mcqNoOptions) // MCQ-only: creative/short rows have no key concept, so a missing key never shows the note there.
             Text(widget.ls['noKeyNote']!),
           if (widget.attempt != null &&
               widget.attempt!.status == StructuredStatus.keyMismatch) ...[

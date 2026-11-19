@@ -20,6 +20,13 @@ const Map<String, String> practiceStringsBn = {
   'selected': 'নির্বাচিত বিষয়',
   'avg': 'গড় স্কোর',
   'done': 'সম্পন্ন রান',
+  'practiceSection': 'অনুশীলন (MCQ)',
+  'modelSection': 'মডেল টেস্ট',
+  'guideModelTitle': 'গাইড মডেল টেস্ট',
+  'guideModelSub': 'গাইডের সেট ধরে পূর্ণাঙ্গ পরীক্ষা',
+  'bankModelTitle': 'ব্যাংক মডেল টেস্ট',
+  'bankModelSub': 'অ্যাপের তৈরি মডেল টেস্ট',
+  'start': 'শুরু করো',
 };
 const Map<String, String> practiceStringsEn = {
   'title': 'Practice',
@@ -28,7 +35,8 @@ const Map<String, String> practiceStringsEn = {
   'bankNote': 'Guide MCQs (shortfall note + bank button) · not book questions',
   'weakTitle': 'Weak Topic Revision',
   'weakNone': 'No mistakes yet — start with a quiz',
-  'weakUnavailable': 'Wrong answers exist, but no revision questions could be loaded',
+  'weakUnavailable':
+      'Wrong answers exist, but no revision questions could be loaded',
   'wrongQuestions': 'wrong questions',
   'startQuiz': 'Start Quiz',
   'dailyError': 'Could not start the quiz. Please try again.',
@@ -42,4 +50,11 @@ const Map<String, String> practiceStringsEn = {
   'selected': 'Selected subject',
   'avg': 'Average score',
   'done': 'Runs done',
+  'practiceSection': 'Practice (MCQ)',
+  'modelSection': 'Model tests',
+  'guideModelTitle': 'Guide model tests',
+  'guideModelSub': 'Full tests from the guide sets',
+  'bankModelTitle': 'Bank model tests',
+  'bankModelSub': 'App-built model tests',
+  'start': 'Start',
 };

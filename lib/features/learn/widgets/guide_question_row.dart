@@ -18,6 +18,7 @@ class GuideQuestionRow extends StatelessWidget {
     required this.subjectId,
     required this.chapterNumber,
     required this.onTap,
+    this.boardLabel,
   });
   final GuideBankQuestion question;
   final bool locked;
@@ -26,6 +27,10 @@ class GuideQuestionRow extends StatelessWidget {
   final int chapterNumber;
   final VoidCallback onTap;
 
+  /// Board/year label parsed from the row's setId; null for
+  /// non-board rows. Never invented when the id has no board shape.
+  final String? boardLabel;
+
   String _typeLabel() {
     switch (question.questionType) {
       case 'mcq':
@@ -33,7 +38,10 @@ class GuideQuestionRow extends StatelessWidget {
       case 'short':
         return s['filterShort']!;
       case 'creative':
+      case 'board-creative':
         return s['filterCreative']!;
+      case 'board-mcq':
+        return s['filterMcq']!;
       case 'fill_blank':
         return s['filterFillBlank']!;
       default:
@@ -64,12 +72,9 @@ class GuideQuestionRow extends StatelessWidget {
           runSpacing: 4,
           children: [
             Chip(label: Text(_typeLabel())),
+            if (boardLabel != null) Chip(label: Text(boardLabel!)),
             if (question.marks != null)
-              Chip(
-                label: Text(
-                  '${question.marks} ${s['marksWord']!}',
-                ),
-              ),
+              Chip(label: Text('${question.marks} ${s['marksWord']!}')),
             // Pilot (lesson 2.1): practice-work rows are NOT
             // textbook solutions — say so on the row itself, so
             // a student never mistakes one for the other.
@@ -80,10 +85,7 @@ class GuideQuestionRow extends StatelessWidget {
             // unknown is never presented as "no solution".
             if (question.hasSolution == true)
               Chip(label: Text(s['solutionAvailable']!)),
-            if (question.important)
-              const Chip(
-                label: Text('★'),
-              ),
+            if (question.important) const Chip(label: Text('★')),
             // Batch 2, item 3: the key-missing chip is MCQ-only.
             // Problem/creative rows have no key BY DESIGN — their
             // answers come from an AI rewrite of the printed guide

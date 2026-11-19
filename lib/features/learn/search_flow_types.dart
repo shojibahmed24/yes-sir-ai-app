@@ -7,7 +7,11 @@
 //   boxed_kaj, other) plus verbatim lowercased values and NULL.
 // - Chapter/lesson titles come ONLY from class9_10_math_chapters
 //   (NCTB TOC + guide pilot banners, step 2).
+import '../../core/data/class9_10_bgs_lessons.dart';
+import '../../core/data/class9_10_biology_lessons.dart';
+import '../../core/data/class9_10_economics_lessons.dart';
 import '../../core/data/class9_10_math_chapters.dart';
+import '../../core/data/class9_10_science_lessons.dart';
 import '../../core/data/class9_physics_lessons.dart';
 import '../../core/models/guide_bank_model.dart';
 import 'lesson_selection.dart';
@@ -45,7 +49,11 @@ class SearchFlowJumpResult {
 /// stays under the line cap). Empty title => the chapter label
 /// plus the number alone, never an invented title.
 String searchFlowChapterLabel(
-    int n, String title, bool bn, Map<String, String> s) {
+  int n,
+  String title,
+  bool bn,
+  Map<String, String> s,
+) {
   final num = numStr(n, bn);
   if (title.isEmpty) return "${s['chapterLabel']} $num";
   return '$num · $title';
@@ -88,9 +96,9 @@ bool searchFlowTextbookMatches(SearchFlowType type, String? raw) {
     case SearchFlowType.comprehension:
     case SearchFlowType.mathProblem:
     case SearchFlowType.otherPractice:
-      case SearchFlowType.exercise:
-      case SearchFlowType.activity:
-      case SearchFlowType.exerciseMcq:
+    case SearchFlowType.exercise:
+    case SearchFlowType.activity:
+    case SearchFlowType.exerciseMcq:
       return false;
   }
 }
@@ -134,6 +142,9 @@ const kChapter3AppendixLesson = 'পরিশিষ্ট';
 /// the 'সব লেসন' all-option.
 /// Class 9 physics lists its chapters' lesson codes the same way
 /// (class9_physics_lessons.dart), shown as the bare code.
+/// Class 9-10 Economics and General Science now carry curated maps
+/// from their live guide lesson values. Real lesson values are
+/// listed; test-collection/compilation labels are not.
 /// Deliberately excluded:
 /// - Chapter 17: its only DB lesson value is '17' (whole chapter),
 ///   so there are no sub-lessons to pick from.
@@ -148,6 +159,18 @@ Map<String, String> lessonsForChapter(
       for (final code in class9PhysicsLessonCodes[chapter] ?? const <String>[])
         code: code,
     };
+  }
+  if (subject == 'biology' && (schoolClass == 9 || schoolClass == 10)) {
+    return class9BiologyLessons[chapter] ?? const {};
+  }
+  if (subject == 'bgs' && (schoolClass == 9 || schoolClass == 10)) {
+    return class9BgsLessons[chapter] ?? const {};
+  }
+  if (subject == 'economics' && (schoolClass == 9 || schoolClass == 10)) {
+    return class9EconomicsLessons[chapter] ?? const {};
+  }
+  if (subject == 'science' && (schoolClass == 9 || schoolClass == 10)) {
+    return class9ScienceLessons[chapter] ?? const {};
   }
   if (subject != 'math' || (schoolClass != 9 && schoolClass != 10)) {
     return const {};

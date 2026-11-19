@@ -23,6 +23,7 @@ Widget _header(GuideBankQuestion q, int chapter) => MaterialApp(
           fontSize: 16,
           s: guideBankStringsBn,
           color: Colors.black,
+          bn: true,
         ),
       ),
     );

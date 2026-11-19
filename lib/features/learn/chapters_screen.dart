@@ -19,6 +19,9 @@ import '../../l10n/pages/chapters_strings.dart';
 import '../../l10n/pages/guide_bank_strings.dart';
 import '../../l10n/pages/home_strings.dart';
 import '../home/widgets/home_bottom_nav.dart';
+import '../home/widgets/home_empty_state.dart';
+import '../../theme/widgets/app_state_view.dart';
+import '../../theme/widgets/section_header.dart';
 import 'learn_store.dart';
 import 'widgets/chapter_card.dart';
 import 'widgets/digits.dart';
@@ -46,7 +49,11 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
   Future<List<dynamic>> _load() async {
     final schoolClass = await resolveSchoolClass(); // Saved profile class.
     return Future.wait([
-      booksService.chaptersForSubjectAsync(schoolClass, widget.subjectId, languageNotifier.value.languageCode == 'bn'),
+      booksService.chaptersForSubjectAsync(
+        schoolClass,
+        widget.subjectId,
+        languageNotifier.value.languageCode == 'bn',
+      ),
       LearnStore.chaptersList(),
     ]);
   }
@@ -55,12 +62,8 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
     if (widget.subjectId == 'math') return mockChapters;
     return List.generate(
       5,
-      (i) => MockChapter(
-        'অধ্যায় ${i + 1}',
-        'Chapter ${i + 1}',
-        '',
-        'remaining',
-      ),
+      (i) =>
+          MockChapter('অধ্যায় ${i + 1}', 'Chapter ${i + 1}', '', 'remaining'),
     );
   }
 
@@ -80,22 +83,26 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.go('/home/subjects'),
             ),
-            title: Text('$subjectName · ${s['subtitle']!}', overflow: TextOverflow.ellipsis),
+            title: Text(
+              '$subjectName · ${s['subtitle']!}',
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           body: FutureBuilder<List<dynamic>>(
             future: _future,
             builder: (context, snap) {
               if (!snap.hasData) {
-                if (snap.hasError) return _error(s);
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 12),
-                      Text(s['loading']!),
-                    ],
-                  ),
+                if (snap.hasError) {
+                  return AppStateView(
+                    kind: AppStateKind.error,
+                    title: s['loadFailed']!,
+                    actionLabel: s['retry']!,
+                    onAction: () => setState(() => _future = _load()),
+                  );
+                }
+                return AppStateView(
+                  kind: AppStateKind.loading,
+                  title: s['loading']!,
                 );
               }
               final dbChapters = snap.data![0] as List<ChapterInfo>?;
@@ -107,7 +114,12 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
               // demo: error state + retry. Unconfigured (null
               // here) = demo list WITH the demo label below.
               if (AppConfig.supabaseConfigured && dbChapters == null) {
-                return _error(s);
+                return AppStateView(
+                  kind: AppStateKind.error,
+                  title: s['loadFailed']!,
+                  actionLabel: s['retry']!,
+                  onAction: () => setState(() => _future = _load()),
+                );
               }
               // Configured empty -> honest empty state, no rows.
               // Configured non-empty -> rows grouped by book.
@@ -129,37 +141,41 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                       // flow for this subject (source
                       // selector on that screen picks guide).
                       if (v == 'guide') {
-                        context.go(
-                          '/search-flow?subject=${widget.subjectId}',
-                        );
+                        context.go('/search-flow?subject=${widget.subjectId}');
                       }
                     },
                     s: gs,
                   ),
                   const SizedBox(height: 16),
                   if (demo != null) ...[
-                    Text(s['demoLabel']!,
-                        style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      s['demoLabel']!,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                     const SizedBox(height: 8),
                   ],
                   const SizedBox(height: 8),
+                  Text('${numStr(openedHere, bn)} ${s['chaptersOpened']!}'),
                   Text(
-                    '${numStr(openedHere, bn)} ${s['chaptersOpened']!}',
+                    s['tapChapterHint']!,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  Text(s['tapChapterHint']!,
-                      style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 16),
-                  Text(s['all']!,
-                      style: Theme.of(context).textTheme.headlineMedium),
+                  SectionHeader(title: s['all']!),
                   const SizedBox(height: 8),
                   if (dbChapters != null && dbChapters.isEmpty)
-                    Text(s['noChapters']!),
+                    HomeEmptyState(
+                      message: s['noChapters']!,
+                      actionLabel: s['retry']!,
+                      onAction: () => setState(() => _future = _load()),
+                    ),
                   if (demo != null)
                     ...demo.asMap().entries.map((e) {
                       final n = e.key + 1;
                       final c = e.value;
-                      final isOpened =
-                          opened.contains('${widget.subjectId}|$n');
+                      final isOpened = opened.contains(
+                        '${widget.subjectId}|$n',
+                      );
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: ChapterCard(
@@ -189,8 +205,9 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                         ),
                       ),
                     ...entry.value.map((c) {
-                      final isOpened =
-                          opened.contains('${widget.subjectId}|${c.number}');
+                      final isOpened = opened.contains(
+                        '${widget.subjectId}|${c.number}',
+                      );
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: ChapterCard(
@@ -219,32 +236,14 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
             current: 0,
             labels: [
               nav['home']!,
-              nav['search']!,
+              nav['subjectsTab']!,
               nav['practice']!,
               nav['progress']!,
-              nav['profile']!
+              nav['profile']!,
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _error(Map<String, String> s) {
-    return SingleChildScrollView(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(s['loadFailed']!),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => setState(() => _future = _load()),
-              child: Text(s['retry']!),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

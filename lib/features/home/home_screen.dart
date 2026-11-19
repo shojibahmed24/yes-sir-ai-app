@@ -25,6 +25,7 @@ import 'widgets/home_subject_grid.dart';
 import 'widgets/home_search_field.dart';
 import 'widgets/home_bottom_nav.dart';
 import '../../theme/themed_scaffold.dart';
+import '../../theme/widgets/section_header.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -39,7 +40,8 @@ class HomeScreen extends StatelessWidget {
       subject: p[0],
       chapter: int.tryParse(p[1]) ?? 1,
       page: int.tryParse(p[2]) ?? 1,
-      problem: int.tryParse(p[3]) ?? 1, schoolClass: schoolClass,
+      problem: int.tryParse(p[3]) ?? 1,
+      schoolClass: schoolClass,
     );
   }
 
@@ -106,9 +108,7 @@ class HomeScreen extends StatelessWidget {
                           // (subject/class prefilled when known),
                           // never the old /lesson or /search
                           // screens that dead-end class 9.
-                          onContinue: () => context.go(
-                            homeContinueRoute(last),
-                          ),
+                          onContinue: () => context.go(homeContinueRoute(last)),
                         ),
                         const SizedBox(height: HomeDesign.blockGap),
                         // Batch 2, item 3: saved = LocalStore (the
@@ -126,23 +126,10 @@ class HomeScreen extends StatelessWidget {
                           bangla: bn,
                         ),
                         const SizedBox(height: HomeDesign.sectionGap),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                s['subjects']!,
-                                style: Theme.of(context).textTheme.headlineMedium,
-                              ),
-                            ),
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                minimumSize: const Size(64, 48),
-                              ),
-                              onPressed: () => context.go('/home/subjects'),
-                              child: Text(s['seeAll']!),
-                            ),
-                          ],
+                        SectionHeader(
+                          title: s['subjects']!,
+                          actionLabel: s['seeAll']!,
+                          onAction: () => context.go('/home/subjects'),
                         ),
                         // Batch 2, item 3: grid uses the profile
                         // class, never hardcoded 6; loading shows
@@ -198,7 +185,7 @@ class HomeScreen extends StatelessWidget {
             current: 0,
             labels: [
               s['home']!,
-              s['search']!,
+              s['subjectsTab']!,
               s['practice']!,
               s['progress']!,
               s['profile']!,
