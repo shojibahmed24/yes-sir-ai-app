@@ -2,6 +2,7 @@
 // type matching, question-number normalisation, lesson-step
 // skipping, verified chapter titles.
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yes_sir_ai/core/data/class9_physics_lessons.dart';
 import 'package:yes_sir_ai/features/learn/search_flow_types.dart';
 
 void main() {
@@ -17,7 +18,10 @@ void main() {
       searchFlowGuideSection(SearchFlowType.textbookExercise),
       'textbook_exercise',
     );
-    expect(SearchFlowType.values.length, 5);
+    // The five original options; the extra guide-only types are
+    // covered in search_flow_type_options_test.dart.
+    expect(searchFlowBaseTypes.length, 5);
+    expect(SearchFlowType.values.length, 13);
   });
 
   test('old-server legacy questionType exists only for mcq/short/creative', () {
@@ -97,6 +101,7 @@ void main() {
       '3.3',
       '3.4',
       '3.5',
+      'পরিশিষ্ট',
     ]);
     expect(lessonsForChapter('math', 9, 3)['3.3'], 'উৎপাদকে বিশ্লেষণ');
     expect(lessonsForChapter('math', 9, 7).keys, ['7.1', '7.2']);
@@ -122,12 +127,33 @@ void main() {
     expect(lessonsForChapter('math', 9, 16)['16.3'], 'বৃত্ত সংক্রান্ত পরিমাপ');
     // No sub-lessons: ch17's only DB value is '17' (whole chapter).
     expect(lessonsForChapter('math', 9, 17), isEmpty);
-    // Appendix rows stay reachable via 'সব লেসন', not a dropdown entry.
-    expect(lessonsForChapter('math', 9, 3).containsKey('পরিশিষ্ট'), isFalse);
+    // appendix is its own row since 11/10/2026, after 3.1-3.5
+    final ch3 = lessonsForChapter('math', 9, 3);
+    expect(ch3.keys.toList(),
+        ['3.1', '3.2', '3.3', '3.4', '3.5', 'পরিশিষ্ট']);
+    expect(lessonsForChapter('math', 9, 7).containsKey('পরিশিষ্ট'), isFalse);
     // Other subjects, classes and chapters skip the lesson step.
     expect(lessonsForChapter('science', 9, 2), isEmpty);
     expect(lessonsForChapter('math', 6, 2), isEmpty);
     expect(lessonsForChapter('math', 9, 99), isEmpty);
+  });
+
+  test('class 9 physics lessons: codes only, from the live DB', () {
+    expect(lessonsForChapter('physics', 9, 1).keys,
+        ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7']);
+    expect(lessonsForChapter('physics', 9, 7).keys, ['7.1', '7.2', '7.3']);
+    // Title = code: no lesson title is invented.
+    expect(lessonsForChapter('physics', 9, 3)['3.4'], '3.4');
+    // No lesson rows in the DB for these chapters, other classes
+    // and other subjects.
+    expect(lessonsForChapter('physics', 9, 5), isEmpty);
+    expect(lessonsForChapter('physics', 9, 99), isEmpty);
+    expect(lessonsForChapter('physics', 10, 1), isEmpty);
+    expect(lessonsForChapter('chemistry', 9, 1), isEmpty);
+    // Every code belongs to its own chapter.
+    for (final e in class9PhysicsLessonCodes.entries) {
+      expect(e.value.every((c) => c.startsWith('${e.key}.')), isTrue);
+    }
   });
 
   test('verified chapter titles: real names, no invented titles', () {

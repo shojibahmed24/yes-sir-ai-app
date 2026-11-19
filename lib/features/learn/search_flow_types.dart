@@ -8,9 +8,13 @@
 // - Chapter/lesson titles come ONLY from class9_10_math_chapters
 //   (NCTB TOC + guide pilot banners, step 2).
 import '../../core/data/class9_10_math_chapters.dart';
+import '../../core/data/class9_physics_lessons.dart';
 import '../../core/models/guide_bank_model.dart';
 import 'lesson_selection.dart';
+import 'search_flow_type_options.dart';
 import 'widgets/digits.dart';
+
+export 'search_flow_type_options.dart';
 
 /// Jump outcome for the search screen's "সরাসরি উত্তর" button.
 /// The controller resolves; the screen navigates. Keeping the
@@ -37,21 +41,6 @@ class SearchFlowJumpResult {
   final String? message;
 }
 
-/// The 5 dropdown options — identical in textbook and guide mode.
-/// There is deliberately NO "all questions" option: a list always
-/// loads one type, 20 at a time.
-enum SearchFlowType { mcq, short, creative, practiceWork, textbookExercise }
-
-/// Dropdown label for a search-flow type (moved from the screen so
-/// the screen stays under the line cap).
-String searchFlowTypeLabel(SearchFlowType t, Map<String, String> s) => {
-  SearchFlowType.mcq: s['typeMcq']!,
-  SearchFlowType.short: s['typeShort']!,
-  SearchFlowType.creative: s['typeCreative']!,
-  SearchFlowType.practiceWork: s['typePracticeWork']!,
-  SearchFlowType.textbookExercise: s['typeTextbookExercise']!,
-}[t]!;
-
 /// Chapter dropdown label (moved from the screen so the screen
 /// stays under the line cap). Empty title => the chapter label
 /// plus the number alone, never an invented title.
@@ -60,42 +49,6 @@ String searchFlowChapterLabel(
   final num = numStr(n, bn);
   if (title.isEmpty) return "${s['chapterLabel']} $num";
   return '$num · $title';
-}
-
-/// Guide-bank `section` value for a dropdown option (guide mode).
-String searchFlowGuideSection(SearchFlowType type) {
-  switch (type) {
-    case SearchFlowType.mcq:
-      return 'mcq_bank';
-    case SearchFlowType.short:
-      return 'short';
-    case SearchFlowType.creative:
-      return 'creative';
-    case SearchFlowType.practiceWork:
-      return 'practice_work';
-    case SearchFlowType.textbookExercise:
-      return 'textbook_exercise';
-  }
-}
-
-/// Types with a server-side questionType filter on the OLD guide
-/// server (v7 rows carry question_type but no section/lesson):
-/// only MCQ / short / creative can be filtered client-side there.
-/// practice_work and textbook_exercise need the new server's
-/// section filter — on the old server they are honestly
-/// unavailable, never faked from questionType.
-String? searchFlowLegacyQuestionType(SearchFlowType type) {
-  switch (type) {
-    case SearchFlowType.mcq:
-      return 'mcq';
-    case SearchFlowType.short:
-      return 'short';
-    case SearchFlowType.creative:
-      return 'creative';
-    case SearchFlowType.practiceWork:
-    case SearchFlowType.textbookExercise:
-      return null;
-  }
 }
 
 /// Textbook-mode match for one row's raw question_type value
@@ -128,6 +81,17 @@ bool searchFlowTextbookMatches(SearchFlowType type, String? raw) {
       return v == 'task';
     case SearchFlowType.textbookExercise:
       return v != 'mcq' && v != 'short' && v != 'creative' && v != 'task';
+    // Guide-only exam kinds (grp_* server groups): textbook rows
+    // carry no such section, so they never match here.
+    case SearchFlowType.oneWord:
+    case SearchFlowType.knowledge:
+    case SearchFlowType.comprehension:
+    case SearchFlowType.mathProblem:
+    case SearchFlowType.otherPractice:
+      case SearchFlowType.exercise:
+      case SearchFlowType.activity:
+      case SearchFlowType.exerciseMcq:
+      return false;
   }
 }
 
@@ -153,6 +117,9 @@ int? normalizeQuestionNumber(String input) {
   return n;
 }
 
+/// Live DB lesson value of the chapter-3 appendix (title = value).
+const kChapter3AppendixLesson = 'পরিশিষ্ট';
+
 /// Lessons actually present for a chapter, as
 /// lesson-code -> title. Class 9-10 math guide chapters 2, 3, 7, 8,
 /// 9, 11, 16 have DB-backed lesson rows (math import 2026-11-01;
@@ -160,17 +127,28 @@ int? normalizeQuestionNumber(String input) {
 /// screen shows the lesson dropdown for them. Every other chapter
 /// returns empty, and the screen SKIPS the lesson step entirely
 /// for it.
-/// Deliberately excluded, with rows still reachable via the
-/// dropdown's 'সব লেসন' all-option:
+/// Chapter 3 also lists its unnumbered appendix 'পরিশিষ্ট' as a
+/// row of its own (11/10/2026), keyed by its live DB lesson value
+/// so the exact-match list filter finds it. Rows whose lesson is
+/// blank in the DB cannot be filtered server-side; they stay under
+/// the 'সব লেসন' all-option.
+/// Class 9 physics lists its chapters' lesson codes the same way
+/// (class9_physics_lessons.dart), shown as the bare code.
+/// Deliberately excluded:
 /// - Chapter 17: its only DB lesson value is '17' (whole chapter),
 ///   so there are no sub-lessons to pick from.
-/// - 'পরিশিষ্ট' (chapter-3 appendix): not a numbered lesson, so it
-///   has no dropdown entry; its rows appear under 'সব লেসন'.
 Map<String, String> lessonsForChapter(
   String subject,
   int schoolClass,
   int chapter,
 ) {
+  if (subject == 'physics' && schoolClass == 9) {
+    // Codes only (no titles in the DB, none invented): key = title.
+    return {
+      for (final code in class9PhysicsLessonCodes[chapter] ?? const <String>[])
+        code: code,
+    };
+  }
   if (subject != 'math' || (schoolClass != 9 && schoolClass != 10)) {
     return const {};
   }
@@ -178,6 +156,12 @@ Map<String, String> lessonsForChapter(
     case 2:
       return chapter2LessonTitles;
     case 3:
+      return {
+        ...Map.fromEntries(
+          guideLessonTitles.entries.where((e) => e.key.startsWith('3.')),
+        ),
+        kChapter3AppendixLesson: kChapter3AppendixLesson,
+      };
     case 7:
     case 8:
     case 9:
