@@ -9,28 +9,35 @@ import 'package:yes_sir_ai/core/data/class9_10_science_lessons.dart';
 import 'package:yes_sir_ai/features/learn/search_flow_types.dart';
 
 void main() {
-  test('economics chapter 2-3: DB codes get DB topic titles', () {
+  test('economics chapter 2-3: MCQ code and topic rows both listed', () {
     final ch2 = lessonsForChapter('economics', 9, 2);
-    expect(ch2.length, 7);
-    expect(ch2['2.1'], 'অর্থনৈতিক সম্পদ');
-    expect(ch2['2.4'], 'আয়, সঞ্চয় ও বিনিয়োগ');
-    expect(ch2['2.6'], 'বাংলাদেশের অর্থনৈতিক কার্যাবলি');
+    expect(ch2.length, 13);
+    expect(ch2['2.1'], 'অর্থনৈতিক সম্পদ (MCQ)');
+    expect(ch2['2.4'], 'আয়, সঞ্চয় ও বিনিয়োগ (MCQ)');
+    expect(ch2['অর্থনৈতিক সম্পদ'], 'অর্থনৈতিক সম্পদ');
+    expect(ch2['আয়, সঞ্চয় ও বিনিয়োগ'], 'আয়, সঞ্চয় ও বিনিয়োগ');
     expect(ch2.containsKey('বাংলাদেশের অর্থনৈতিক সম্পদ'), isTrue);
     final ch3 = lessonsForChapter('economics', 9, 3);
-    expect(ch3.length, 8);
-    expect(ch3['3.1'], 'উপযোগ, ভোগ ও ভোক্তা');
-    expect(ch3['3.8'], 'ভারসাম্য দাম ও পরিমাণ নির্ধারণ');
+    expect(ch3.length, 16);
+    expect(ch3['3.1'], 'উপযোগ, ভোগ ও ভোক্তা (MCQ)');
+    expect(ch3['উপযোগ, ভোগ ও ভোক্তা'], 'উপযোগ, ভোগ ও ভোক্তা');
+    expect(ch3['3.8'], 'ভারসাম্য দাম ও পরিমাণ নির্ধারণ (MCQ)');
   });
 
-  test('economics chapters 4-6: keys are the live printed labels', () {
+  test('economics chapters 4-6: numbered and topic labels both listed', () {
     final ch4 = lessonsForChapter('economics', 9, 4);
-    expect(ch4.length, 8);
-    expect(ch4.containsKey('৪.১ উৎপাদন ও উৎপাদক'), isTrue);
+    expect(ch4.length, 16);
+    expect(ch4['৪.১ উৎপাদন ও উৎপাদক'], '৪.১ উৎপাদন ও উৎপাদক');
+    expect(ch4['উৎপাদন ও উৎপাদক'], 'উৎপাদন ও উৎপাদক');
     expect(ch4.containsKey('৪.৮ ব্যক্তিগত ও সামাজিক ব্যয়'), isTrue);
     final ch6 = lessonsForChapter('economics', 9, 6);
-    expect(ch6.length, 6);
+    expect(ch6.length, 12);
     expect(
       ch6.containsKey('৬.২ মোট দেশজ উৎপাদন (জিডিপি) পরিমাপ পদ্ধতিসমূহ'),
+      isTrue,
+    );
+    expect(
+      ch6.containsKey('মোট দেশজ উৎপাদন (জিডিপি) পরিমাপ পদ্ধতিসমূহ'),
       isTrue,
     );
   });
@@ -48,6 +55,25 @@ void main() {
       isFalse,
       reason: 'budget-edition label is a compilation name, not a lesson',
     );
+  });
+
+  test('no chapter shows the same picker title twice', () {
+    for (final chapterMap in [
+      ...class9EconomicsLessons.values,
+      ...class9ScienceLessons.values,
+    ]) {
+      final values = chapterMap.values.toList();
+      expect(
+        values.toSet().length,
+        values.length,
+        reason: 'two rows would share one title',
+      );
+      final labels = [
+        for (final e in chapterMap.entries)
+          e.key == e.value ? e.key : '${e.key} · ${e.value}',
+      ];
+      expect(labels.toSet().length, labels.length, reason: labels.join(' | '));
+    }
   });
 
   test('science chapter 1-3: numbered lessons only', () {
