@@ -10,8 +10,20 @@ build/
 android/.gradle/
 # Android local config (machine-specific paths)
 android/local.properties
-# Local Supabase dev data (gigabytes, never push)
-supabase/
+# Local Supabase dev data (gigabytes, never push) — only the Edge
+# functions and migrations are tracked; import data and work dirs stay local.
+supabase/.temp/
+supabase/supabase/
+supabase/functions/guide-bank/supabase/
+supabase/book_import*
+supabase/book_questions*
+supabase/chapter_page_map*
+supabase/chapters_*.json
+supabase/chunks/
+supabase/class7/
+supabase/formula-pass-work/
+supabase/tools/
+supabase/QUESTIONS_IMPORT_REPORT.md
 # Reference screenshots (not app source)
 stitch-reference/
 # Logs
