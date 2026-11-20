@@ -22,7 +22,7 @@ import '../../core/services/billing_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/premium_strings.dart';
 import '../../theme/app_theme.dart';
-import 'widgets/premium_feature_row.dart';
+import 'widgets/premium_benefits_card.dart';
 import '../../theme/themed_scaffold.dart';
 
 class PremiumPaywallScreen extends StatefulWidget {
@@ -82,7 +82,6 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
   @override
   Widget build(BuildContext context) {
     final s = isBangla ? premiumStringsBn : premiumStringsEn;
-    final dark = Theme.of(context).brightness == Brightness.dark;
     return ThemedScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -153,46 +152,11 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
                 else
                   Column(
                     children: [
-                      // UI palette (গ): feature card on a warm
-                      // gold-tinted wash with a gold border; ink
-                      // text on it stays far above WCAG AA.
-                      Card(
-                        color: dark
-                            ? const Color(0xFF3D2E12)
-                            : const Color(0xFFFFF7E6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          side: BorderSide(
-                            color: AppTheme.amber.withValues(alpha: 0.40),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              PremiumFeatureRow(
-                                icon: Icons.mic,
-                                color: AppTheme.primary,
-                                text: s['voiceFeat']!,
-                              ),
-                              PremiumFeatureRow(
-                                icon: Icons.menu_book,
-                                color: AppTheme.secondary,
-                                text: s['booksFeat']!,
-                              ),
-                              PremiumFeatureRow(
-                                icon: Icons.assignment,
-                                color: AppTheme.success,
-                                text: s['testsFeat']!,
-                              ),
-                              PremiumFeatureRow(
-                                icon: Icons.edit_note,
-                                color: AppTheme.amber,
-                                text: s['practiceFeat']!,
-                              ),
-                            ],
-                          ),
-                        ),
+                      PremiumBenefitsCard(
+                        voice: s['voiceFeat']!,
+                        books: s['booksFeat']!,
+                        tests: s['testsFeat']!,
+                        practice: s['practiceFeat']!,
                       ),
                       const SizedBox(height: 8),
                       Text(
