@@ -18,6 +18,8 @@ import '../../core/services/billing_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/premium_strings.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_tokens.dart';
+import 'widgets/voice_hero.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class VoiceTutorScreen extends StatefulWidget {
@@ -82,7 +84,9 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
     }
     if (state == VoiceState.noMinutes) {
       await _refresh();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s['exhausted']!)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s['exhausted']!)));
       return;
     }
     final budget = await aiVoiceService.budget();
@@ -111,7 +115,11 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
     await _refresh();
     if (!mounted) return;
     if (minutes > 0 || auto) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${s['callEnded']!} $minutes ${s['minutesUnit']!}")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("${s['callEnded']!} $minutes ${s['minutesUnit']!}"),
+        ),
+      );
     }
   }
 
@@ -149,11 +157,21 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
                 children: [
                   const Icon(Icons.mic_off, size: 64, color: AppTheme.error),
                   const SizedBox(height: 16),
-                  Text(s['notPremium']!, style: Theme.of(context).textTheme.bodyLarge, textAlign: TextAlign.center),
+                  Text(
+                    s['notPremium']!,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 16),
-                  ElevatedButton(onPressed: () => context.push('/premium'), child: Text(s['goPremium']!)),
+                  ElevatedButton(
+                    onPressed: () => context.push('/premium'),
+                    child: Text(s['goPremium']!),
+                  ),
                   const SizedBox(height: 12),
-                  OutlinedButton(onPressed: () => context.go('/home'), child: Text(s['backHome']!)),
+                  OutlinedButton(
+                    onPressed: () => context.go('/home'),
+                    child: Text(s['backHome']!),
+                  ),
                 ],
               ),
             ),
@@ -165,43 +183,42 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
     return ThemedScaffold(
       appBar: AppBar(title: Text(s['voiceTitle']!)),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(Sp.xxl),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(s['voiceSub']!, style: Theme.of(context).textTheme.bodyLarge, textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                CircleAvatar(
-                  radius: 64,
-                  backgroundColor: _inCall ? AppTheme.success : AppTheme.primary,
-                  child: Icon(_inCall ? Icons.mic : Icons.mic_none, size: 56, color: Colors.white),
+                VoiceHero(
+                  title: s['voiceSub']!,
+                  micOn: _inCall,
+                  big: _inCall,
+                  status: _inCall
+                      ? _clock
+                      : exhausted
+                      ? s['exhausted']!
+                      : "${s['remainingLabel']!}: $_remaining ${s['minutesUnit']!} ${s['perMonth']!}",
+                  note: _inCall
+                      ? (_isDemo ? s['demoPracticeNote']! : s['liveNote']!)
+                      : (_isDemoTestGate ? s['demoTestGateNote']! : ''),
                 ),
-                const SizedBox(height: 16),
-                if (_inCall) ...[
-                  Text(_clock, style: Theme.of(context).textTheme.displayLarge, textAlign: TextAlign.center),
-                  Text(_isDemo ? s['callActiveDemo']! : s['callActiveLive']!, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
-                  const SizedBox(height: 8),
-                  Text(_isDemo ? s['demoPracticeNote']! : s['liveNote']!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
-                ] else if (exhausted)
-                  Text(s['exhausted']!, style: Theme.of(context).textTheme.bodyLarge, textAlign: TextAlign.center)
-                else
-                  Column(
-                    children: [
-                      Text("${s['remainingLabel']!}: $_remaining ${s['minutesUnit']!} ${s['perMonth']!}", style: Theme.of(context).textTheme.headlineMedium, textAlign: TextAlign.center),
-                      if (_isDemoTestGate) ...[const SizedBox(height: 8), Text(s['demoTestGateNote']!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center)],
-                    ],
-                  ),
-                const SizedBox(height: 24),
+                const SizedBox(height: Sp.xxl),
                 if (!exhausted)
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: _inCall ? AppTheme.error : AppTheme.primary, foregroundColor: Colors.white),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _inCall
+                          ? AppTheme.error
+                          : AppTheme.primary,
+                      foregroundColor: Colors.white,
+                    ),
                     onPressed: _inCall ? () => _end() : _start,
                     child: Text(_inCall ? s['endCall']! : s['startCall']!),
                   ),
                 const SizedBox(height: 12),
-                OutlinedButton(onPressed: _backHome, child: Text(s['backHome']!)),
+                OutlinedButton(
+                  onPressed: _backHome,
+                  child: Text(s['backHome']!),
+                ),
               ],
             ),
           ),
