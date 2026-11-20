@@ -125,11 +125,15 @@
 - `SectionHeader` যেখানে “action” আছে সেখানে ধারাবাহিক ব্যবহার।
 - **verify:** সাবজেক্ট-কালার ম্যাপ টেস্ট; স্ন্যাপশট না-ভাঙা।
 
-### UI Phase 3 — টাইপোগ্রাফি ও ডেনসিটি (professional + consistent)
-- `guide_answer_body.dart`/`lesson_answer_body.dart`/`solution_renderer.dart` ইত্যাদির
-  `fontSize:` লিটারাল → `app_text_theme` (প্রাইমারি/বডি/ক্যাপশন) + `Sp` স্পেসিং।
+### UI Phase 3 — টাইপোগ্রাফি ও ফাইল-হেলথ (professional + consistent)
+- **সংশোধন:** answer স্ক্রিনে `fontSize` হলো ইউজারের **ফন্ট-সাইজ কন্ট্রোল**
+  (`onFontSmaller`/`onFontLarger`) — তাই ওই লিটারাল সরানো যাবে না; শুধু স্পেসিং
+  `Sp`-এ এবং ফ্যামিলি/হাইট থিম থেকেই আসে।
+- `guide_answer_body.dart` (২৫৭ → ≤২৫০): প্রশ্ন + MCQ ব্লক আলাদা
+  `guide_answer_question_block.dart`-এ।
+- `search_screen.dart` (২৫৪ → ≤২৫০): একটা ব্লক আলাদা helper-এ।
 - সব কার্ড `AppTheme.softCardDecoration`/`Rad` ব্যবহার; বটম-nav/ডায়ালগ `Elev`।
-- **verify:** কোনো ভিজুয়াল রিগ্রেশন টেস্ট; analyze।
+- **verify:** analyze ০ error/warning; full suite সবুজ; ভিজুয়াল আচরণ অপরিবর্তিত।
 
 ### UI Phase 4 — স্ক্রিন-বাই-স্ক্রিন পলিশ (journey 1–4)
 প্রতিটি স্ক্রিনে: এন্ট্রান্স মোশন, খালি/এরর/লোডিং স্টেট (`AppStateView`),
