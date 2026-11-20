@@ -11,6 +11,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show compute;
+
 import 'app_config.dart';
 
 /// Connection reuse: created once, kept alive with idle connections.
@@ -25,26 +27,37 @@ HttpClient get sharedEdgeHttpClient => _sharedClient;
 const _openTimeout = Duration(seconds: 12);
 const _bodyTimeout = Duration(seconds: 15);
 
-Future<Map<String, dynamic>?> edgePost(Map<String, dynamic> body,
-    {String? endpoint}) async {
+/// Bodies above this size are decoded off the UI isolate: a bulk
+/// chapter/bank reply can be 1,500+ rows, and decoding it inline
+/// caused a visible jank on open.
+const int _offloadDecodeBytes = 60 * 1000;
+
+Map<String, dynamic>? _decodeBody(String text) {
+  final data = jsonDecode(text);
+  return data is Map<String, dynamic> ? data : null;
+}
+
+Future<Map<String, dynamic>?> edgePost(
+  Map<String, dynamic> body, {
+  String? endpoint,
+}) async {
   final url = endpoint ?? AppConfig.explainEndpoint;
   if (url.isEmpty) return null;
   try {
-    final req = await _sharedClient.postUrl(Uri.parse(url)).timeout(
-          _openTimeout,
-        );
+    final req = await _sharedClient
+        .postUrl(Uri.parse(url))
+        .timeout(_openTimeout);
     req.headers.set('Authorization', 'Bearer ${AppConfig.supabaseAnonKey}');
     req.headers.set('apikey', AppConfig.supabaseAnonKey);
     req.headers.set('Content-Type', 'application/json');
     req.add(utf8.encode(jsonEncode(body)));
     final res = await req.close().timeout(_openTimeout);
-    final text = await res
-        .transform(utf8.decoder)
-        .join()
-        .timeout(_bodyTimeout);
+    final text = await res.transform(utf8.decoder).join().timeout(_bodyTimeout);
     if (res.statusCode != 200) return null;
-    final data = jsonDecode(text);
-    return data is Map<String, dynamic> ? data : null;
+    if (text.length > _offloadDecodeBytes) {
+      return await compute(_decodeBody, text);
+    }
+    return _decodeBody(text);
   } catch (_) {
     return null;
   }

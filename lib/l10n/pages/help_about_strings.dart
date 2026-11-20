@@ -42,7 +42,7 @@ const Map<String, String> aboutStringsBn = {
       'Yes Sir AI একজন ধৈর্যশীল AI টিউটর। পাঠ্যবই অনুযায়ী, সহজ ভাষায়, ধাপে ধাপে ব্যাখ্যা দেয় — মুখস্থ নয়, বোঝার জন্য।',
   'features':
       'ক্লাস ১–১০-এর বিষয়ভিত্তিক গাইড, প্র্যাকটিস, কুইজ, মডেল টেস্ট, বোর্ড প্রশ্ন, অভিভাবক রিপোর্ট।',
-  'version': 'ভার্সন ১.০.০+১ • বাংলাদেশ NCTB পাঠ্যক্রম উপযোগী',
+  'version': 'ভার্সন {v} • বাংলাদেশ NCTB পাঠ্যক্রম উপযোগী',
   'package':
       'প্যাকেজ: com.yessirai.app • প্রিমিয়াম: Google Play Billing দিয়ে, \$5/মাস',
   'home': 'হোমে যাও',
@@ -58,7 +58,7 @@ const Map<String, String> aboutStringsEn = {
       'Yes Sir AI is a patient AI tutor. It explains step by step, in easy language, from the textbook — for understanding, not memorisation.',
   'features':
       'Subject guides for classes 1–10, practice, quizzes, model tests, board questions, parent reports.',
-  'version': 'Version 1.0.0+1 • Suited to the Bangladesh NCTB curriculum',
+  'version': 'Version {v} • Suited to the Bangladesh NCTB curriculum',
   'package':
       'Package: com.yessirai.app • Premium: Google Play Billing only, \$5/month',
   'home': 'Go home',

@@ -29,6 +29,7 @@ dependencies:
   # 2026-10-31: grep-verified unused after the audit-fix round
   # (SolutionBlocks replaced the MarkdownBody fallback).
   flutter_math_fork: ^0.7.0
+  package_info_plus: ^10.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

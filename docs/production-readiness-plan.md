@@ -44,16 +44,16 @@
 - [x] A8 হোম `loadHomeData()` memoized (H1) — বাকি স্ক্রিনের future memo পরের ধাপ।
 - [x] A9 শেয়ারড `HttpClient` + ১২/১৫ সেকেন্ড টাইমআউট `edge_post.dart`-এ (N1)।
 - [x] A10 মৃত ফাইল `search_flow_number_input.dart` `git rm` (L1); `mock_data`-এর নাম-fallback সরানো (L3); `dart_defines.json` untracked + example।
-- [x] A11 About টেক্সট ঠিক (ক্লাস ১–১০) (M2) — **version** `package_info_plus` পরে (ডিপেন্ডেন্সি)।
+- [x] A11 About টেক্সট ঠিক (ক্লাস ১–১০) (M2) + **আসল version** `package_info_plus` (M3)।
 - **verify:** analyze ০ error/warning + full suite (৮৮৭/৮৮৭) + `flutter build appbundle --release`।
 
 ### Phase B — রেন্ডার/নেটওয়ার্ক জ্যাংক (কোড-অনলি)
 - [x] B1 `bangla_second_set_rows_screen` → `ListView.builder` (R1)।
 - [x] B2 `SolutionBlocks.parseBlocks` memoize (bounded 40) (R2)।
-- [ ] B3 English reader স্ক্যান ডিস্কে SWR-persist (N3) — **পরের ধাপ** (বড় কাজ)।
+- [x] B3 English reader স্ক্যান ডিস্কে SWR-persist (N3) — টেস্ট ২/২ (`english_reader_cache_test`)।
 - [x] B4 চ্যাপ্টার-ফিল্টার memoize (R4) — `ChapterFilterCache` + টেস্ট; হোম গ্রিড `IntrinsicHeight` **অপরিবর্তিত** (১.৩x টেক্সট-নিরাপত্তা অগ্রাধিকার)।
-- [ ] B5 বড় jsonDecode → `compute()` (bulk/ক্যাশ paths) (B3-perf) — **পরের ধাপ**।
-- [ ] B6 lesson screen-এর auto-AI-generate → on-demand (N5) — **পরের ধাপ** (প্রোডাক্ট আচরণ বদলায়)।
+- [x] B5 বড় jsonDecode → `compute()` (bulk replies >৬০k chars) (B3-perf)।
+- [x] B6 lesson screen-এর auto-AI-generate বন্ধ → স্টাইল-চিপে on-demand (N5) — বেস উত্তর আগে দেখায়, এক চাপে এক ব্যাখ্যা।
 - **verify:** analyze + full suite; ১.৩x টেক্সট-স্কেল টেস্ট বাড়ানো।
 
 ### Phase C — ব্যাকএন্ড/এজ (Supabase deploy + এক-বারের মালিক ক্রেডেনশিয়াল লাগবে)

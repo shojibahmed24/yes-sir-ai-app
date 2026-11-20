@@ -28,7 +28,6 @@ class _LessonScreenState extends State<LessonScreen> {
   double _fontSize = 15;
   bool _saved = false;
   bool _loading = false;
-  bool _autoFetched = false;
   String? _displayText;
   String? _fallbackText;
   String? _keyMismatchKey;
@@ -61,7 +60,9 @@ class _LessonScreenState extends State<LessonScreen> {
     // Only grounded lessons count as opened (no-match visits
     // must not inflate Home stats); async result records too.
     if (_syncGrounded) LearnStore.recordLesson(_sel.key, _sel.chapterKey);
-    LearnStore.isSaved(_sel.key).then((v) { if (mounted) setState(() => _saved = v); });
+    LearnStore.isSaved(_sel.key).then((v) {
+      if (mounted) setState(() => _saved = v);
+    });
     resolveLessonGrounding(
       _sel,
       languageNotifier.value.languageCode == 'bn',
@@ -71,13 +72,11 @@ class _LessonScreenState extends State<LessonScreen> {
       if (g.found && !_syncGrounded) {
         LearnStore.recordLesson(_sel.key, _sel.chapterKey);
       }
-      // Auto-fetch on open: a grounded lesson shows its live
-      // structured explanation without waiting for a style chip.
-      // Ungrounded lessons keep the not-indexed branch below.
-      if (g.found && !_autoFetched) {
-        _autoFetched = true;
-        _applyStyle('steps', languageNotifier.value.languageCode == 'bn');
-      }
+      // ON-DEMAND (2026-11-21): opening a lesson no longer fires a
+      // live AI generation. The screen shows the local base answer
+      // plus the style chips; tapping a chip generates exactly one
+      // explanation on request. Faster open, no token spend on every
+      // glance, and the student chooses the style they want.
     });
   }
 
@@ -106,14 +105,14 @@ class _LessonScreenState extends State<LessonScreen> {
         context.go('/lesson/no-match');
         return;
       case 'serverKeyMissing':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s['aiServerKeyMissing']!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(s['aiServerKeyMissing']!)));
         return;
       case 'failed':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s['aiFailed']!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(s['aiFailed']!)));
         return;
       default:
         break;
@@ -170,17 +169,28 @@ class _LessonScreenState extends State<LessonScreen> {
                   runSpacing: 8,
                   children: [
                     Chip(label: Text(subjectNameFor(_sel.subject, bn))),
-                    Chip(label: Text('${s['metaChapter']!} ${numStr(_sel.chapter, bn)}')),
-                    Chip(label: Text('${s['metaPage']!} ${numStr(_sel.page, bn)}')),
+                    Chip(
+                      label: Text(
+                        '${s['metaChapter']!} ${numStr(_sel.chapter, bn)}',
+                      ),
+                    ),
+                    Chip(
+                      label: Text('${s['metaPage']!} ${numStr(_sel.page, bn)}'),
+                    ),
                     if (_sel.problem != 0)
-                      Chip(label: Text('${s['metaQuestion']!} ${numStr(_sel.problem, bn)}')),
+                      Chip(
+                        label: Text(
+                          '${s['metaQuestion']!} ${numStr(_sel.problem, bn)}',
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 if (!isGrounded) ...[
                   Text(
-                      chapterOnly ? s['chapterOnly']! : s['notIndexed']!,
-                      style: Theme.of(context).textTheme.headlineMedium),
+                    chapterOnly ? s['chapterOnly']! : s['notIndexed']!,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: () => context.go('/lesson/no-match'),
@@ -200,15 +210,17 @@ class _LessonScreenState extends State<LessonScreen> {
                     sourceLabel: _source == 'demo'
                         ? s['demoAnswer']!
                         : _source == 'live'
-                            ? s['liveAnswer']!
-                            : _source == 'pending'
-                                ? s['loadingAnswer']!
-                                : s['unverifiedAnswer']!,
+                        ? s['liveAnswer']!
+                        : _source == 'pending'
+                        ? s['loadingAnswer']!
+                        : s['unverifiedAnswer']!,
                     fontSize: _fontSize,
                     onFontSmaller: () => setState(
-                        () => _fontSize = (_fontSize - 1).clamp(13, 20)),
+                      () => _fontSize = (_fontSize - 1).clamp(13, 20),
+                    ),
                     onFontLarger: () => setState(
-                        () => _fontSize = (_fontSize + 1).clamp(13, 20)),
+                      () => _fontSize = (_fontSize + 1).clamp(13, 20),
+                    ),
                     loading: _loading,
                     displayText: _displayText,
                     solution: _solution,
@@ -216,8 +228,7 @@ class _LessonScreenState extends State<LessonScreen> {
                     keyMismatchKey: _keyMismatchKey,
                     isGuide: ctx?.source == 'guide',
                     hasAnswerKey: ctx?.answerKey.isNotEmpty ?? false,
-                    showSourceChips: _solution != null ||
-                        _fallbackText != null,
+                    showSourceChips: _solution != null || _fallbackText != null,
                     marksPrinted: ctx?.marksPrinted ?? false,
                     aiProvider: _aiProvider,
                     aiModel: _aiModel,
