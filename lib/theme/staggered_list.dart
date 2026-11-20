@@ -12,24 +12,24 @@ class StaggeredList extends StatelessWidget {
     required this.children,
     this.gap = MotionTokens.staggerGap,
     this.maxAnimated = MotionTokens.maxStaggerItems,
+    this.crossAxisAlignment = CrossAxisAlignment.start,
   });
   final List<Widget> children;
   final Duration gap;
   final int maxAnimated;
+  final CrossAxisAlignment crossAxisAlignment;
 
   @override
   Widget build(BuildContext context) {
     if (reducedMotion(context)) {
-      return Column(children: children);
+      return Column(crossAxisAlignment: crossAxisAlignment, children: children);
     }
     return Column(
+      crossAxisAlignment: crossAxisAlignment,
       children: [
         for (var i = 0; i < children.length; i++)
           if (i < maxAnimated)
-            _StaggeredItem(
-              delay: gap * i,
-              child: children[i],
-            )
+            _StaggeredItem(delay: gap * i, child: children[i])
           else
             children[i],
       ],

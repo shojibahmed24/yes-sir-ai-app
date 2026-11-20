@@ -26,6 +26,7 @@ import 'widgets/home_search_field.dart';
 import 'widgets/home_bottom_nav.dart';
 import '../../theme/themed_scaffold.dart';
 import '../../theme/app_tokens.dart';
+import '../../theme/staggered_list.dart';
 import '../../theme/widgets/section_header.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -78,7 +79,10 @@ class HomeScreen extends StatelessWidget {
                             '${numStr(last.problem, bn)}';
                   return SingleChildScrollView(
                     padding: const EdgeInsets.all(HomeDesign.screenPadding),
-                    child: Column(
+                    // One staggered entrance for the first blocks
+                    // (hero, search, stats): same motion language as
+                    // the subject grid below.
+                    child: StaggeredList(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const DemoBanner(),
