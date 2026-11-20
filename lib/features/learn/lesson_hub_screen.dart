@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/lesson_hub_strings.dart';
+import '../../theme/animated_card.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/themed_scaffold.dart';
@@ -190,44 +191,39 @@ class _HubCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: Sp.sm),
-      child: Card(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Rad.xl),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(Sp.lg),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(Rad.md),
-                  ),
-                  child: Icon(icon, color: accent, size: IconSize.md),
+      child: AnimatedCard(
+        accent: accent,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(Sp.lg),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(Rad.md),
                 ),
-                const SizedBox(width: Sp.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
+                child: Icon(icon, color: accent, size: IconSize.md),
+              ),
+              const SizedBox(width: Sp.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
-                const Icon(Icons.chevron_right_rounded, size: IconSize.sm),
-              ],
-            ),
+              ),
+              const Icon(Icons.chevron_right_rounded, size: IconSize.sm),
+            ],
           ),
         ),
       ),
