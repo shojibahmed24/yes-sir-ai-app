@@ -1,7 +1,14 @@
 // UI ONLY - local mock data for Home + Learn screens.
 // TODO backend: replace with Supabase / book index data. No real AI calls.
 class MockSubject {
-  const MockSubject(this.id, this.bn, this.en, this.chapters, this.done, this.locked);
+  const MockSubject(
+    this.id,
+    this.bn,
+    this.en,
+    this.chapters,
+    this.done,
+    this.locked,
+  );
   final String id;
   final String bn;
   final String en;
@@ -30,10 +37,30 @@ const mockSubjects = <MockSubject>[
 
 const mockChapters = <MockChapter>[
   MockChapter('০১ প্যাটার্ন', '01 Pattern', '১ – ১৮', 'done'),
-  MockChapter('০২ মুনাফা ও সরল সুদ', '02 Profit & simple interest', '১৯ – ৩৬', 'done'),
-  MockChapter('০৩ পরিমাপ ও ক্ষেত্রফল', '03 Measurement & area', '৩৭ – ৫৪', 'inProgress'),
-  MockChapter('০৪ বীজগণিতীয় সূত্রাবলি', '04 Algebraic formulas', '৫৫ – ৭২', 'remaining'),
-  MockChapter('০৫ বীজগণিতীয় ভগ্নাংশ', '05 Algebraic fractions', '৭৩ – ৯০', 'remaining'),
+  MockChapter(
+    '০২ মুনাফা ও সরল সুদ',
+    '02 Profit & simple interest',
+    '১৯ – ৩৬',
+    'done',
+  ),
+  MockChapter(
+    '০৩ পরিমাপ ও ক্ষেত্রফল',
+    '03 Measurement & area',
+    '৩৭ – ৫৪',
+    'inProgress',
+  ),
+  MockChapter(
+    '০৪ বীজগণিতীয় সূত্রাবলি',
+    '04 Algebraic formulas',
+    '৫৫ – ৭২',
+    'remaining',
+  ),
+  MockChapter(
+    '০৫ বীজগণিতীয় ভগ্নাংশ',
+    '05 Algebraic fractions',
+    '৭৩ – ৯০',
+    'remaining',
+  ),
 ];
 
 const mockRoutineBn = <String>[
@@ -77,9 +104,7 @@ String subjectNameFor(String id, bool bn) {
   };
   final n = names[id];
   if (n != null) return bn ? n.$1 : n.$2;
-  final m = mockSubjects.firstWhere(
-    (s) => s.id == id,
-    orElse: () => mockSubjects.first,
-  );
-  return bn ? m.bn : m.en;
+  // Unknown id: show the raw server id, never a made-up subject
+  // name ("গণিত" for an unknown subject was misleading).
+  return id;
 }

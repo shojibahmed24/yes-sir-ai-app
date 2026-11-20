@@ -49,11 +49,25 @@ class AuthService {
   /// alone. Offline with a still-valid cached session (expiry-
   /// checked) still counts as valid, so a dead network never
   /// logs a signed-in user out.
+  ///
+  /// QUICK-LOAD (2026-11-20): a session that is still comfortably
+  /// valid is trusted locally — no network round trip on every
+  /// cold start. Network refresh happens only when the token is
+  /// near expiry, and is capped at 8s so a dead network can never
+  /// hold the splash for the client's default long timeout.
   Future<bool> validateSession() async {
     final client = supabaseOrNull;
     if (client == null) return false;
+    final cached = client.auth.currentSession;
+    final cachedExpiry = cached?.expiresAt;
+    if (cachedExpiry != null) {
+      final nowSec = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      if (cachedExpiry - nowSec > _refreshSkewSeconds) return true;
+    }
     try {
-      final res = await client.auth.refreshSession();
+      final res = await client.auth.refreshSession().timeout(
+        const Duration(seconds: 8),
+      );
       return res.session != null;
     } catch (_) {
       final s = client.auth.currentSession;
@@ -63,6 +77,9 @@ class AuthService {
       return DateTime.now().millisecondsSinceEpoch ~/ 1000 < exp;
     }
   }
+
+  /// Refresh only when the token is this close to expiry (2 min).
+  static const int _refreshSkewSeconds = 120;
 
   Future<bool> onboardingSeen() async {
     final prefs = await SharedPreferences.getInstance();
@@ -87,7 +104,11 @@ class AuthService {
   Future<AuthResult> signInEmail(String email, String password) async {
     final client = supabaseOrNull;
     if (client == null) {
-      return const AuthResult(ok: true, userId: 'demo-user', mode: AuthMode.demo);
+      return const AuthResult(
+        ok: true,
+        userId: 'demo-user',
+        mode: AuthMode.demo,
+      );
     }
     try {
       final res = await client.auth.signInWithPassword(
@@ -101,7 +122,8 @@ class AuthService {
       );
     } on AuthException catch (e) {
       // 'email_not_confirmed' = unconfirmed address (resend path).
-      final notConfirmed = e.code == 'email_not_confirmed' ||
+      final notConfirmed =
+          e.code == 'email_not_confirmed' ||
           e.message.toLowerCase().contains('not confirmed');
       return AuthResult(
         ok: false,
@@ -112,17 +134,29 @@ class AuthService {
       );
     } on Exception catch (e) {
       // Network failures land here, not as AuthException.
-      return AuthResult(ok: false, mode: AuthMode.supabase, errorKind: classifySignInError(e));
+      return AuthResult(
+        ok: false,
+        mode: AuthMode.supabase,
+        errorKind: classifySignInError(e),
+      );
     }
   }
 
   Future<AuthResult> signUpEmail(String email, String password) async {
     final client = supabaseOrNull;
     if (client == null) {
-      return const AuthResult(ok: true, userId: 'demo-user', mode: AuthMode.demo);
+      return const AuthResult(
+        ok: true,
+        userId: 'demo-user',
+        mode: AuthMode.demo,
+      );
     }
     try {
-      final res = await client.auth.signUp(email: email, password: password, emailRedirectTo: AppConfig.emailConfirmationRedirectTo);
+      final res = await client.auth.signUp(
+        email: email,
+        password: password,
+        emailRedirectTo: AppConfig.emailConfirmationRedirectTo,
+      );
       // With "Confirm email" on, Supabase returns a user but NO
       // session: the account exists but is not signed in until the
       // confirmation link is clicked. Callers must show the pending
@@ -148,7 +182,11 @@ class AuthService {
       return const AuthResult(ok: true, mode: AuthMode.demo);
     }
     try {
-      await client.auth.resend(email: email, type: OtpType.signup, emailRedirectTo: AppConfig.emailConfirmationRedirectTo);
+      await client.auth.resend(
+        email: email,
+        type: OtpType.signup,
+        emailRedirectTo: AppConfig.emailConfirmationRedirectTo,
+      );
       return const AuthResult(ok: true, mode: AuthMode.supabase);
     } on AuthException catch (e) {
       return AuthResult(ok: false, error: e.message, mode: AuthMode.supabase);
@@ -208,10 +246,7 @@ class AuthService {
       final res = await client.auth.updateUser(
         UserAttributes(password: newPassword),
       );
-      return AuthResult(
-        ok: res.user != null,
-        mode: AuthMode.supabase,
-      );
+      return AuthResult(ok: res.user != null, mode: AuthMode.supabase);
     } on AuthException catch (e) {
       return AuthResult(ok: false, error: e.message, mode: AuthMode.supabase);
     }
@@ -226,7 +261,11 @@ class AuthService {
     final client = supabaseOrNull;
     if (client == null || AppConfig.googleOAuthClientId.isEmpty) {
       // No real OAuth path: never a fake success (button hidden too).
-      return AuthResult(ok: false, mode: client == null ? AuthMode.demo : AuthMode.supabase, googleNotConfigured: true);
+      return AuthResult(
+        ok: false,
+        mode: client == null ? AuthMode.demo : AuthMode.supabase,
+        googleNotConfigured: true,
+      );
     }
     try {
       final launched = await client.auth.signInWithOAuth(
@@ -240,9 +279,19 @@ class AuthService {
         errorKind: launched ? AuthErrorKind.none : AuthErrorKind.unknown,
       );
     } on AuthException catch (e) {
-      return AuthResult(ok: false, error: e.message, mode: AuthMode.supabase, errorKind: classifySignInError(e));
+      return AuthResult(
+        ok: false,
+        error: e.message,
+        mode: AuthMode.supabase,
+        errorKind: classifySignInError(e),
+      );
     } catch (e) {
-      return AuthResult(ok: false, error: e.toString(), mode: AuthMode.supabase, errorKind: classifySignInError(e));
+      return AuthResult(
+        ok: false,
+        error: e.toString(),
+        mode: AuthMode.supabase,
+        errorKind: classifySignInError(e),
+      );
     }
   }
 }

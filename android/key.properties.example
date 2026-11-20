@@ -1,0 +1,13 @@
+# Release signing (copy to android/key.properties — it is gitignored).
+# Generate the keystore ONCE and keep it safe: without it you cannot
+# update the app under the same signing identity (Play App Signing
+# protects you only after the first upload).
+#
+#   keytool -genkey -v -keystore android/upload-keystore.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Then fill the values below. NEVER commit this file or the .jks.
+storeFile=upload-keystore.jks
+storePassword=CHANGE_ME
+keyAlias=upload
+keyPassword=CHANGE_ME

@@ -36,7 +36,25 @@ bool _isBullet(String t) => RegExp(r'^[-*•]\s+').hasMatch(t);
 bool _isNumbered(String t) => RegExp(r'^[0-9০-৯]+[.)]\s+').hasMatch(t);
 bool _isFence(String t) => t.startsWith('```');
 
+// Parse cache (2026-11-20 quick-load): the same explanation text is
+// re-parsed on every rebuild (font-size taps, reveal toggles). Parsing
+// is pure, so the result can be reused. Bounded so a long session
+// cannot grow it without limit.
+final Map<String, List<_Block>> _parseCache = {};
+const int _parseCacheMax = 40;
+
+void clearSolutionBlocksCache() => _parseCache.clear();
+
 List<_Block> parseBlocks(String text) {
+  final hit = _parseCache[text];
+  if (hit != null) return hit;
+  final parsed = _parseBlocksUncached(text);
+  if (_parseCache.length >= _parseCacheMax) _parseCache.clear();
+  _parseCache[text] = parsed;
+  return parsed;
+}
+
+List<_Block> _parseBlocksUncached(String text) {
   final lines = text.split('\n');
   final blocks = <_Block>[];
   var i = 0;

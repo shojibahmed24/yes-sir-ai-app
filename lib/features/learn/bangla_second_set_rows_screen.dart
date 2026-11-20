@@ -35,8 +35,7 @@ class BanglaSecondSetRowsScreen extends StatefulWidget {
       _BanglaSecondSetRowsScreenState();
 }
 
-class _BanglaSecondSetRowsScreenState
-    extends State<BanglaSecondSetRowsScreen> {
+class _BanglaSecondSetRowsScreenState extends State<BanglaSecondSetRowsScreen> {
   late Future<_SetRowsLoaded> _future;
 
   String _sectionLabel(String? section, Map<String, String> s) {
@@ -60,8 +59,9 @@ class _BanglaSecondSetRowsScreenState
   }
 
   Future<_SetRowsLoaded> _load() async {
-    final sections =
-        widget.group == 'board' ? ['board-mcq', 'board-written'] : ['appendix-model-test'];
+    final sections = widget.group == 'board'
+        ? ['board-mcq', 'board-written']
+        : ['appendix-model-test'];
     final results = await Future.wait([
       for (final section in sections)
         banglaSecondFetch.fetchSectionRows(section),
@@ -84,8 +84,9 @@ class _BanglaSecondSetRowsScreenState
       return a.id.compareTo(b.id);
     });
     return _SetRowsLoaded(
-        rows: failed ? null : rows,
-        isPremium: results.last as bool);
+      rows: failed ? null : rows,
+      isPremium: results.last as bool,
+    );
   }
 
   @override
@@ -131,38 +132,49 @@ class _BanglaSecondSetRowsScreenState
               if (rows.isEmpty) {
                 return Center(child: Text(s['empty']!));
               }
-              final children = <Widget>[];
+              // Lazy list (2026-11-20): a board set can exceed 100 rows,
+              // so rows are built on demand. The item list only stores
+              // indices/labels (no widgets), which is cheap to build.
+              final items = <Object>[];
               String? lastSection;
               for (var i = 0; i < rows.length; i++) {
                 final q = rows[i];
-                if (widget.group == 'board' &&
-                    q.section != lastSection) {
+                if (widget.group == 'board' && q.section != lastSection) {
                   lastSection = q.section;
-                  children.add(Padding(
-                    padding: const EdgeInsets.only(top: 12, bottom: 4),
-                    child: Text(
-                      _sectionLabel(lastSection, s),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ));
+                  items.add(_sectionLabel(lastSection, s));
                 }
-                children.add(BanglaSecondRowTile(
-                  q: q,
-                  onTap: () => openSearchFlowGuideAnswer(
-                    context,
-                    isPremium: loaded.isPremium,
-                    index: i,
-                    q: q,
-                    subjectId: 'bangla',
-                    chapterNumber: 0,
-                    schoolClass: BanglaSecondFetch.schoolClass,
-                    returnTo: _selfUrl,
-                  ),
-                ));
+                items.add(i);
               }
-              return ListView(
+              return ListView.builder(
                 padding: const EdgeInsets.all(16),
-                children: children,
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  if (item is String) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 4),
+                      child: Text(
+                        item,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    );
+                  }
+                  final i = item as int;
+                  final q = rows[i];
+                  return BanglaSecondRowTile(
+                    q: q,
+                    onTap: () => openSearchFlowGuideAnswer(
+                      context,
+                      isPremium: loaded.isPremium,
+                      index: i,
+                      q: q,
+                      subjectId: 'bangla',
+                      chapterNumber: 0,
+                      schoolClass: BanglaSecondFetch.schoolClass,
+                      returnTo: _selfUrl,
+                    ),
+                  );
+                },
               );
             },
           ),

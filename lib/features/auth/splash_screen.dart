@@ -51,37 +51,34 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _route() async {
-    await restoreLanguage();
-    await restoreAppearance();
+    // QUICK-LOAD (2026-11-20): the three preference reads run in
+    // PARALLEL and the old fixed 2.5s wait is gone. The only delay
+    // left is a 350ms brand minimum, overlapped with the routing
+    // work, so the logo never flashes but no launch loses seconds.
+    final watch = Stopwatch()..start();
+    final prefsReady = Future.wait([restoreLanguage(), restoreAppearance()]);
     final seen = await authService.onboardingSeen();
-    await Future<void>.delayed(const Duration(milliseconds: 2500));
-    if (!mounted) return;
     // DEMO mode: no Supabase session exists to validate, so the
     // saved demo session keeps the existing behaviour (Home
     // shows the DEMO banner for it).
+    String target;
     if (authService.isDemo) {
-      if (await authService.hasLocalSession()) {
-        context.go('/home');
-      } else if (seen) {
-        context.go('/login');
-      } else {
-        context.go('/onboarding-1');
-      }
-      return;
-    }
-    // Configured backend: trust the LIVE session, never the
-    // prefs key alone — an expired/invalid session routes to
-    // login, never to home with a dead session.
-    final valid = await authService.validateSession();
-    if (!mounted) return;
-    if (!valid) await authService.clearSession();
-    if (valid) {
-      context.go('/home');
-    } else if (seen) {
-      context.go('/login');
+      final has = await authService.hasLocalSession();
+      target = has ? '/home' : (seen ? '/login' : '/onboarding-1');
     } else {
-      context.go('/onboarding-1');
+      // Configured backend: trust the LIVE session, never the
+      // prefs key alone — an expired/invalid session routes to
+      // login, never to home with a dead session.
+      final valid = await authService.validateSession();
+      if (!valid) await authService.clearSession();
+      target = valid ? '/home' : (seen ? '/login' : '/onboarding-1');
     }
+    await prefsReady;
+    const minSplash = Duration(milliseconds: 350);
+    final left = minSplash - watch.elapsed;
+    if (left > Duration.zero) await Future<void>.delayed(left);
+    if (!mounted) return;
+    context.go(target);
   }
 
   @override
@@ -117,21 +114,27 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 24),
                 FadeSlide(
-                  child: Text(s['appName']!,
-                      style: Theme.of(context).textTheme.displayLarge),
+                  child: Text(
+                    s['appName']!,
+                    style: Theme.of(context).textTheme.displayLarge,
+                  ),
                 ),
                 FadeSlide(
                   delayMs: 120,
-                  child: Text(s['appNameBn']!,
-                      style: Theme.of(context).textTheme.headlineMedium),
+                  child: Text(
+                    s['appNameBn']!,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FadeSlide(
                   delayMs: 200,
-                  child: Text(s['tagline']!,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.inkSecondary,
-                          )),
+                  child: Text(
+                    s['tagline']!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.inkSecondary,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 FadeSlide(
@@ -141,10 +144,15 @@ class _SplashScreenState extends State<SplashScreen>
                 const SizedBox(height: 32),
                 const CircularProgressIndicator(color: AppTheme.primary),
                 const SizedBox(height: 12),
-                Text(s['loading']!, style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  s['loading']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 const SizedBox(height: 24),
-                Text(s['curriculum']!,
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  s['curriculum']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 Text(s['safe']!, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),

@@ -1,11 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Network: Supabase auth/data, Edge functions, Play Billing.
+         MISSING until 2026-11-20 meant RELEASE BUILDS HAD NO
+         NETWORK (INTERNET was only in the debug/profile manifests). -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Batch 2, item 6: camera option of the Settings picture
          picker. Gallery uses the system photo picker (no permission
          needed); a denied camera permission is handled in-app. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <application
-        android:label="yes_sir_ai"
+        android:label="Yes Sir AI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

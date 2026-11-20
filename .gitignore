@@ -30,3 +30,14 @@ stitch-reference/
 *.log
 # OS
 .DS_Store
+
+# Android release signing (NEVER commit the keystore or its passwords)
+android/key.properties
+android/*.jks
+android/*.keystore
+
+# Local build-time config (public keys only, but keep the habit:
+# a future fill must not leak a real key into git history)
+dart_defines.json
+.env
+.env.*

@@ -15,6 +15,7 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/textbook_chapter_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/chapter_questions_strings.dart';
+import 'chapter_filter_cache.dart';
 import 'lesson_selection.dart';
 import 'widgets/chapter_questions_parts.dart';
 import 'widgets/digits.dart';
@@ -93,13 +94,14 @@ class _ChapterQuestionsScreenState extends State<ChapterQuestionsScreen> {
     });
   }
 
-  List<TextbookChapterQuestion> get _filtered =>
-      filterTextbookQuestions(
-        all: _all,
-        type: _type,
-        query: _query,
-        page: int.tryParse(_pageText.trim()),
-      );
+  final _filters = ChapterFilterCache();
+
+  List<TextbookChapterQuestion> get _filtered => _filters.filter(
+      all: _all,
+      type: _type,
+      query: _query,
+      pageText: _pageText,
+      epoch: _filterEpoch);
 
   void _resetFilters() => setState(() {
         _query = '';

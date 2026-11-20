@@ -29,8 +29,19 @@ import '../../theme/app_tokens.dart';
 import '../../theme/staggered_list.dart';
 import '../../theme/widgets/section_header.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // QUICK-LOAD (2026-11-20): ONE load per screen lifetime. A locale
+  // or theme rebuild used to re-run loadHomeData() (three storage
+  // reads) on every frame rebuild. A fresh /home navigation still
+  // reloads, so returning to the tab shows current numbers.
+  late final Future<HomeData> _data = loadHomeData();
 
   // Class stamp: saved profile class when available; null = no
   // class known — downstream resolves from it, never a silent 6.
@@ -61,7 +72,7 @@ class HomeScreen extends StatelessWidget {
             message: s['pressBackAgain']!,
             child: SafeArea(
               child: FutureBuilder<HomeData>(
-                future: loadHomeData(),
+                future: _data,
                 builder: (context, snap) {
                   final data = snap.data;
                   final sum = data?.summary;
