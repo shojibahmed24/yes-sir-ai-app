@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/profile_service.dart';
+import '../../../core/services/profile_source.dart';
+import '../../profile/widgets/profile_avatar.dart';
 import '../../../l10n/language_provider.dart';
 import '../../../theme/app_theme.dart';
 
@@ -25,6 +27,8 @@ class HomeTopBar extends StatefulWidget {
 class _HomeTopBarState extends State<HomeTopBar> {
   String? _name;
   int? _schoolClass;
+  String? _localPicture;
+  String? _remotePicture;
 
   @override
   void initState() {
@@ -34,6 +38,10 @@ class _HomeTopBarState extends State<HomeTopBar> {
       setState(() {
         final n = p['full_name'];
         if (n is String && n.isNotEmpty) _name = n;
+        // Same picture source as the Profile hero (2026-11-21): the
+        // saved photo now shows on the dashboard too.
+        _localPicture = ProfileFields.localPicture(p);
+        _remotePicture = ProfileFields.remotePicture(p);
         // Batch 2, item 3: parse via the shared profile source,
         // not `is int` — a String-stored class used to vanish
         // here while Settings still showed it.
@@ -56,7 +64,6 @@ class _HomeTopBarState extends State<HomeTopBar> {
         : bn
         ? 'ক্লাস $_schoolClass'
         : 'Class $_schoolClass';
-    final initial = name == null || name.isEmpty ? '?' : name.characters.first;
     // Phase 16 (M3): language toggle reachable from Home itself, not
     // only auth screens + Settings. Language names need no translation.
     final langCode = languageNotifier.value.languageCode;
@@ -95,13 +102,11 @@ class _HomeTopBarState extends State<HomeTopBar> {
           children: [
             GestureDetector(
               onTap: () => context.go('/profile'),
-              child: CircleAvatar(
+              child: ProfileAvatar(
+                name: _name ?? '',
+                localPath: _localPicture,
+                remoteUrl: _remotePicture,
                 radius: 28,
-                backgroundColor: AppTheme.primary,
-                child: Text(
-                  initial,
-                  style: const TextStyle(color: Colors.white, fontSize: 20),
-                ),
               ),
             ),
             const SizedBox(width: 12),
