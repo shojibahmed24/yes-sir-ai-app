@@ -17,14 +17,12 @@ import '../../../core/models/guide_bank_model.dart';
 import '../../../core/services/punctuation_score.dart';
 import '../../../core/services/structured_explanation_service.dart';
 import 'guide_answer_footer.dart';
+import 'guide_answer_question_block.dart';
 import 'guide_explanation_section.dart';
 import 'guide_key_card.dart';
-import 'guide_mcq_no_options_card.dart';
-import 'guide_mcq_options_card.dart';
 import 'guide_printed_explanation_card.dart';
 import 'guide_punctuation_check.dart';
 import 'guide_question_header.dart';
-import 'guide_translated_math_text.dart';
 import 'verbatim_answer_card.dart';
 
 class GuideAnswerBody extends StatefulWidget {
@@ -145,38 +143,15 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
           showStimulus: widget.showStimulus,
         ),
         const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: GuideTranslatedMathText(
-              text: _q.questionText,
-              fontSize: fontSize + 1,
-              fontWeight: FontWeight.w600,
-              color: onSurface,
-              // English only: other subjects always render the original.
-              translate: widget.subjectId == 'english',
-            ),
-          ),
+        GuideAnswerQuestionBlock(
+          q: _q,
+          fontSize: fontSize,
+          s: widget.s,
+          correctOptionIndex: _tryFirst ? widget.correctOptionIndex : null,
+          acceptedIndices: _tryFirst ? widget.acceptedIndices : null,
+          onAttempted: () => setState(() => _attempted = true),
+          translate: widget.subjectId == 'english',
         ),
-        const SizedBox(height: 12),
-        if (_q.questionType == 'mcq' && _q.options.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: GuideMcqOptionsCard(
-              key: ValueKey('mcq:${_q.id}'),
-              options: _q.options,
-              correctOptionIndex: _tryFirst ? widget.correctOptionIndex : null,
-              acceptedIndices: _tryFirst ? widget.acceptedIndices : null,
-              fontSize: fontSize,
-              s: widget.s,
-              onAttempted: () => setState(() => _attempted = true),
-            ),
-          ),
-        if (_mcqNoOptions)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: GuideMcqNoOptionsCard(fontSize: fontSize, s: widget.s),
-          ),
         if (_revealed) ...[
           if (widget.keyText != null)
             GuideKeyCard(

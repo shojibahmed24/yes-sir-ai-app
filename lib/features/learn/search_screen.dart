@@ -97,43 +97,17 @@ class _SearchScreenState extends State<SearchScreen> {
       context.go('/lesson');
       return;
     }
-    List<dynamic>? chapters;
-    try {
-      chapters = await booksService.chaptersForSubjectAsync(
-        _schoolClass,
-        _sel.subject,
-        bn,
-      );
-    } catch (_) {
-      chapters = null;
-    }
-    if (!context.mounted) return;
-    final chapterExists =
-        chapters == null || chapters.any((c) => c.number == _sel.chapter);
-    switch (decideSearchShortcut(
-      exactFound: found,
-      chapterExists: chapterExists,
-    )) {
-      case SearchShortcut.lesson:
-        context.go('/lesson');
-        break;
-      case SearchShortcut.chapterList:
-        _goChapterList(bannerPage: _sel.page);
-        break;
-      case SearchShortcut.noMatch:
-        LessonSelectionHolder.set(
-          LessonSelection(
-            subject: _sel.subject,
-            chapter: _sel.chapter,
-            page: _sel.page,
-            problem: _sel.problem,
-            queryText: _label(bn),
-            schoolClass: _schoolClass,
-          ),
-        );
-        context.go('/lesson/no-match');
-        break;
-    }
+    await resolveSearchFallback(
+      context: context,
+      subject: _sel.subject,
+      schoolClass: _schoolClass,
+      chapter: _sel.chapter,
+      page: _sel.page,
+      problem: _sel.problem,
+      label: _label(bn),
+      bn: bn,
+      goChapterList: (bannerPage) => _goChapterList(bannerPage: bannerPage),
+    );
   }
 
   @override
