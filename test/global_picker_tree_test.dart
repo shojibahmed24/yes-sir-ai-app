@@ -247,6 +247,33 @@ void main() {
     expect(tree.rootNodes.length, 15);
   });
 
+  test('paper2 guide: grammar note drills into the 60 model tests', () {
+    final c = _controller()
+      ..subjectId = 'english-2nd'
+      ..source = 'guide'
+      ..schoolClass = 9
+      ..chaptersLoading = false;
+    final e = _extras()
+      ..paper2Sections.counts = {
+        for (final v in paperTwoSections) v: 0,
+        'writing-letter': 59,
+      }
+      ..sets = const [
+        GuideModelSetInfo(setId: 'paper2-100', totalCount: 59, keyedCount: 56),
+      ];
+    final tree = _tree(c, e);
+    expect(tree.rootNodes.map((n) => n.id).toList(), [
+      'paper2:writing-letter',
+      'paper2-grammar-note',
+      'sets-group',
+    ]);
+    final note = tree.rootNodes[1];
+    expect(note.title, contains('গ্রামার'));
+    expect(note.title, contains('মডেল টেস্ট'));
+    expect(note.hasChildren, isTrue);
+    expect(tree.childrenOf(note)?.single.id, 'set:paper2-100');
+  });
+
   test('bangla 2nd guide: 11 type nodes, each a route pick', () {
     final c = _controller()
       ..subjectId = 'bangla-2nd'

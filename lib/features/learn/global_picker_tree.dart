@@ -6,12 +6,12 @@
 // Behavior underneath is unchanged: a pick maps to exactly the
 // state change the old per-subject dropdowns used to make.
 import '../../core/data/bangla_first_lessons.dart';
-import '../../core/data/paper2_sections.dart';
 import '../../core/data/set_only_chapters.dart';
 import '../../l10n/pages/bangla_first_strings.dart';
 import '../../l10n/pages/bangla_second_strings.dart';
 import 'bangla_second_types.dart';
 import 'global_picker_model.dart';
+import 'global_picker_paper2.dart';
 import 'global_picker_type_nodes.dart';
 import 'lesson_hub_nodes.dart';
 import 'search_flow_bangla_papers.dart';
@@ -95,27 +95,7 @@ GlobalPickerTree buildGlobalPickerTree({
     if (extras.sets.isNotEmpty) roots.add(setsGroupNode());
     loading = false;
   } else if (paper2Mode) {
-    // Only sections the live paper really has. Zero is a server
-    // fact (hidden); an unknown count stays visible, never a guess.
-    // All-zero data keeps the full list so the picker is never blank.
-    final known = extras.paper2SectionCounts;
-    final offered = known.isEmpty
-        ? paperTwoSections
-        : paperTwoSections.where((v) {
-            final n = known[v];
-            return n == null || n > 0;
-          }).toList();
-    final list = offered.isEmpty ? paperTwoSections : offered;
-    roots = [
-      for (final v in list)
-        GlobalPickerNode(
-          id: 'paper2:$v',
-          title: s[paperTwoSectionStringKey(v)]!,
-          subtitle: (known[v] ?? 0) > 0 ? numStr(known[v]!, bn) : null,
-          kind: GlobalPickerNodeKind.section,
-          pick: GlobalPickerPick.paper2(v),
-        ),
-    ];
+    roots = paper2SectionNodes(extras: extras, s: s, bn: bn);
     if (extras.sets.isNotEmpty) roots.add(setsGroupNode());
     loading = false;
   } else {

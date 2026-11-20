@@ -101,6 +101,7 @@ bool searchFlowTextbookMatches(SearchFlowType type, String? raw) {
     case SearchFlowType.exercise:
     case SearchFlowType.activity:
     case SearchFlowType.exerciseMcq:
+    case SearchFlowType.conceptualCreative:
       return false;
   }
 }

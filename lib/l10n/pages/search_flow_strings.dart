@@ -49,6 +49,8 @@ const Map<String, String> searchFlowStringsBn = {
   'setLabel': 'মডেল টেস্ট সেট',
   'setOnlyChaptersNote':
       'অধ্যায় {chapters}-এর প্রশ্ন শুধু মডেল টেস্ট সেটে আছে — ট্যাপ করে সেট খুলুন',
+  'paper2GrammarInSetsNote':
+      'গ্রামার Q1–Q10 শুধু মডেল টেস্টের ভেতরে আছে — ট্যাপ করে সেট খুলুন',
   'setAll': 'সব সেট',
   'setLoading': 'সেট লোড হচ্ছে…',
   'pickerSearchHint': 'খুঁজুন…',
@@ -84,8 +86,8 @@ const Map<String, String> searchFlowStringsBn = {
   'typeOtherPractice': 'মৌখিক ও কাজ',
   'typeActivity': 'অনুশীলনমূলক কাজ',
   'typeExerciseMcq': 'অনুশীলনীর বহুনির্বাচনি',
-  'practiceWorkWarning':
-      'এটা অনুশীলনের জন্য, পাঠ্যবইয়ের সমাধান নয়',
+  'typeConceptualCreative': 'কনসেপচুয়াল সৃজনশীল',
+  'practiceWorkWarning': 'এটা অনুশীলনের জন্য, পাঠ্যবইয়ের সমাধান নয়',
   'showList': 'তালিকা দেখুন',
   'jumpButton': 'সরাসরি উত্তর',
   'jumpChecking': 'খোঁজা হচ্ছে…',
@@ -161,6 +163,8 @@ const Map<String, String> searchFlowStringsEn = {
   'setLabel': 'Model test set',
   'setOnlyChaptersNote':
       'Chapters {chapters} questions are only in model test sets — tap to open them',
+  'paper2GrammarInSetsNote':
+      'Grammar Q1–Q10 lives only inside the model tests — tap to open a set',
   'setAll': 'All sets',
   'setLoading': 'Loading sets…',
   'pickerSearchHint': 'Search…',
@@ -196,8 +200,8 @@ const Map<String, String> searchFlowStringsEn = {
   'typeOtherPractice': 'Oral & activities',
   'typeActivity': 'Activities',
   'typeExerciseMcq': 'Exercise MCQs',
-  'practiceWorkWarning':
-      'This is for practice, not a textbook solution',
+  'typeConceptualCreative': 'Conceptual creative',
+  'practiceWorkWarning': 'This is for practice, not a textbook solution',
   'showList': 'Show list',
   'jumpButton': 'Go to answer',
   'jumpChecking': 'Searching…',

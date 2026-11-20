@@ -21,6 +21,7 @@ enum SearchFlowType {
   exercise,
   activity,
   exerciseMcq,
+  conceptualCreative,
 }
 
 /// The five original options (textbook mode and every subject
@@ -43,6 +44,7 @@ const _extraGuideTypes = <String, List<SearchFlowType>>{
     SearchFlowType.comprehension,
     SearchFlowType.mathProblem,
     SearchFlowType.otherPractice,
+    SearchFlowType.conceptualCreative,
   ],
   'civics': [SearchFlowType.knowledge, SearchFlowType.comprehension],
 };
@@ -58,6 +60,9 @@ const _higherMathTypes = [
   SearchFlowType.exercise,
   SearchFlowType.activity,
   SearchFlowType.exerciseMcq,
+  // Guide's 'কনসেপচুয়াল (CONCEPTUAL) সৃজনশীল' block: its own raw
+  // section value on the server, never folded into 'creative'.
+  SearchFlowType.conceptualCreative,
 ];
 
 /// Types a dropdown / picker offers. Extras only in guide mode.
@@ -91,6 +96,7 @@ const _labelKeys = {
   SearchFlowType.exercise: 'typeTextbookExercise',
   SearchFlowType.activity: 'typeActivity',
   SearchFlowType.exerciseMcq: 'typeExerciseMcq',
+  SearchFlowType.conceptualCreative: 'typeConceptualCreative',
 };
 
 /// Dropdown label for a search-flow type.
@@ -113,6 +119,9 @@ String searchFlowGuideSection(SearchFlowType type) => {
   SearchFlowType.exercise: 'grp_exercise',
   SearchFlowType.activity: 'grp_activity',
   SearchFlowType.exerciseMcq: 'grp_exercise_mcq',
+  // Raw section value, already a valid server LIST_SECTION value:
+  // no group, no server change, no deploy.
+  SearchFlowType.conceptualCreative: 'conceptual-creative',
 }[type]!;
 
 /// Types with a server-side questionType filter on the OLD guide
