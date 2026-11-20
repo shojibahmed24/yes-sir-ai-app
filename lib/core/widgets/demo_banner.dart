@@ -24,18 +24,11 @@ class DemoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = isBangla ? backendStringsBn : backendStringsEn;
-    final String? message;
-    if (!AppConfig.supabaseConfigured) {
-      message = s['demoMode'];
-    } else if (AppConfig.aiFullyConfigured) {
-      return const SizedBox.shrink();
-    } else if (!AppConfig.aiTextConfigured && !AppConfig.aiVoiceConfigured) {
-      message = s['backendConnectedAiMissing'];
-    } else if (AppConfig.aiTextConfigured) {
-      message = s['backendConnectedAiPartialText'];
-    } else {
-      message = s['backendConnectedAiPartialVoice'];
-    }
+    // 2026-11-21: the old "partial live" banner advertised an
+    // unfinished product to every real user. It now shows ONLY in
+    // DEMO mode (no backend configured), where it is a true warning.
+    if (AppConfig.supabaseConfigured) return const SizedBox.shrink();
+    final message = s['demoMode'];
     final scheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
@@ -43,10 +36,9 @@ class DemoBanner extends StatelessWidget {
       color: scheme.secondaryContainer,
       child: Text(
         message!,
-        style: Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.copyWith(color: scheme.onSecondaryContainer),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: scheme.onSecondaryContainer),
         textAlign: TextAlign.center,
       ),
     );

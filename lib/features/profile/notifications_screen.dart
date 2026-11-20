@@ -19,8 +19,14 @@ class _Notif {
   final String body;
   final String action;
   final String route;
-  const _Notif(this.id, this.icon, this.title, this.body, this.action,
-      this.route);
+  const _Notif(
+    this.id,
+    this.icon,
+    this.title,
+    this.body,
+    this.action,
+    this.route,
+  );
 }
 
 class NotificationsScreen extends StatefulWidget {
@@ -57,18 +63,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     await prefs.setBool('ys_notif_cleared', _cleared);
   }
 
-  List<_Notif> _items(Map<String, String> s) => [
-        _Notif('streak', Icons.local_fire_department, s['streakTitle']!,
-            s['streakBody']!, s['goQuiz']!, '/quiz'),
-        _Notif('ai', Icons.smart_toy, s['aiTitle']!, s['aiBody']!,
-            s['openSolution']!, '/lesson'),
-        _Notif('badge', Icons.military_tech, s['badgeTitle']!,
-            s['badgeBody']!, '', '/progress'),
-        _Notif('test', Icons.menu_book, s['testTitle']!, s['testBody']!,
-            '', '/model-tests'),
-        _Notif('parent', Icons.shield, s['parentTitle']!, s['parentBody']!,
-            '', '/parent-pin'),
-      ];
+  // 2026-11-21: the five hardcoded rows were a "Demo list", not real
+  // delivered notifications. With no push/local notification pipeline
+  // yet, the honest screen is the empty state (the screen's own
+  // `empty` text), never invented items.
+  List<_Notif> _items(Map<String, String> s) => const [];
 
   void _open(_Notif item, Map<String, String> s) {
     setState(() => _read.add(item.id));
@@ -88,8 +87,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               Navigator.of(ctx).pop();
               context.push(item.route);
             },
-            child: Text(
-                item.action.isEmpty ? s['open']! : item.action),
+            child: Text(item.action.isEmpty ? s['open']! : item.action),
           ),
         ],
       ),
@@ -111,10 +109,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                24 + MediaQuery.of(context).padding.bottom,
+              ),
               children: [
-                Text(s['centre']!,
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  s['centre']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 Row(
                   children: [
                     Expanded(
@@ -139,22 +144,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
                 if (items.isEmpty) ...[
                   const SizedBox(height: 32),
-                  Text(s['empty']!,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center),
+                  Text(
+                    s['empty']!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
                 ] else ...[
                   // Phase 16 (M8): NO fake Today/Earlier grouping by
                   // list position — these items carry no stored dates,
                   // so they are shown as one honest ungrouped list
                   // labelled as a demo/static list.
-                  Text(s['demoNote']!,
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    s['demoNote']!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                   for (final item in items) _tile(item, s),
                 ],
                 Card(
                   child: ListTile(
-                    leading:
-                        const Icon(Icons.tune, color: AppTheme.primary),
+                    leading: const Icon(Icons.tune, color: AppTheme.primary),
                     title: Text(s['prefs']!),
                     subtitle: Text(s['prefsSub']!),
                     trailing: const Icon(Icons.chevron_right),
@@ -181,18 +189,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
           ],
         ),
-        title: Text(item.title,
-            style: TextStyle(
-                fontWeight:
-                    isUnread ? FontWeight.bold : FontWeight.normal)),
+        title: Text(
+          item.title,
+          style: TextStyle(
+            fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(item.body),
             if (item.action.isNotEmpty)
-              Text(item.action,
-                  style: const TextStyle(
-                      color: AppTheme.primaryDark, fontWeight: FontWeight.w600)),
+              Text(
+                item.action,
+                style: const TextStyle(
+                  color: AppTheme.primaryDark,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
           ],
         ),
         onTap: () => _open(item, s),
