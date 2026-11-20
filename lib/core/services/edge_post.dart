@@ -24,8 +24,8 @@ final HttpClient _sharedClient = HttpClient()
 /// Exposed for tests/teardown only; production code must not close it.
 HttpClient get sharedEdgeHttpClient => _sharedClient;
 
-const _openTimeout = Duration(seconds: 12);
-const _bodyTimeout = Duration(seconds: 15);
+const _openTimeout = Duration(seconds: 30);
+const _bodyTimeout = Duration(seconds: 45);
 
 /// Bodies above this size are decoded off the UI isolate: a bulk
 /// chapter/bank reply can be 1,500+ rows, and decoding it inline

@@ -19,29 +19,41 @@ class SubjectCard extends StatelessWidget {
     required this.chaptersLabel,
     required this.lockedLabel,
     this.subjectId = 'math',
+    this.guideOnly = false,
+    this.guideLabel = '',
   });
   final String subjectId;
   final String name;
   final int chapters;
   final int done;
   final bool locked;
+
+  /// True for a subject with NO supplied textbook but a real guide: it
+  /// stays usable and opens the guide search flow (guide-only launch).
+  final bool guideOnly;
+  final String guideLabel;
   final String chaptersLabel;
   final String lockedLabel;
 
   @override
   Widget build(BuildContext context) {
     final progress = chapters == 0 ? 0.0 : done / chapters;
-    // UI palette (গ): subject-colour accent + progress bar; locked
-    // cards keep the muted lock look, no colour tease.
+    // UI palette (গ): subject-colour accent + progress bar; a truly
+    // locked card (no book AND no guide) keeps the muted lock look.
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final accent = locked
+    final inert = locked && !guideOnly;
+    final accent = inert
         ? AppTheme.inkMuted
         : AppTheme.subjectColorFor(subjectId, dark: dark);
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return AnimatedCard(
       accent: accent,
       radius: Rad.xl,
-      onTap: locked ? null : () => context.go('/home/subjects/$subjectId'),
+      onTap: inert
+          ? null
+          : guideOnly
+              ? () => context.go('/search-flow?subject=$subjectId')
+              : () => context.go('/home/subjects/$subjectId'),
       child: Padding(
         padding: const EdgeInsets.all(Sp.lg),
         child: Column(
@@ -68,18 +80,20 @@ class SubjectCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ),
-                if (locked) Icon(Icons.lock_outlined, color: muted),
+                if (inert) Icon(Icons.lock_outlined, color: muted),
               ],
             ),
             const SizedBox(height: Sp.sm),
             Text(
-              '$chapters $chaptersLabel',
+              guideOnly
+                  ? guideLabel
+                  : '$chapters $chaptersLabel',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             // "Book not supplied yet" is information, not an error:
             // muted ink, never the red error colour.
-            if (locked) Text(lockedLabel, style: TextStyle(color: muted)),
-            if (!locked) ...[
+            if (inert) Text(lockedLabel, style: TextStyle(color: muted)),
+            if (!inert && !guideOnly) ...[
               const SizedBox(height: Sp.sm),
               ClipRRect(
                 borderRadius: BorderRadius.circular(Rad.sm),

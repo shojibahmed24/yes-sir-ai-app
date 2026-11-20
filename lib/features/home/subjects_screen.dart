@@ -179,6 +179,8 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                                   .where((c) => c.startsWith('${subj.id}|'))
                                   .length,
                               locked: subj.locked,
+                              guideOnly: subj.locked && subj.hasGuide,
+                              guideLabel: s['guideAvailable']!,
                               subjectId: subj.id,
                               chaptersLabel: s['chapters']!,
                               lockedLabel:
