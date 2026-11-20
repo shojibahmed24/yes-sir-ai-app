@@ -8,6 +8,7 @@ import 'package:yes_sir_ai/features/practice/practice_store.dart';
 import 'package:yes_sir_ai/features/progress/widgets/progress_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/progress_strings.dart';
+import 'package:yes_sir_ai/features/progress/widgets/progress_hero.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class ProgressScreen extends StatelessWidget {
@@ -19,7 +20,9 @@ class ProgressScreen extends StatelessWidget {
     final now = DateTime.now();
     for (int i = 6; i >= 0; i--) {
       final d = now.subtract(Duration(days: i));
-      days.add((bangla ? progressWeekdaysBn : progressWeekdaysEn)[d.weekday % 7]);
+      days.add(
+        (bangla ? progressWeekdaysBn : progressWeekdaysEn)[d.weekday % 7],
+      );
     }
     return days;
   }
@@ -30,7 +33,11 @@ class ProgressScreen extends StatelessWidget {
     final now = DateTime.now();
     for (int i = 6; i >= 0; i--) {
       final d = now.subtract(Duration(days: i));
-      out.add(set.contains('${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}'));
+      out.add(
+        set.contains(
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}',
+        ),
+      );
     }
     return out;
   }
@@ -40,11 +47,16 @@ class ProgressScreen extends StatelessWidget {
     return ValueListenableBuilder<Locale>(
       valueListenable: languageNotifier,
       builder: (context, locale, _) {
-        final s = locale.languageCode == 'bn' ? progressStringsBn : progressStringsEn;
+        final s = locale.languageCode == 'bn'
+            ? progressStringsBn
+            : progressStringsEn;
         final bangla = locale.languageCode == 'bn';
         return ThemedScaffold(
           appBar: AppBar(
-            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/home'),
+            ),
             title: Text(s['title']!),
           ),
           body: FutureBuilder<ProgressSummary>(
@@ -56,54 +68,88 @@ class ProgressScreen extends StatelessWidget {
               // 'no data' even when the server row held a real streak /
               // chapters / average. Empty state only when BOTH local
               // runs and server numbers are absent.
-              final hasServerNumbers = sum.streakDays > 0 || sum.chaptersDone > 0 || sum.averageScore > 0;
+              final hasServerNumbers =
+                  sum.streakDays > 0 ||
+                  sum.chaptersDone > 0 ||
+                  sum.averageScore > 0;
               if (sum.totalAttempts == 0 && !hasServerNumbers) {
                 return ListView(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    16,
+                    16,
+                    16 + MediaQuery.of(context).padding.bottom,
+                  ),
                   children: [
-                    Text(s['noData']!, style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      s['noData']!,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 8),
                     Text(s['noDataSub']!),
                     const SizedBox(height: 16),
-                    ElevatedButton(onPressed: () => context.go('/practice'), child: Text(s['startPractice']!)),
+                    ElevatedButton(
+                      onPressed: () => context.go('/practice'),
+                      child: Text(s['startPractice']!),
+                    ),
                   ],
                 );
               }
               final today = PracticeSession.today();
-              final didQuizToday = sum.attempts.any((a) => a.kind == 'quiz' && a.date == today);
-              final didModelToday = sum.attempts.any((a) => a.kind == 'model' && a.date == today);
-              final tasksDone = (didQuizToday ? 1 : 0) + (didModelToday ? 1 : 0) + (sum.goalProgress >= 1 ? 1 : 0);
+              final didQuizToday = sum.attempts.any(
+                (a) => a.kind == 'quiz' && a.date == today,
+              );
+              final didModelToday = sum.attempts.any(
+                (a) => a.kind == 'model' && a.date == today,
+              );
+              final tasksDone =
+                  (didQuizToday ? 1 : 0) +
+                  (didModelToday ? 1 : 0) +
+                  (sum.goalProgress >= 1 ? 1 : 0);
               return ListView(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  16 + MediaQuery.of(context).padding.bottom,
+                ),
                 children: [
                   if (sum.totalAttempts == 0 && hasServerNumbers)
                     Card(
-                      child: Padding(padding: const EdgeInsets.all(16), child: Text(s['serverNote']!)),
-                    ),
-                  if (sum.totalAttempts == 0 && hasServerNumbers) const SizedBox(height: 12),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.workspace_premium),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text("${s['level']!} ${sum.level} · ${sum.xp} XP", style: Theme.of(context).textTheme.headlineMedium)),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(s['serverNote']!),
                       ),
                     ),
+                  if (sum.totalAttempts == 0 && hasServerNumbers)
+                    const SizedBox(height: 12),
+                  ProgressHero(
+                    title: "${s['level']!} ${sum.level} · ${sum.xp} XP",
+                    goalProgress: sum.goalProgress,
+                    showProgress: sum.goalMinutes > 0,
                   ),
                   const SizedBox(height: 12),
-                  StreakRow(days: _last7Labels(bangla), active: _last7Active(sum), label: '${sum.streakDays} ${s['streak']!}'),
+                  StreakRow(
+                    days: _last7Labels(bangla),
+                    active: _last7Active(sum),
+                    label: '${sum.streakDays} ${s['streak']!}',
+                  ),
                   const SizedBox(height: 12),
                   // Phase 16 (M6): goal in the user's own minutes; no goal
                   // saved => honest no-goal text, never a hardcoded ring.
                   if (sum.goalMinutes == 0)
                     Card(
-                      child: Padding(padding: const EdgeInsets.all(16), child: Text(s['noGoal']!)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(s['noGoal']!),
+                      ),
                     )
                   else
-                    GoalRing(done: sum.todayMinutes, goal: sum.goalMinutes, label: "${s['goalTitle']!} (${s['minutes']!})"),
+                    GoalRing(
+                      done: sum.todayMinutes,
+                      goal: sum.goalMinutes,
+                      label: "${s['goalTitle']!} (${s['minutes']!})",
+                    ),
                   const SizedBox(height: 12),
                   Card(
                     child: Padding(
@@ -111,7 +157,10 @@ class ProgressScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(s['week']!, style: Theme.of(context).textTheme.headlineMedium),
+                          Text(
+                            s['week']!,
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
                           // Phase 17 (L8): with no local runs, show the server
                           // numbers themselves — not '0 runs · avg 0%'.
                           Text(
@@ -124,8 +173,14 @@ class ProgressScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text(s['today']!, style: Theme.of(context).textTheme.headlineLarge),
-                  Text('$tasksDone/3 ${s['todaySub']!}', style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    s['today']!,
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                  Text(
+                    '$tasksDone/3 ${s['todaySub']!}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                   const SizedBox(height: 8),
                   TaskTile(
                     title: s['taskQuiz']!,
@@ -146,14 +201,27 @@ class ProgressScreen extends StatelessWidget {
                         subject = 'math';
                       }
                       PracticeSession.selectedSubject = subject;
-                      PracticeSession.quizItems = practiceService.quizFor(subject);
+                      PracticeSession.quizItems = practiceService.quizFor(
+                        subject,
+                      );
                       context.go('/quiz');
                     },
                   ),
-                  TaskTile(title: s['taskModel']!, done: didModelToday, onTap: () => context.go('/model-tests')),
-                  TaskTile(title: s['taskGoal']!, done: sum.goalProgress >= 1, onTap: () => context.go('/practice')),
+                  TaskTile(
+                    title: s['taskModel']!,
+                    done: didModelToday,
+                    onTap: () => context.go('/model-tests'),
+                  ),
+                  TaskTile(
+                    title: s['taskGoal']!,
+                    done: sum.goalProgress >= 1,
+                    onTap: () => context.go('/practice'),
+                  ),
                   const SizedBox(height: 12),
-                  OutlinedButton(onPressed: () => context.go('/achievements'), child: Text(s['achievements']!)),
+                  OutlinedButton(
+                    onPressed: () => context.go('/achievements'),
+                    child: Text(s['achievements']!),
+                  ),
                 ],
               );
             },
