@@ -24,6 +24,7 @@ import '../learn/widgets/digits.dart';
 import '../learn/widgets/subject_guide_card.dart';
 import 'widgets/class_selector.dart';
 import 'widgets/subject_card.dart';
+import 'widgets/subjects_overall_card.dart';
 import 'widgets/home_bottom_nav.dart';
 import 'widgets/home_empty_state.dart';
 
@@ -150,23 +151,11 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     s: s,
                   ),
                   const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s['overall']!,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          Text(
-                            '${numStr(supplied, bn)} ${s['booksSupplied']!}',
-                          ),
-                          Text('${numStr(lessons, bn)} ${s['lessonsOpened']!}'),
-                        ],
-                      ),
-                    ),
+                  SubjectsOverallCard(
+                    title: s['overall']!,
+                    booksLine: '${numStr(supplied, bn)} ${s['booksSupplied']!}',
+                    lessonsLine:
+                        '${numStr(lessons, bn)} ${s['lessonsOpened']!}',
                   ),
                   const SizedBox(height: 16),
                   SectionHeader(title: s['allSubjects']!),

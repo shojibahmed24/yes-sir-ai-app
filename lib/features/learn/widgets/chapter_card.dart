@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/profile_service.dart';
+import '../../../theme/animated_card.dart';
 import '../../../theme/app_theme.dart';
 import '../lesson_selection.dart';
 import 'mock_data.dart';
@@ -39,38 +40,43 @@ class ChapterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // UI palette (গ): the leading icon carries the subject colour
-    // (done stays green).
+    // (done stays green). ONE card style app-wide (AnimatedCard).
     final dark = Theme.of(context).brightness == Brightness.dark;
-    return Card(
-      child: ListTile(
-        leading: Icon(_icon,
-            color: chapter.status == 'done'
-                ? AppTheme.success
-                : AppTheme.subjectColorFor(subjectId, dark: dark)),
-        title: Text(
-          bn ? chapter.bn : chapter.en,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(chapter.pages.isEmpty
-            ? statusLabel
-            : '$pagesLabel ${chapter.pages} · $statusLabel'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () async {
-          // Class stamp: saved profile class when available.
-          // Null = no class known here — Search re-stamps from
-          // the saved profile, never a silent 6 at creation.
-          final schoolClass = await profileService.loadSchoolClass();
-          if (!context.mounted) return;
-          LessonSelectionHolder.set(LessonSelection(
+    final accent = chapter.status == 'done'
+        ? AppTheme.success
+        : AppTheme.subjectColorFor(subjectId, dark: dark);
+    return AnimatedCard(
+      accent: accent,
+      onTap: () async {
+        // Class stamp: saved profile class when available.
+        // Null = no class known here — Search re-stamps from
+        // the saved profile, never a silent 6 at creation.
+        final schoolClass = await profileService.loadSchoolClass();
+        if (!context.mounted) return;
+        LessonSelectionHolder.set(
+          LessonSelection(
             subject: subjectId,
             chapter: chapterNumber,
             page: 45,
             problem: 5,
             schoolClass: schoolClass,
-          ));
-          context.go('/search');
-        },
+          ),
+        );
+        context.go('/search');
+      },
+      child: ListTile(
+        leading: Icon(_icon, color: accent),
+        title: Text(
+          bn ? chapter.bn : chapter.en,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          chapter.pages.isEmpty
+              ? statusLabel
+              : '$pagesLabel ${chapter.pages} · $statusLabel',
+        ),
+        trailing: const Icon(Icons.chevron_right),
       ),
     );
   }
