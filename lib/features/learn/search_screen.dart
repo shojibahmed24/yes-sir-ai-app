@@ -9,13 +9,13 @@
 // Guide Bank (linked below).
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/services/books_service.dart';
 import '../../core/services/explanation_service.dart';
 import '../../core/services/profile_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/search_strings.dart';
 import 'learn_store.dart';
 import 'lesson_selection.dart';
+import 'search_solution_fallback.dart';
 import 'widgets/search_guide_section.dart';
 import 'widgets/search_recents.dart';
 import 'widgets/search_stepper.dart';

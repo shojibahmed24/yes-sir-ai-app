@@ -41,9 +41,7 @@ class SubjectCard extends StatelessWidget {
     return AnimatedCard(
       accent: accent,
       radius: Rad.xl,
-      onTap: locked
-          ? null
-          : () => context.go('/home/subjects/$subjectId/chapters'),
+      onTap: locked ? null : () => context.go('/home/subjects/$subjectId'),
       child: Padding(
         padding: const EdgeInsets.all(Sp.lg),
         child: Column(

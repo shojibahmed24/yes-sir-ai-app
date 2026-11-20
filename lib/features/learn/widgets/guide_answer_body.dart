@@ -127,7 +127,6 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
 
   @override
   Widget build(BuildContext context) {
-    final onSurface = Theme.of(context).colorScheme.onSurface;
     final onVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     final fontSize = widget.fontSize;
     return ListView(

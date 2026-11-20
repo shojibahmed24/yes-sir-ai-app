@@ -7,6 +7,7 @@ import '../features/home/home_screen.dart';
 import '../features/home/opened_chapters_screen.dart';
 import '../features/home/today_lessons_screen.dart';
 import '../features/home/subjects_screen.dart';
+import '../features/subject_detail/subject_detail_screen.dart';
 import '../features/learn/chapters_screen.dart';
 import '../features/learn/search_screen.dart';
 import '../features/learn/chapter_questions_screen.dart';
@@ -50,6 +51,15 @@ final List<GoRoute> learnRoutes = [
     builder: (c, s) => BackScope(
       parent: '/home/subjects',
       child: ChaptersScreen(subjectId: s.pathParameters['subjectId'] ?? 'math'),
+    ),
+  ),
+  GoRoute(
+    path: '/home/subjects/:subjectId',
+    builder: (c, s) => BackScope(
+      parent: '/home/subjects',
+      child: SubjectDetailScreen(
+        subjectId: s.pathParameters['subjectId'] ?? 'math',
+      ),
     ),
   ),
   // Step 6 group contract (Step 7: the old /guide-bank and
