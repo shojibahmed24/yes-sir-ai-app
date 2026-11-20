@@ -14,7 +14,8 @@ const Map<String, String> settingsStringsBn = {
   'small': 'ছোট',
   'normal': 'স্বাভাবিক',
   'large': 'বড়',
-  'preview': 'লাইভ রিডিং প্রিভিউ: একটি গতিশীল বস্তুর ত্বরণ হলো তার বেগ পরিবর্তনের হার।',
+  'preview':
+      'লাইভ রিডিং প্রিভিউ: একটি গতিশীল বস্তুর ত্বরণ হলো তার বেগ পরিবর্তনের হার।',
   'theme': 'অ্যাপ থিম ও মোড',
   'themeSub': 'পড়ার সময় চোখের আরাম নিশ্চিত করো',
   'day': 'ডে মোড',
@@ -34,10 +35,14 @@ const Map<String, String> settingsStringsBn = {
   'editGoal': 'দিনে পড়ার লক্ষ্য (মিনিট)',
   'editGuardianName': 'অভিভাবকের নাম',
   'editGuardianPhone': 'অভিভাবকের ফোন নম্বর',
-  'sepiaNote': 'সেপিয়া থিম এখনো অ্যাপে নেই, তাই সেপিয়া বেছে নিলে ডে মোড (হালকা) দেখাবে।',
+  'profileDetails': 'প্রোফাইল তথ্য',
+  'profileDetailsSub': 'নাম, স্কুল, পড়ার লক্ষ্য ও অভিভাবকের তথ্য',
+  'sepiaNote':
+      'সেপিয়া থিম এখনো অ্যাপে নেই, তাই সেপিয়া বেছে নিলে ডে মোড (হালকা) দেখাবে।',
   'demoTestSection': 'ডেমো টেস্ট — শুধু টেস্টের জন্য, আসল প্রিমিয়াম নয়',
   'demoVoiceTest': 'DEMO ভয়েস-গেট টেস্ট চালু করো (শুধু টেস্ট)',
-  'demoVoiceTestNote': 'শুধু টেস্টের জন্য একটি লোকাল ফ্ল্যাগ। চালু করলে শুধু ডেমো মোডে ভয়েস টিউটরের গেট খুলে টেস্ট করা যাবে — এটি কোনো কেনা নয়, আসল প্রিমিয়াম দেয় না, বিলিং বা পেওয়ালের আচরণ বদলায় না, এবং রিলিজে (আসল ব্যাকএন্ড চালু থাকলে) এই ফ্ল্যাগ গোনা হয় না, তাই প্রিমিয়ামের দাবি হিসেবে টিকে থাকে না। ডিফল্ট: বন্ধ। সাইন-আউট করলে বন্ধ হয়ে যায়।',
+  'demoVoiceTestNote':
+      'শুধু টেস্টের জন্য একটি লোকাল ফ্ল্যাগ। চালু করলে শুধু ডেমো মোডে ভয়েস টিউটরের গেট খুলে টেস্ট করা যাবে — এটি কোনো কেনা নয়, আসল প্রিমিয়াম দেয় না, বিলিং বা পেওয়ালের আচরণ বদলায় না, এবং রিলিজে (আসল ব্যাকএন্ড চালু থাকলে) এই ফ্ল্যাগ গোনা হয় না, তাই প্রিমিয়ামের দাবি হিসেবে টিকে থাকে না। ডিফল্ট: বন্ধ। সাইন-আউট করলে বন্ধ হয়ে যায়।',
   'save': 'সংরক্ষণ করো',
   'notChosen': 'ক্লাস এখনো বাছা হয়নি',
   'selectClass': 'ক্লাস বাছো',
@@ -54,14 +59,17 @@ const Map<String, String> settingsStringsBn = {
   'pictureDenied': 'ছবি বাছার অনুমতি দেওয়া হয়নি — ছবি বদলানো হয়নি',
   'pictureUnavailable': 'ছবি বাছা যায়নি — আবার চেষ্টা করো',
   'pictureRemoved': 'প্রোফাইল ছবি সরানো হয়েছে',
-  'pictureLocalOnlyNote': 'নোট: এই ছবি শুধু এই ডিভাইসে আছে — অনলাইনে আপলোড হয়নি, তাই অন্য ডিভাইসে দেখাবে না।',
-  'notifNote': 'নোট: এই টগলগুলো এখনো কোনো আসল নোটিফিকেশন চালু/বন্ধ করে না — পুশ বা লোকাল নোটিফিকেশন এখনো চালু হয়নি।',
+  'pictureLocalOnlyNote':
+      'নোট: এই ছবি শুধু এই ডিভাইসে আছে — অনলাইনে আপলোড হয়নি, তাই অন্য ডিভাইসে দেখাবে না।',
+  'notifNote':
+      'নোট: এই টগলগুলো এখনো কোনো আসল নোটিফিকেশন চালু/বন্ধ করে না — পুশ বা লোকাল নোটিফিকেশন এখনো চালু হয়নি।',
   // AI provider (2026-11-04): OpenRouter + Gemini, both via Edge.
   'aiProvider': 'AI প্রোভাইডার',
   'aiProviderSub': 'লেখা উত্তরের জন্য কোন AI ব্যবহার হবে',
   'openRouter': 'OpenRouter',
   'gemini': 'Gemini',
-  'aiProviderNote': 'নোট: Gemini বেছে নিলে Supabase Edge Secrets-এ GEMINI_API_KEY বসাতে হবে আর explain-question ফাংশন রিডিপ্লয় করতে হবে, না হলে সৎ এরর দেখাবে। OpenRouter-ই ডিফল্ট।',
+  'aiProviderNote':
+      'নোট: Gemini বেছে নিলে Supabase Edge Secrets-এ GEMINI_API_KEY বসাতে হবে আর explain-question ফাংশন রিডিপ্লয় করতে হবে, না হলে সৎ এরর দেখাবে। OpenRouter-ই ডিফল্ট।',
 };
 const Map<String, String> settingsStringsEn = {
   'title': 'Settings',
@@ -76,7 +84,8 @@ const Map<String, String> settingsStringsEn = {
   'small': 'Small',
   'normal': 'Normal',
   'large': 'Large',
-  'preview': 'Live reading preview: Acceleration of a moving object is the rate of change of its velocity.',
+  'preview':
+      'Live reading preview: Acceleration of a moving object is the rate of change of its velocity.',
   'theme': 'App theme and mode',
   'themeSub': 'Choose light that is easy on the eyes while reading',
   'day': 'Day mode',
@@ -96,10 +105,14 @@ const Map<String, String> settingsStringsEn = {
   'editGoal': 'Daily study goal (minutes)',
   'editGuardianName': 'Guardian name',
   'editGuardianPhone': 'Guardian phone number',
-  'sepiaNote': 'There is no sepia theme in the app yet, so choosing sepia shows day mode (light).',
+  'profileDetails': 'Profile details',
+  'profileDetailsSub': 'Name, school, daily goal and guardian details',
+  'sepiaNote':
+      'There is no sepia theme in the app yet, so choosing sepia shows day mode (light).',
   'demoTestSection': 'Demo test — testing only, not real premium',
   'demoVoiceTest': 'Enable DEMO voice-gate test (test only)',
-  'demoVoiceTestNote': 'A local test flag only. When ON, it only opens the voice tutor gate for testing in demo mode — it is not a purchase, grants no real premium, does not change billing or paywall behaviour, and is ignored once a real backend is configured, so it never survives as a premium claim in release. Default: OFF. Signing out turns it off.',
+  'demoVoiceTestNote':
+      'A local test flag only. When ON, it only opens the voice tutor gate for testing in demo mode — it is not a purchase, grants no real premium, does not change billing or paywall behaviour, and is ignored once a real backend is configured, so it never survives as a premium claim in release. Default: OFF. Signing out turns it off.',
   'save': 'Save settings',
   'notChosen': 'Class not chosen yet',
   'selectClass': 'Choose class',
@@ -116,12 +129,15 @@ const Map<String, String> settingsStringsEn = {
   'pictureDenied': 'Picture permission was not given — picture unchanged',
   'pictureUnavailable': 'Could not pick a picture — try again',
   'pictureRemoved': 'Profile picture removed',
-  'pictureLocalOnlyNote': 'Note: this picture lives on this device only — it was not uploaded online, so it will not show on another device.',
-  'notifNote': 'Note: these toggles do not switch any real notification on or off yet — no push or local notification scheduling exists yet.',
+  'pictureLocalOnlyNote':
+      'Note: this picture lives on this device only — it was not uploaded online, so it will not show on another device.',
+  'notifNote':
+      'Note: these toggles do not switch any real notification on or off yet — no push or local notification scheduling exists yet.',
   // AI provider (2026-11-04): OpenRouter + Gemini, both via Edge.
   'aiProvider': 'AI provider',
   'aiProviderSub': 'Which AI answers written explanations',
   'openRouter': 'OpenRouter',
   'gemini': 'Gemini',
-  'aiProviderNote': 'Note: if you choose Gemini, set GEMINI_API_KEY in Supabase Edge Secrets and redeploy the explain-question function, otherwise an honest error will show. OpenRouter is the default.',
+  'aiProviderNote':
+      'Note: if you choose Gemini, set GEMINI_API_KEY in Supabase Edge Secrets and redeploy the explain-question function, otherwise an honest error will show. OpenRouter is the default.',
 };
