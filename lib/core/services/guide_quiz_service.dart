@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/backend_models.dart';
 import '../models/guide_bank_model.dart';
+import 'guide_key_bulk_service.dart';
 import 'guide_quiz_pool.dart';
 import 'guide_quiz_sampling.dart';
 import 'question_generation.dart';
@@ -42,6 +43,33 @@ class GuideQuizService {
     required bool bangla,
     required int limit,
   }) async {
+    // C6 (2026-11-21): ONE bulk key call for the whole candidate list.
+    // Falls back to the per-question Mode G loop only when the bulk
+    // endpoint is unavailable (old server / network error).
+    final bulkKeys = await fetchGuideKeys([
+      for (final c in candidates) c.question.id,
+    ]);
+    if (bulkKeys != null) {
+      final bulkItems = <QuizItem>[];
+      for (final c in candidates) {
+        if (bulkItems.length >= limit) break;
+        if (c.question.section == 'bank') continue;
+        final key = bulkKeys[c.question.id] ?? '';
+        if (key.isEmpty) continue;
+        final accepted = acceptedOptionIndices(
+            parseAcceptedAnswerKeys(key), c.question.options);
+        if (accepted.isEmpty) continue;
+        bulkItems.add(QuizItem(
+          id: c.question.id,
+          questionBn: c.question.questionText,
+          questionEn: c.question.questionText,
+          options: c.question.options,
+          correctIndex: accepted.first,
+          correctIndices: accepted,
+        ));
+      }
+      return bulkItems;
+    }
     final items = <QuizItem>[];
     var at = 0;
     while (items.length < limit && at < candidates.length) {

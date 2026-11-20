@@ -62,6 +62,7 @@ const Map<String, String> aboutStringsEn = {
   'package':
       'Package: com.yessirai.app • Premium: Google Play Billing only, \$5/month',
   'home': 'Go home',
+  'privacy': 'Privacy policy',
   'termsTitle': 'Terms and privacy',
   'termsBody':
       'The full terms and privacy text is not added to this app yet. Until then: your study data stays in your account, voice is premium-only (30 minutes/month), and payment is Google Play only.',

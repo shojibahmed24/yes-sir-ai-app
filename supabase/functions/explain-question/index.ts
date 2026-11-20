@@ -686,6 +686,30 @@ Deno.serve(async (req) => {
   // case groundingSolution stays HIDDEN grounding for the AI
   // only — especially for guide_error rows without a correction
   // yet, whose printed answer must never be shown as trusted. ----
+  // C6 BULK KEY RESOLUTION (2026-11-21): one call for a whole model
+  // test instead of one Mode G call per question. Input:
+  // { resolveKeys: [ids] } (max 200) -> { keys: { id: key } }.
+  if (Array.isArray(body.resolveKeys)) {
+    const ids = (body.resolveKeys as unknown[])
+      .filter((x): x is string => typeof x === 'string' && x !== '')
+      .slice(0, 200);
+    if (ids.length === 0) return json({ keys: {} });
+    if ((Deno.env.get('GUIDE_KEY_GATE') ?? '') === 'premium' && !userId) {
+      return json({ error: 'sign-in-required' }, 401);
+    }
+    const { data, error } = await supabase
+      .from('guide_questions')
+      .select('id, answer_key')
+      .in('id', ids);
+    if (error) return json({ error: 'keys-unavailable' }, 503);
+    const keys: Record<string, string> = {};
+    for (const row of data ?? []) {
+      const key = (row.answer_key as string | null) ?? '';
+      if (key !== '') keys[row.id as string] = key;
+    }
+    return json({ keys });
+  }
+
   if (typeof body.guideQuestionId === 'string' &&
       body.guideQuestionId !== '') {
     const gLang = body.language === 'en' ? 'en' : 'bn';

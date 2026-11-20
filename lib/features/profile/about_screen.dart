@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/help_about_strings.dart';
@@ -38,6 +39,10 @@ class _AboutScreenState extends State<AboutScreen> {
     } catch (_) {
       // Tests / unsupported platform: keep the placeholder.
     }
+  }
+
+  Future<void> _open(BuildContext context, String url) async {
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -78,21 +83,26 @@ class _AboutScreenState extends State<AboutScreen> {
           const SizedBox(height: 4),
           Text(s['package']!, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: Text(s['termsTitle']!),
-                content: Text(s['termsBody']!),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text(s['close']!),
-                  ),
-                ],
+          // Legal links (2026-11-21): hosted bilingual pages open in
+          // the browser; no legal text is duplicated inside the app.
+          Wrap(
+            spacing: 8,
+            children: [
+              TextButton(
+                onPressed: () => _open(
+                  context,
+                  'https://shojibahmed24.github.io/yes-sir-ai-app/privacy-policy.html',
+                ),
+                child: Text(s['privacy']!),
               ),
-            ),
-            child: Text(s['terms']!),
+              TextButton(
+                onPressed: () => _open(
+                  context,
+                  'https://shojibahmed24.github.io/yes-sir-ai-app/terms.html',
+                ),
+                child: Text(s['terms']!),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           ElevatedButton(
