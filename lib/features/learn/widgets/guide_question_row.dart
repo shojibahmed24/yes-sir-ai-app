@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/guide_bank_model.dart';
+import '../../../theme/animated_card.dart';
 import '../../../theme/app_theme.dart';
 import 'guide_report_button.dart';
 
@@ -51,17 +52,19 @@ class GuideQuestionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // UI palette (গ): the row icon carries the subject colour
-    // (locked rows keep the error-red lock, unchanged).
+    // UI palette (গ): the row icon and the card border carry the
+    // subject colour (locked rows keep the error-red lock,
+    // unchanged). Entrance is off: this list recycles rows while
+    // scrolling, so only the tap scale animates.
     final dark = Theme.of(context).brightness == Brightness.dark;
-    return Card(
+    final accent = locked
+        ? Theme.of(context).colorScheme.error
+        : AppTheme.subjectColorFor(subjectId, dark: dark);
+    return AnimatedCard(
+      accent: accent,
+      entrance: false,
       child: ListTile(
-        leading: Icon(
-          locked ? Icons.lock : Icons.assignment,
-          color: locked
-              ? Theme.of(context).colorScheme.error
-              : AppTheme.subjectColorFor(subjectId, dark: dark),
-        ),
+        leading: Icon(locked ? Icons.lock : Icons.assignment, color: accent),
         title: Text(
           question.questionText,
           maxLines: 2,
