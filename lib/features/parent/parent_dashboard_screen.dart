@@ -15,6 +15,7 @@ import '../../core/services/progress_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/parent_strings.dart';
 import '../../theme/app_theme.dart';
+import 'widgets/parent_hero.dart';
 import 'widgets/parent_stat_card.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
@@ -77,14 +78,15 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     final s = isBangla ? parentStringsBn : parentStringsEn;
     if (_loading) {
       return ThemedScaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/profile'),
-            ),
-            title: Text(s['dashTitle']!),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/profile'),
           ),
-          body: const Center(child: CircularProgressIndicator()));
+          title: Text(s['dashTitle']!),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
     final hasData = _streak > 0 || _chapters > 0 || _avg > 0 || _saved > 0;
     final heading = _name.isEmpty
@@ -99,91 +101,129 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
         title: Text(s['dashTitle']!),
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + MediaQuery.of(context).padding.bottom,
+        ),
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                color: AppTheme.amber.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(16)),
-            child: Row(children: [
-              const Icon(Icons.visibility),
-              const SizedBox(width: 8),
-              Expanded(child: Text(s['readOnly']!))
-            ]),
+              color: AppTheme.amber.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.visibility),
+                const SizedBox(width: 8),
+                Expanded(child: Text(s['readOnly']!)),
+              ],
+            ),
           ),
           if (AppConfig.demoMode) ...[
             const SizedBox(height: 12),
-            Text(s['demoNote']!,
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center),
+            Text(
+              s['demoNote']!,
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
           ],
           const SizedBox(height: 12),
-          Text(heading, style: Theme.of(context).textTheme.headlineMedium),
+          ParentHero(heading: heading, name: _name, schoolClass: _schoolClass),
           const SizedBox(height: 12),
           if (!hasData)
             Card(
-                child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(s['emptyProgress']!))),
-          Row(children: [
-            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(s['emptyProgress']!),
+              ),
+            ),
+          Row(
+            children: [
+              Expanded(
                 child: ParentStatCard(
-                    icon: Icons.local_fire_department,
-                    label: s['streak']!,
-                    value: '$_streak ${s['days']!}')),
-            const SizedBox(width: 12),
-            Expanded(
+                  icon: Icons.local_fire_department,
+                  color: AppTheme.amber,
+                  label: s['streak']!,
+                  value: '$_streak ${s['days']!}',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
                 child: ParentStatCard(
-                    icon: Icons.check_circle,
-                    label: s['chaptersDone']!,
-                    value: '$_chapters')),
-          ]),
+                  icon: Icons.check_circle,
+                  color: AppTheme.success,
+                  label: s['chaptersDone']!,
+                  value: '$_chapters',
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           ParentStatCard(
-              icon: Icons.quiz, label: s['avgScore']!, value: '$_avg%'),
+            icon: Icons.quiz,
+            color: AppTheme.primary,
+            label: s['avgScore']!,
+            value: '$_avg%',
+          ),
           const SizedBox(height: 12),
           ParentStatCard(
-              icon: Icons.bookmark, label: s['savedLabel']!, value: '$_saved'),
+            icon: Icons.bookmark,
+            color: AppTheme.secondary,
+            label: s['savedLabel']!,
+            value: '$_saved',
+          ),
           const SizedBox(height: 12),
           ParentStatCard(
-              icon: Icons.mic,
-              label: s['voiceUsedLabel']!,
-              value: '$_voiceUsed / $_voiceCap ${s['minutes']!}'),
+            icon: Icons.mic,
+            color: AppTheme.subjectColors['bgs']!,
+            label: s['voiceUsedLabel']!,
+            value: '$_voiceUsed / $_voiceCap ${s['minutes']!}',
+          ),
           const SizedBox(height: 12),
           Text(
-              _goalMinutes > 0
-                  ? "${s['goalLabel']!}: $_goalMinutes ${s['minutes']!}"
-                  : s['noGoal']!,
-              style: Theme.of(context).textTheme.bodyMedium),
+            _goalMinutes > 0
+                ? "${s['goalLabel']!}: $_goalMinutes ${s['minutes']!}"
+                : s['noGoal']!,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           const SizedBox(height: 12),
           Card(
-              child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(s['weakTitle']!,
-                            style: Theme.of(context).textTheme.headlineMedium),
-                        const SizedBox(height: 8),
-                        if (_weak.isEmpty)
-                          Text(s['weakEmpty']!)
-                        else
-                          for (final w in _weak)
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(w.label(
-                                  Localizations.localeOf(context)
-                                          .languageCode ==
-                                      'bn')),
-                              subtitle: Text(
-                                  '${w.wrong}/${w.total} ${s['wrong']!}'),
-                            ),
-                      ]))),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s['weakTitle']!,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  if (_weak.isEmpty)
+                    Text(s['weakEmpty']!)
+                  else
+                    for (final w in _weak)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          w.label(
+                            Localizations.localeOf(context).languageCode ==
+                                'bn',
+                          ),
+                        ),
+                        subtitle: Text('${w.wrong}/${w.total} ${s['wrong']!}'),
+                      ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
-              onPressed: () => context.go('/home'),
-              child: Text(s['backHome']!)),
+            onPressed: () => context.go('/home'),
+            child: Text(s['backHome']!),
+          ),
         ],
       ),
     );
