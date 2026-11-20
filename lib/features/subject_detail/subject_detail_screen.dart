@@ -35,13 +35,14 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
     final match = subjects.where((s) => s.id == widget.subjectId);
     if (match.isEmpty) return null;
     final SubjectInfo subj = match.first;
-    final openedHere = opened.where((c) => c.startsWith('${subj.id}|')).length;
+    final openedHere = LearnStore.openedChapterCount(opened, cls, subj.id);
     return SubjectDetailInfo(
       subjectId: subj.id,
       name: subj.name(bn),
       schoolClass: cls,
       chapters: subj.chapterCount,
       opened: openedHere,
+      hasGuide: subj.hasGuide,
     );
   }
 

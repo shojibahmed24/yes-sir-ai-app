@@ -13,6 +13,7 @@ const Map<String, String> subjectDetailStringsBn = {
   'loading': 'বিষয় লোড হচ্ছে…',
   'classLabel': 'ক্লাস',
   'noChapters': 'এই বিষয়ের কোনো অধ্যায় এখনো যোগ হয়নি',
+  'startNow': 'শুরু করুন',
 };
 
 const Map<String, String> subjectDetailStringsEn = {
@@ -30,4 +31,5 @@ const Map<String, String> subjectDetailStringsEn = {
   'loading': 'Loading subject…',
   'classLabel': 'Class',
   'noChapters': 'No chapters are added for this subject yet',
+  'startNow': 'Start now',
 };

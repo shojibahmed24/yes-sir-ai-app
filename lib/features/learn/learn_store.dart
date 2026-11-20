@@ -174,6 +174,45 @@ class LearnStore {
     return p.getStringList(_chapters) ?? const [];
   }
 
+  /// Chapter keys used to be '<subject>|<chapter>'; they now carry the
+  /// class ('<class>|<subject>|<chapter>') so a chapter opened in
+  /// class 6 never counts as progress in class 9. Null = malformed.
+  static (int? schoolClass, String subject, int chapter)? parseChapterKey(
+    String key,
+  ) {
+    final parts = key.split('|');
+    if (parts.length == 2) {
+      final n = int.tryParse(parts[1]);
+      if (parts[0].isEmpty || n == null || n < 1) return null;
+      return (null, parts[0], n);
+    }
+    if (parts.length == 3) {
+      final c = int.tryParse(parts[0]);
+      final n = int.tryParse(parts[2]);
+      if (c == null || parts[1].isEmpty || n == null || n < 1) return null;
+      return (c, parts[1], n);
+    }
+    return null;
+  }
+
+  /// Opened chapters of ONE class + subject. Legacy 2-part keys carry
+  /// no class and are counted for every class (the old behaviour), so
+  /// an existing install never loses its progress.
+  static int openedChapterCount(
+    List<String> keys,
+    int schoolClass,
+    String subject,
+  ) {
+    var count = 0;
+    for (final key in keys) {
+      final parsed = parseChapterKey(key);
+      if (parsed == null || parsed.$2 != subject) continue;
+      if (parsed.$1 != null && parsed.$1 != schoolClass) continue;
+      count++;
+    }
+    return count;
+  }
+
   static Future<List<String>> savedIds() async {
     final p = await SharedPreferences.getInstance();
     return p.getStringList(_saved) ?? const [];

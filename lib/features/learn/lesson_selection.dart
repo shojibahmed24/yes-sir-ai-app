@@ -88,7 +88,13 @@ class LessonSelection {
       );
 
   String get key => '$subject|$chapter|$page|$problem';
-  String get chapterKey => '$subject|$chapter';
+
+  /// Progress key: class-stamped when the class is known, so an opened
+  /// chapter in class 6 is not counted in class 9. Falls back to the
+  /// legacy '<subject>|<chapter>' when the route had no class.
+  String get chapterKey => schoolClass == null
+      ? '$subject|$chapter'
+      : '$schoolClass|$subject|$chapter';
 }
 
 /// The current selection. Defaults to the one grounded DEMO lesson

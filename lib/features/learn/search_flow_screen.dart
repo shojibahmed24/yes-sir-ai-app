@@ -38,9 +38,11 @@ class SearchFlowScreen extends StatefulWidget {
     super.key,
     this.initialSubjectId = 'math',
     this.initialSchoolClass,
+    this.initialSource,
   });
   final String initialSubjectId;
   final int? initialSchoolClass;
+  final String? initialSource;
 
   @override
   State<SearchFlowScreen> createState() => _SearchFlowScreenState();
@@ -53,8 +55,13 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
   String? _jumpMessage;
 
   void _ensureEnglish() => _englishHost.ensure(
-      subjectId: _c.subjectId, source: _c.source, schoolClass: _c.schoolClass,
-      onChanged: () { if (mounted) setState(() {}); });
+    subjectId: _c.subjectId,
+    source: _c.source,
+    schoolClass: _c.schoolClass,
+    onChanged: () {
+      if (mounted) setState(() {});
+    },
+  );
 
   @override
   void initState() {
@@ -62,11 +69,16 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
     _c = SearchFlowController(
       initialSubjectId: widget.initialSubjectId,
       initialSchoolClass: widget.initialSchoolClass,
+      initialSource: widget.initialSource,
       onChanged: () {
         if (mounted) setState(() {});
       },
     );
-    _extras = SearchFlowBrowseExtras(onChanged: () { if (mounted) setState(() {}); });
+    _extras = SearchFlowBrowseExtras(
+      onChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
     _c.init(languageNotifier.value.languageCode == 'bn').then((_) {
       if (mounted) {
         _extras.refreshGuide(_c.effectiveSubjectId, _c.effectiveClass);
@@ -90,17 +102,29 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
       context.go('/bangla-second');
       return;
     }
-    context.go('/search-flow-list?${_c.listQuery(questionNumber: questionNumber, setId: _extras.setId, paper2Section: _extras.paper2Section, chapterless: _extras.setId == null && (banglaFirst || paper2Mode))}');
+    context.go(
+      '/search-flow-list?${_c.listQuery(questionNumber: questionNumber, setId: _extras.setId, paper2Section: _extras.paper2Section, chapterless: _extras.setId == null && (banglaFirst || paper2Mode))}',
+    );
   }
 
   Future<void> _jump(Map<String, String> s, bool bn) async {
-    final result = await _c.jump(s, bn, paper2Section: _extras.paper2Section, setId: _extras.setId);
+    final result = await _c.jump(
+      s,
+      bn,
+      paper2Section: _extras.paper2Section,
+      setId: _extras.setId,
+    );
     if (!mounted) return;
     switch (result.kind) {
       case SearchFlowJumpKind.guideQuestion:
         // Step 7: back from the answer returns to this search screen.
-        GuideAnswerHolder.set(q: result.question!, subject: _c.subjectId,
-            chapter: _c.chapter!, schoolClass: _c.schoolClass, returnTo: '/search-flow?subject=${_c.subjectId}');
+        GuideAnswerHolder.set(
+          q: result.question!,
+          subject: _c.subjectId,
+          chapter: _c.chapter!,
+          schoolClass: _c.schoolClass,
+          returnTo: '/search-flow?subject=${_c.subjectId}',
+        );
         context.go('/guide-answer');
       case SearchFlowJumpKind.lesson:
         LessonSelectionHolder.set(result.lesson!);
@@ -122,17 +146,41 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
         final s = bn ? searchFlowStringsBn : searchFlowStringsEn;
         final englishGuideMode =
             _c.source == 'guide' && _c.subjectId == 'english';
-        final paper2Mode = _c.source == 'guide' && _c.subjectId == 'english-2nd';
+        final paper2Mode =
+            _c.source == 'guide' && _c.subjectId == 'english-2nd';
         final banglaFirst = isBanglaFirstMode(_c.subjectId, _c.source);
         final banglaSecond = isBanglaSecondMode(_c.subjectId, _c.source);
         final setMode = _extras.setId != null;
-        final needType = setMode || banglaFirst || banglaSecond ? false : paper2Mode ? _extras.paper2Section == null : _c.type == null;
-        final canSubmit = (setMode || banglaFirst || banglaSecond || paper2Mode || _c.chapter != null) && !needType;
-        final String? actionHint = setMode || banglaFirst || banglaSecond ? null : paper2Mode ? (_extras.paper2Section == null ? s['actionHintSection'] : null) : _c.chapter == null && needType ? s['actionHintBoth'] : _c.chapter == null ? s['actionHintChapter'] : needType ? s['actionHintType'] : null;
+        final needType = setMode || banglaFirst || banglaSecond
+            ? false
+            : paper2Mode
+            ? _extras.paper2Section == null
+            : _c.type == null;
+        final canSubmit =
+            (setMode ||
+                banglaFirst ||
+                banglaSecond ||
+                paper2Mode ||
+                _c.chapter != null) &&
+            !needType;
+        final String? actionHint = setMode || banglaFirst || banglaSecond
+            ? null
+            : paper2Mode
+            ? (_extras.paper2Section == null ? s['actionHintSection'] : null)
+            : _c.chapter == null && needType
+            ? s['actionHintBoth']
+            : _c.chapter == null
+            ? s['actionHintChapter']
+            : needType
+            ? s['actionHintType']
+            : null;
         const gap = SizedBox(height: 12);
         return ThemedScaffold(
           appBar: AppBar(
-            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/home'),
+            ),
             title: Text(s['title']!),
           ),
           body: Column(
@@ -143,7 +191,10 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(s['subtitle']!, style: Theme.of(context).textTheme.bodyMedium),
+                      Text(
+                        s['subtitle']!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                       const SizedBox(height: 16),
                       SearchFlowGroupLabel(s['identityGroup']!),
                       const SizedBox(height: 12),
@@ -153,18 +204,27 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                         bn: bn,
                         onClass: (v) => _c.changeClass(v, bn).then((_) {
                           if (mounted) {
-                            _extras.refreshGuide(_c.effectiveSubjectId, _c.effectiveClass);
+                            _extras.refreshGuide(
+                              _c.effectiveSubjectId,
+                              _c.effectiveClass,
+                            );
                             _ensureEnglish();
                           }
                         }),
                         onSubject: (v) {
                           _c.applySubject(v);
-                          _extras.refreshGuide(_c.effectiveSubjectId, _c.effectiveClass);
+                          _extras.refreshGuide(
+                            _c.effectiveSubjectId,
+                            _c.effectiveClass,
+                          );
                           _ensureEnglish();
                         },
                         onSource: (v) {
                           _c.changeSource(v);
-                          _extras.refreshGuide(_c.effectiveSubjectId, _c.effectiveClass);
+                          _extras.refreshGuide(
+                            _c.effectiveSubjectId,
+                            _c.effectiveClass,
+                          );
                           _ensureEnglish();
                         },
                       ),
@@ -175,30 +235,61 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                       // Subject-wise items load below it; English
                       // guide navigates to its list/reader routes
                       // from here instead of a separate screen.
-                      if (englishGuideMode &&
-                          _englishHost.controller == null)
-                        SearchFlowLoadingBars(label: s['pickerLoading']!, semanticsLabel: s['pickerLoading']!)
+                      if (englishGuideMode && _englishHost.controller == null)
+                        SearchFlowLoadingBars(
+                          label: s['pickerLoading']!,
+                          semanticsLabel: s['pickerLoading']!,
+                        )
                       else
                         GlobalPicker(
-                          treeKey: '${_c.subjectId}|${_c.source}|${_c.schoolClass}',
+                          treeKey:
+                              '${_c.subjectId}|${_c.source}|${_c.schoolClass}',
                           tree: englishGuideMode
-                              ? buildEnglishPickerTree(c: _englishHost.controller!, schoolClass: _c.schoolClass, s: s, bn: bn)
-                              : buildGlobalPickerTree(c: _c, extras: _extras, s: s, bn: bn),
+                              ? buildEnglishPickerTree(
+                                  c: _englishHost.controller!,
+                                  schoolClass: _c.schoolClass,
+                                  s: s,
+                                  bn: bn,
+                                )
+                              : buildGlobalPickerTree(
+                                  c: _c,
+                                  extras: _extras,
+                                  s: s,
+                                  bn: bn,
+                                ),
                           s: s,
                           selectedId: globalPickerSelectedId(_c, _extras),
-                          onPick: (pick) => applyGlobalPickerPick(context: context, c: _c, extras: _extras, pick: pick, onChanged: () => setState(() {})),
-                          onBranch: (node) => onGlobalPickerBranch(node: node, c: _c, extras: _extras, english: _englishHost),
+                          onPick: (pick) => applyGlobalPickerPick(
+                            context: context,
+                            c: _c,
+                            extras: _extras,
+                            pick: pick,
+                            onChanged: () => setState(() {}),
+                          ),
+                          onBranch: (node) => onGlobalPickerBranch(
+                            node: node,
+                            c: _c,
+                            extras: _extras,
+                            english: _englishHost,
+                          ),
                         ),
                       // Board tile (migration 018): guide source only.
                       if (_c.source == 'guide')
-                        SearchFlowBoardTile(subjectId: _c.effectiveSubjectId, schoolClass: _c.effectiveClass, s: s, bn: bn),
+                        SearchFlowBoardTile(
+                          subjectId: _c.effectiveSubjectId,
+                          schoolClass: _c.effectiveClass,
+                          s: s,
+                          bn: bn,
+                        ),
                       // Bangla 1st Paper entry card: the only in-app way into /bangla-first.
                       if (banglaFirst) const BanglaFirstEntryCard(),
                       if (!englishGuideMode) ...[
                         gap,
                         SearchFlowTextField(
-                          label: s['questionNumberLabel']!, icon: Icons.numbers,
-                          controller: _c.numberCtrl, hint: s['questionNumberHint']!,
+                          label: s['questionNumberLabel']!,
+                          icon: Icons.numbers,
+                          controller: _c.numberCtrl,
+                          hint: s['questionNumberHint']!,
                           keyboardType: TextInputType.number,
                           onChanged: (_) {
                             if (_jumpMessage != null) {
@@ -215,8 +306,12 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                           !paper2Mode) ...[
                         gap,
                         SearchFlowTypeField(
-                          value: _c.type, s: s, bn: bn, chapter: _c.chapter,
-                          guide: _c.source == 'guide', lesson: _c.lesson,
+                          value: _c.type,
+                          s: s,
+                          bn: bn,
+                          chapter: _c.chapter,
+                          guide: _c.source == 'guide',
+                          lesson: _c.lesson,
                           subject: _c.effectiveSubjectId,
                           schoolClass: _c.effectiveClass,
                           onChanged: (v) => setState(() => _c.type = v),
@@ -224,7 +319,12 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                       ],
                       if (_jumpMessage != null) ...[
                         const SizedBox(height: 12),
-                        Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(_jumpMessage!))),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(_jumpMessage!),
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -232,7 +332,10 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
               ),
               if (!englishGuideMode)
                 SearchFlowActions(
-                  canSubmit: canSubmit, jumping: _c.jumping, actionHint: actionHint, s: s,
+                  canSubmit: canSubmit,
+                  jumping: _c.jumping,
+                  actionHint: actionHint,
+                  s: s,
                   // No number field in Bangla 1st/2nd, so no jump button (was dead).
                   showJump: !banglaFirst && !banglaSecond,
                   onShowList: () => _goList(),

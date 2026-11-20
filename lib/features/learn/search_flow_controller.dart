@@ -19,9 +19,15 @@ class SearchFlowController {
     required this.initialSubjectId,
     required this.initialSchoolClass,
     required this.onChanged,
+    this.initialSource,
   });
   final String initialSubjectId;
   final int? initialSchoolClass;
+
+  /// 'guide' from a subject's Start button: opens the guide picker
+  /// directly instead of the textbook source. Null = old behaviour
+  /// (guide only when the subject's book is locked).
+  final String? initialSource;
   final VoidCallback onChanged;
 
   int schoolClass = 6;
@@ -63,17 +69,23 @@ class SearchFlowController {
 
   Future<void> init(bool bn) async {
     bangla = bn;
-    final saved =
-        await profileService.loadSchoolClass().catchError((_) => null);
+    final saved = await profileService.loadSchoolClass().catchError(
+      (_) => null,
+    );
     final cls = initialSchoolClass ?? saved ?? 6;
-    subjects = splitBanglaSubjects(await booksService.subjectsAsync(cls, bn)
-        .catchError((_) => <SubjectInfo>[]));
+    subjects = splitBanglaSubjects(
+      await booksService
+          .subjectsAsync(cls, bn)
+          .catchError((_) => <SubjectInfo>[]),
+    );
     schoolClass = cls;
     final initial = normalizeBanglaSubject(initialSubjectId);
     subjectId = subjects.any((s) => s.id == initial)
         ? initial
         : (subjects.isNotEmpty ? subjects.first.id : 'math');
     applySubject(subjectId);
+    final wanted = initialSource;
+    if (wanted != null && wanted != source) changeSource(wanted);
   }
 
   void applySubject(String id) {
@@ -90,12 +102,17 @@ class SearchFlowController {
   Future<void> changeClass(int cls, bool bn) async {
     bangla = bn;
     schoolClass = cls;
-    subjects = splitBanglaSubjects(await booksService.subjectsAsync(cls, bn)
-        .catchError((_) => <SubjectInfo>[]));
+    subjects = splitBanglaSubjects(
+      await booksService
+          .subjectsAsync(cls, bn)
+          .catchError((_) => <SubjectInfo>[]),
+    );
     final current = normalizeBanglaSubject(subjectId);
-    applySubject(subjects.any((x) => x.id == current)
-        ? current
-        : (subjects.isNotEmpty ? subjects.first.id : 'math'));
+    applySubject(
+      subjects.any((x) => x.id == current)
+          ? current
+          : (subjects.isNotEmpty ? subjects.first.id : 'math'),
+    );
   }
 
   void changeSource(String value) {
@@ -156,9 +173,7 @@ class SearchFlowController {
         _notify();
         return;
       }
-      chapters = src == 'guide'
-          ? []
-          : searchFlowChapterFallback(subj, cls);
+      chapters = src == 'guide' ? [] : searchFlowChapterFallback(subj, cls);
     } else {
       chapters = out;
       await pickerCacheService.write(key, encodeChapterTuples(out));

@@ -20,21 +20,23 @@ class OpenedChapterGroup {
 }
 
 /// Pure grouping: first-seen subject order, numeric chapter order,
-/// duplicates dropped, malformed keys ('subject|chapter' with an
-/// empty subject or a non-positive/non-numeric chapter) skipped.
+/// duplicates dropped, malformed keys skipped. Accepts both the old
+/// '<subject>|<chapter>' keys and the class-stamped
+/// '<class>|<subject>|<chapter>' keys (the class is not shown here;
+/// the group is by subject).
 List<OpenedChapterGroup> groupOpenedChapters(List<String> keys) {
   final order = <String>[];
   final bySubject = <String, Set<int>>{};
   for (final key in keys) {
-    final parts = key.split('|');
-    if (parts.length != 2 || parts[0].isEmpty) continue;
-    final chapter = int.tryParse(parts[1]);
-    if (chapter == null || chapter < 1) continue;
-    if (!bySubject.containsKey(parts[0])) {
-      order.add(parts[0]);
-      bySubject[parts[0]] = <int>{};
+    final parsed = LearnStore.parseChapterKey(key);
+    if (parsed == null) continue;
+    final subject = parsed.$2;
+    final chapter = parsed.$3;
+    if (!bySubject.containsKey(subject)) {
+      order.add(subject);
+      bySubject[subject] = <int>{};
     }
-    bySubject[parts[0]]!.add(chapter);
+    bySubject[subject]!.add(chapter);
   }
   return [
     for (final subject in order)
@@ -86,8 +88,10 @@ class _OpenedChaptersScreenState extends State<OpenedChaptersScreen> {
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(s['openedChaptersEmpty']!,
-                        style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      s['openedChaptersEmpty']!,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => context.go('/home'),
@@ -100,8 +104,10 @@ class _OpenedChaptersScreenState extends State<OpenedChaptersScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   for (final group in groups) ...[
-                    Text(subjectNameFor(group.subject, bn),
-                        style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      subjectNameFor(group.subject, bn),
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 8),
                     for (final chapter in group.chapters)
                       Card(

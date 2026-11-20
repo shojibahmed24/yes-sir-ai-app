@@ -173,6 +173,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                         .toList(),
                     opened: opened,
                     bn: bn,
+                    schoolClass: _selectedClass ?? _schoolClass ?? 6,
                     emptyMessage: _query.trim().isEmpty
                         ? nav['noSubjects']!
                         : s['noMatch']!,

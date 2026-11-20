@@ -39,6 +39,7 @@ class ChaptersScreen extends StatefulWidget {
 
 class _ChaptersScreenState extends State<ChaptersScreen> {
   late Future<List<dynamic>> _future;
+  int _schoolClass = 6;
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
 
   Future<List<dynamic>> _load() async {
     final schoolClass = await resolveSchoolClass(); // Saved profile class.
+    _schoolClass = schoolClass;
     return Future.wait([
       booksService.chaptersForSubjectAsync(
         schoolClass,
@@ -107,9 +109,11 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
               }
               final dbChapters = snap.data![0] as List<ChapterInfo>?;
               final opened = snap.data![1] as List<String>;
-              final openedHere = opened
-                  .where((c) => c.startsWith('${widget.subjectId}|'))
-                  .length;
+              final openedHere = LearnStore.openedChapterCount(
+                opened,
+                _schoolClass,
+                widget.subjectId,
+              );
               // Configured backend + null fetch = failure, never
               // demo: error state + retry. Unconfigured (null
               // here) = demo list WITH the demo label below.

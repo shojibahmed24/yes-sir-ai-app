@@ -125,6 +125,7 @@ final List<GoRoute> learnRoutes = [
       child: SearchFlowScreen(
         initialSubjectId: s.uri.queryParameters['subject'] ?? 'math',
         initialSchoolClass: int.tryParse(s.uri.queryParameters['class'] ?? ''),
+        initialSource: s.uri.queryParameters['source'],
       ),
     ),
   ),

@@ -8,6 +8,7 @@ import '../../../core/models/backend_models.dart';
 import '../../../l10n/pages/guide_bank_strings.dart';
 import '../../../l10n/pages/home_strings.dart';
 import '../../../l10n/pages/subjects_strings.dart';
+import '../../learn/learn_store.dart';
 import '../../learn/widgets/subject_guide_card.dart';
 import 'home_empty_state.dart';
 import 'subject_card.dart';
@@ -27,12 +28,14 @@ class SubjectsGrid extends StatelessWidget {
     required this.subjects,
     required this.opened,
     required this.bn,
+    required this.schoolClass,
     required this.onRetry,
     this.emptyMessage,
   });
   final List<SubjectInfo> subjects;
   final List<String> opened;
   final bool bn;
+  final int schoolClass;
   final VoidCallback onRetry;
 
   /// Search misses need their own message: "no subjects" would claim
@@ -69,7 +72,11 @@ class SubjectsGrid extends StatelessWidget {
                 child: SubjectCard(
                   name: subj.name(bn),
                   chapters: subj.chapterCount,
-                  done: opened.where((c) => c.startsWith('${subj.id}|')).length,
+                  done: LearnStore.openedChapterCount(
+                    opened,
+                    schoolClass,
+                    subj.id,
+                  ),
                   locked: subj.locked,
                   guideOnly: subj.locked && subj.hasGuide,
                   guideLabel: s['guideAvailable']!,

@@ -21,12 +21,17 @@ class SubjectDetailInfo {
     required this.schoolClass,
     required this.chapters,
     required this.opened,
+    this.hasGuide = false,
   });
   final String subjectId;
   final String name;
   final int schoolClass;
   final int chapters;
   final int opened;
+
+  /// Server-checked guide content: the start button then opens the
+  /// guide picker directly instead of the textbook chapters.
+  final bool hasGuide;
 }
 
 class SubjectDetailBody extends StatelessWidget {
@@ -107,6 +112,22 @@ class SubjectDetailBody extends StatelessWidget {
           countLabel: '${s['progressLabel']!} ${(progress * 100).round()}%',
         ),
         const SizedBox(height: Sp.xl),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: info.hasGuide
+                ? () => context.go(
+                    '/search-flow?subject=${info.subjectId}'
+                    '&class=${info.schoolClass}&source=guide',
+                  )
+                : info.chapters > 0
+                ? () => context.go('/home/subjects/${info.subjectId}/chapters')
+                : null,
+            icon: const Icon(Icons.play_arrow),
+            label: Text(s['startNow']!),
+          ),
+        ),
+        const SizedBox(height: Sp.md),
         if (info.chapters == 0)
           Text(s['noChapters']!, style: Theme.of(context).textTheme.bodyMedium)
         else
