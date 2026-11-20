@@ -165,6 +165,22 @@ function escapeLike(s: string): string {
   return s.replace(/[%_\\]/g, (c) => `\\${c}`);
 }
 
+// Role of a JWT without re-verifying it: the platform's verify_jwt
+// already checked the signature. The anon key's payload carries
+// role "anon"; a real user session carries "authenticated".
+function jwtRole(token: string): string | null {
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  try {
+    const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
+    return typeof payload.role === 'string' ? payload.role : null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -172,7 +188,20 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return json({ error: 'POST only' }, 405);
   }
-  if (!req.headers.get('Authorization')) {
+  // CORS (2026-11-21): native apps send no Origin, so a missing Origin
+  // is always allowed. Set ALLOWED_ORIGINS (comma-separated) to refuse
+  // browser callers outside the list; unset keeps the current policy.
+  const origin = req.headers.get('origin');
+  const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s !== '');
+  if (origin && allowedOrigins.length > 0 && !allowedOrigins.includes(origin)) {
+    return new Response('forbidden', { status: 403, headers: corsHeaders });
+  }
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  if (!token) {
     return json({ error: 'Authorization required' }, 401);
   }
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -181,15 +210,30 @@ Deno.serve(async (req) => {
     // Misconfiguration, not a client error. Never echo env values.
     return json({ error: 'Function is not configured' }, 500);
   }
+  // JWT VALIDATION (2026-11-21): a header merely being present was the
+  // only check, so any string passed. The anon key is recognised by its
+  // role claim as the anonymous path; any other token must verify as a
+  // real user session.
+  const isAnon = jwtRole(token) === 'anon';
+  let userId: string | null = null;
+  const supabase = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  });
+  if (!isAnon) {
+    const { data: authData, error: authError } = await supabase.auth.getUser(
+      token,
+    );
+    if (authError || !authData.user) {
+      return json({ error: 'Invalid session' }, 401);
+    }
+    userId = authData.user.id;
+  }
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
     return json({ error: 'Invalid JSON body' }, 400);
   }
-  const supabase = createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false },
-  });
 
   // ---- Mode GEN: server-side generation (2026-10-30: keys moved
   // server-side; provider option 2026-11-04). Input:
@@ -211,6 +255,44 @@ Deno.serve(async (req) => {
     if (typeof systemPrompt !== 'string' || systemPrompt === '' ||
         typeof userPrompt !== 'string' || userPrompt === '') {
       return json({ error: 'systemPrompt and userPrompt are required' }, 400);
+    }
+    // GEN GATE (2026-11-21): real signed-in user, bounded prompt, and
+    // an exact per-user daily quota. This used to be an unlimited
+    // proxy for any signed-in account.
+    if (!userId) {
+      return json({ error: 'sign-in-required' }, 401);
+    }
+    if (systemPrompt.length + userPrompt.length > 12000) {
+      return json({ error: 'prompt-too-large' }, 400);
+    }
+    const limitRaw = Deno.env.get('AI_DAILY_LIMIT') ?? '40';
+    const limit = Number(limitRaw);
+    const day = new Date().toISOString().slice(0, 10);
+    try {
+      const { data: usage, error: usageError } = await supabase
+        .from('ai_usage')
+        .select('calls')
+        .eq('user_id', userId)
+        .eq('day', day)
+        .maybeSingle();
+      if (usageError) {
+        return json({ error: 'usage-unavailable' }, 503);
+      }
+      const calls = (usage?.calls as number | undefined) ?? 0;
+      if (Number.isFinite(limit) && calls >= limit) {
+        return json({ error: 'daily-limit', limit }, 429);
+      }
+      const { error: incError } = await supabase.from('ai_usage').upsert({
+        user_id: userId,
+        day,
+        calls: calls + 1,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,day' });
+      if (incError) {
+        return json({ error: 'usage-unavailable' }, 503);
+      }
+    } catch {
+      return json({ error: 'usage-unavailable' }, 503);
     }
     // Provider option (2026-11-04): 'gemini' delegates to
     // gemini.ts; anything else keeps the exact OpenRouter path
@@ -240,6 +322,9 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           model: 'nvidia/nemotron-3-ultra-550b-a55b:free',
+          // Output cap: a runaway completion can no longer spend an
+          // unbounded budget on one request.
+          max_tokens: 1600,
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },

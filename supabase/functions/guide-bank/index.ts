@@ -229,6 +229,22 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+// Role of a JWT without re-verifying it: the platform's verify_jwt
+// already checked the signature. The anon key's payload carries
+// role "anon"; a real user session carries "authenticated".
+function jwtRole(token: string): string | null {
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  try {
+    const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
+    return typeof payload.role === 'string' ? payload.role : null;
+  } catch {
+    return null;
+  }
+}
+
 function isMissingTable(error: { code?: string } | null): boolean {
   return !!error && error.code === '42P01';
 }
@@ -240,7 +256,19 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return json({ error: 'POST only' }, 405);
   }
-  if (!req.headers.get('Authorization')) {
+  // CORS (2026-11-21): no Origin = native app, always allowed. Set
+  // ALLOWED_ORIGINS to refuse browser callers outside the list.
+  const origin = req.headers.get('origin');
+  const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s !== '');
+  if (origin && allowedOrigins.length > 0 && !allowedOrigins.includes(origin)) {
+    return new Response('forbidden', { status: 403, headers: corsHeaders });
+  }
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  if (!token) {
     return json({ error: 'Authorization required' }, 401);
   }
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -248,6 +276,17 @@ Deno.serve(async (req) => {
   if (!supabaseUrl || !serviceKey) {
     // Misconfiguration, not a client error. Never echo env values.
     return json({ error: 'Function is not configured' }, 500);
+  }
+  // JWT VALIDATION (2026-11-21): the anon key's "anon" role stays the
+  // anonymous read path; any other token must verify as a real session.
+  // This replaces the header-presence-only check.
+  if (jwtRole(token) !== 'anon') {
+    const authClient = createClient(supabaseUrl, serviceKey);
+    const { data: authData, error: authError } =
+      await authClient.auth.getUser(token);
+    if (authError || !authData.user) {
+      return json({ error: 'invalid-session' }, 401);
+    }
   }
   let body: Record<string, unknown>;
   try {
