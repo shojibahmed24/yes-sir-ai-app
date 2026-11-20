@@ -19,6 +19,7 @@
 // the week-time line is an honest empty state, never a number.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../core/services/auth_service.dart';
 import '../../core/services/local_store.dart';
 import '../../core/services/profile_service.dart';
@@ -27,6 +28,7 @@ import '../../core/services/progress_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/profile_strings.dart';
 import '../parent/parent_session.dart';
+import 'widgets/delete_account_tile.dart';
 import 'widgets/profile_hero.dart';
 import 'widgets/profile_stats.dart';
 import '../../theme/app_theme.dart';
@@ -217,6 +219,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           tile(Icons.info_outline, s['about']!, s['aboutSub']!, '/about'),
           tile(Icons.help_center, s['help']!, s['helpSub']!, '/help'),
+          DeleteAccountTile(
+            s: s,
+            onDeleted: () async {
+              await authService.signOut();
+              if (context.mounted) context.go('/login');
+            },
+          ),
           ProfileMenuTile(
             icon: Icons.logout,
             title: s['signOut']!,

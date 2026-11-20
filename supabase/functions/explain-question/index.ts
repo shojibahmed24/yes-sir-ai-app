@@ -700,6 +700,42 @@ Deno.serve(async (req) => {
       return json({ found: false, reason: 'guide-unavailable' });
     }
     if (!gq) return json({ found: false, reason: 'not-indexed' });
+    // C2 KEY GATE (2026-11-21): OFF unless GUIDE_KEY_GATE=premium.
+    // When ON, the printed key/worked solution are returned only to a
+    // user with an active entitlement row; everyone else gets a
+    // locked body (the client already knows how to show that state).
+    // Default stays OFF so today's free-open policy is unchanged.
+    if ((Deno.env.get('GUIDE_KEY_GATE') ?? '') === 'premium') {
+      let premium = false;
+      if (userId) {
+        try {
+          const { data: ent } = await supabase
+            .from('subscription_entitlements')
+            .select('active, period_end')
+            .eq('user_id', userId)
+            .eq('active', true)
+            .maybeSingle();
+          if (ent) {
+            const end = ent.period_end as string | null;
+            premium = end === null || new Date(end) > new Date();
+          }
+        } catch {
+          premium = false;
+        }
+      }
+      if (!premium) {
+        return json({
+          found: true,
+          source: 'guide',
+          guideQuestionId: gqId,
+          locked: true,
+          answerKey: '',
+          unitKind: '',
+          groundingSolution: '',
+          groundingSolutionHidden: true,
+        });
+      }
+    }
     // Optional worked-solution column (008 carries per-problem
     // solutions only if the import includes them). Absent column
     // => empty string, NOT an error: the fallback chunk below
