@@ -1,0 +1,36 @@
+// Today / study-plan screen strings (page-wise bn/en).
+const Map<String, String> todayStringsBn = {
+  'title': 'আজকের পরিকল্পনা',
+  'todayLessons': 'আজকের লেসন',
+  'goalLabel': 'আজকের লক্ষ্য',
+  'goalNone': 'লক্ষ্য এখনো সেট করা হয়নি — সেটিংসে গিয়ে ঠিক করুন',
+  'totalLessons': 'মোট লেসন',
+  'chaptersOpened': 'খোলা অধ্যায়',
+  'savedCount': 'সংরক্ষিত প্রশ্ন',
+  'startLearning': 'পড়া শুরু করুন',
+  'practice': 'অনুশীলন করুন',
+  'findQuestion': 'প্রশ্ন খুঁজুন',
+  'empty': 'আজ এখনো কিছু খোলা হয়নি',
+  'emptySub': 'নিচের যেকোনো একটি দিয়ে শুরু করুন',
+  'loading': 'আজকের তথ্য লোড হচ্ছে…',
+  'retry': 'আবার চেষ্টা করুন',
+  'progress': 'সম্পন্ন',
+};
+
+const Map<String, String> todayStringsEn = {
+  'title': "Today's plan",
+  'todayLessons': 'Lessons today',
+  'goalLabel': "Today's goal",
+  'goalNone': 'No goal set yet — set one in Settings',
+  'totalLessons': 'Total lessons',
+  'chaptersOpened': 'Chapters opened',
+  'savedCount': 'Saved questions',
+  'startLearning': 'Start learning',
+  'practice': 'Practice',
+  'findQuestion': 'Find a question',
+  'empty': 'Nothing opened today yet',
+  'emptySub': 'Start with any of the actions below',
+  'loading': "Loading today's data…",
+  'retry': 'Try again',
+  'progress': 'done',
+};

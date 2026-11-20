@@ -8,6 +8,7 @@ import '../features/home/opened_chapters_screen.dart';
 import '../features/home/today_lessons_screen.dart';
 import '../features/home/subjects_screen.dart';
 import '../features/subject_detail/subject_detail_screen.dart';
+import '../features/today/today_screen.dart';
 import '../features/learn/chapters_screen.dart';
 import '../features/learn/search_screen.dart';
 import '../features/learn/chapter_questions_screen.dart';
@@ -45,6 +46,10 @@ final List<GoRoute> learnRoutes = [
     path: '/home/subjects',
     builder: (c, s) =>
         BackScope(parent: '/home', child: const SubjectsScreen()),
+  ),
+  GoRoute(
+    path: '/today',
+    builder: (c, s) => BackScope(parent: '/home', child: const TodayScreen()),
   ),
   GoRoute(
     path: '/home/subjects/:subjectId/chapters',

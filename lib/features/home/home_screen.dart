@@ -25,6 +25,7 @@ import 'widgets/home_subject_grid.dart';
 import 'widgets/home_search_field.dart';
 import 'widgets/home_bottom_nav.dart';
 import '../../theme/themed_scaffold.dart';
+import '../../theme/app_tokens.dart';
 import '../../theme/widgets/section_header.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -86,9 +87,26 @@ class HomeScreen extends StatelessWidget {
                           classChip: s['classChip']!,
                         ),
                         const SizedBox(height: HomeDesign.tightGap),
-                        Text(
-                          s['todayGoal']!,
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        // Tappable today line: opens the study-plan
+                        // screen (real counters only, no invented
+                        // minutes).
+                        InkWell(
+                          onTap: () => context.go('/today'),
+                          borderRadius: BorderRadius.circular(Rad.sm),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  s['todayGoal']!,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                              const Icon(
+                                Icons.chevron_right,
+                                size: IconSize.sm,
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: HomeDesign.blockGap),
                         // Phase 16 (M1): typed text goes to /search
