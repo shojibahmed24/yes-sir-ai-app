@@ -100,131 +100,172 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                24 + MediaQuery.of(context).padding.bottom,
+              ),
               children: [
-                Text(s['paywallSub']!,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center),
+                Text(
+                  s['paywallSub']!,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 16),
                 if (_isPremium)
                   // UI palette (গ): premium-active card uses the
                   // gold → purple premium gradient with white text.
                   Container(
                     decoration: BoxDecoration(
-                      gradient: Theme.of(context).brightness ==
-                              Brightness.dark
+                      gradient: Theme.of(context).brightness == Brightness.dark
                           ? AppTheme.premiumGradientDark
                           : AppTheme.premiumGradient,
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
-                      child: Column(children: [
-                        const Icon(Icons.verified, color: Colors.white),
-                        const SizedBox(height: 8),
-                        Text(s['premiumActive']!,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
+                      child: Column(
+                        children: [
+                          const Icon(Icons.verified, color: Colors.white),
+                          const SizedBox(height: 8),
+                          Text(
+                            s['premiumActive']!,
+                            style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(color: Colors.white),
-                            textAlign: TextAlign.center),
-                        Text(s['premiumActiveSub']!,
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            s['premiumActiveSub']!,
                             style: const TextStyle(color: Colors.white),
-                            textAlign: TextAlign.center),
-                        const SizedBox(height: 8),
-                        Text(
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
                             "${s['remainingLabel']!}: $_remaining ${s['minutesUnit']!} ${s['perMonth']!}",
                             style: const TextStyle(color: Colors.white),
-                            textAlign: TextAlign.center),
-                      ]),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 else
-                  Column(children: [
-                    // UI palette (গ): feature card on a warm
-                    // gold-tinted wash with a gold border; ink
-                    // text on it stays far above WCAG AA.
-                    Card(
-                      color: dark
-                          ? const Color(0xFF3D2E12)
-                          : const Color(0xFFFFF7E6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(
-                          color: AppTheme.amber.withValues(alpha: 0.40),
+                  Column(
+                    children: [
+                      // UI palette (গ): feature card on a warm
+                      // gold-tinted wash with a gold border; ink
+                      // text on it stays far above WCAG AA.
+                      Card(
+                        color: dark
+                            ? const Color(0xFF3D2E12)
+                            : const Color(0xFFFFF7E6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          side: BorderSide(
+                            color: AppTheme.amber.withValues(alpha: 0.40),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              PremiumFeatureRow(
+                                icon: Icons.mic,
+                                color: AppTheme.primary,
+                                text: s['voiceFeat']!,
+                              ),
+                              PremiumFeatureRow(
+                                icon: Icons.menu_book,
+                                color: AppTheme.secondary,
+                                text: s['booksFeat']!,
+                              ),
+                              PremiumFeatureRow(
+                                icon: Icons.assignment,
+                                color: AppTheme.success,
+                                text: s['testsFeat']!,
+                              ),
+                              PremiumFeatureRow(
+                                icon: Icons.edit_note,
+                                color: AppTheme.amber,
+                                text: s['practiceFeat']!,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(children: [
-                          PremiumFeatureRow(
-                              icon: Icons.mic, text: s['voiceFeat']!),
-                          PremiumFeatureRow(
-                              icon: Icons.menu_book, text: s['booksFeat']!),
-                          PremiumFeatureRow(
-                              icon: Icons.assignment, text: s['testsFeat']!),
-                          PremiumFeatureRow(
-                              icon: Icons.edit_note,
-                              text: s['practiceFeat']!),
-                        ]),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(s['premiumOnlyNote']!,
+                      const SizedBox(height: 8),
+                      Text(
+                        s['premiumOnlyNote']!,
                         style: Theme.of(context).textTheme.bodySmall,
-                        textAlign: TextAlign.center),
-                  ]),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 16),
                 // F2: Play price when available, code price fallback.
                 Text(
-                    _playPrice == null
-                        ? s['price']!
-                        : '$_playPrice ${s['perMonth']!}',
-                    style: Theme.of(context).textTheme.displayLarge,
-                    textAlign: TextAlign.center),
-                Text(s['voiceCap']!,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center),
-                Text(s['noHidden']!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center),
+                  _playPrice == null
+                      ? s['price']!
+                      : '$_playPrice ${s['perMonth']!}',
+                  style: Theme.of(context).textTheme.displayLarge,
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  s['voiceCap']!,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  s['noHidden']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 16),
                 if (_isPremium)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white),
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                    ),
                     onPressed: () => context.push('/voice'),
                     child: Text(s['voiceTitle']!),
                   )
                 else
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white),
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                    ),
                     // F1 gate: coming-soon state, never a purchase.
                     onPressed: _comingSoon,
                     child: Text(s['comingSoon']!),
                   ),
                 const SizedBox(height: 12),
-                OutlinedButton(
-                    onPressed: _restore, child: Text(s['restore']!)),
+                OutlinedButton(onPressed: _restore, child: Text(s['restore']!)),
                 const SizedBox(height: 12),
                 OutlinedButton(
-                    onPressed: () => context.go('/home'),
-                    child: Text(s['free']!)),
+                  onPressed: () => context.go('/home'),
+                  child: Text(s['free']!),
+                ),
                 const SizedBox(height: 12),
-                Text(s['billingNote']!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center),
+                Text(
+                  s['billingNote']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 4),
-                Text(s['verifyNote']!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center),
+                Text(
+                  s['verifyNote']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
                 if (AppConfig.demoMode)
-                  Text(s['demoNote']!,
-                      style: Theme.of(context).textTheme.bodySmall,
-                      textAlign: TextAlign.center),
+                  Text(
+                    s['demoNote']!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
               ],
             ),
     );
