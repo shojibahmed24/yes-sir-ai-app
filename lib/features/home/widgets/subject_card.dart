@@ -21,12 +21,25 @@ class SubjectCard extends StatelessWidget {
     this.subjectId = 'math',
     this.guideOnly = false,
     this.guideLabel = '',
+    this.hasGuide = false,
+    this.badgeBook = '',
+    this.badgeGuide = '',
+    this.badgeBoth = '',
   });
   final String subjectId;
   final String name;
   final int chapters;
   final int done;
   final bool locked;
+
+  /// Server-checked guide presence (works for unlocked subjects too,
+  /// so a subject with both a textbook and a guide shows both).
+  final bool hasGuide;
+
+  /// Badge labels: what this subject actually has for this class.
+  final String badgeBook;
+  final String badgeGuide;
+  final String badgeBoth;
 
   /// True for a subject with NO supplied textbook but a real guide: it
   /// stays usable and opens the guide search flow (guide-only launch).
@@ -46,14 +59,21 @@ class SubjectCard extends StatelessWidget {
         ? AppTheme.inkMuted
         : AppTheme.subjectColorFor(subjectId, dark: dark);
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    // Honest source badge from server data, never a guess: book only,
+    // guide only (no supplied textbook), or both.
+    final badge = !hasGuide && !guideOnly
+        ? (locked ? '' : badgeBook)
+        : locked
+        ? badgeGuide
+        : badgeBoth;
     return AnimatedCard(
       accent: accent,
       radius: Rad.xl,
       onTap: inert
           ? null
           : guideOnly
-              ? () => context.go('/search-flow?subject=$subjectId')
-              : () => context.go('/home/subjects/$subjectId'),
+          ? () => context.go('/search-flow?subject=$subjectId')
+          : () => context.go('/home/subjects/$subjectId'),
       child: Padding(
         padding: const EdgeInsets.all(Sp.lg),
         child: Column(
@@ -84,11 +104,34 @@ class SubjectCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: Sp.sm),
-            Text(
-              guideOnly
-                  ? guideLabel
-                  : '$chapters $chaptersLabel',
-              style: Theme.of(context).textTheme.bodySmall,
+            Row(
+              children: [
+                if (badge.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Sp.sm,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: inert ? 0.08 : 0.14),
+                      borderRadius: BorderRadius.circular(Rad.sm),
+                    ),
+                    child: Text(
+                      badge,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: inert ? muted : accent,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: Sp.sm),
+                ],
+                Expanded(
+                  child: Text(
+                    guideOnly ? guideLabel : '$chapters $chaptersLabel',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
             ),
             // "Book not supplied yet" is information, not an error:
             // muted ink, never the red error colour.

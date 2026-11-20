@@ -15,6 +15,7 @@ import '../models/backend_models.dart';
 import 'app_config.dart';
 import 'edge_post.dart';
 import 'guide_bank_service.dart';
+import 'guide_flags_service.dart';
 import 'model_test_set_service.dart';
 
 /// Null = unreachable (unknown, not empty).
@@ -73,6 +74,58 @@ bool? chapterlessBankPresence(Map<String, dynamic>? res) {
   final rows = res['questions'];
   if (rows is List) return rows.isNotEmpty;
   return null;
+}
+
+/// Bulk path: ONE class-wide call sets hasGuide for EVERY subject
+/// (locked or not — so a subject with both a book and a guide can be
+/// badged correctly). Complete = the server answered for the class.
+/// If the bulk call fails, the per-subject probe below runs instead,
+/// so an old server or a bad network behaves exactly as before.
+typedef GuideFlagsFetch = Future<Map<String, bool>?> Function(int schoolClass);
+
+Future<GuideFlagsResult> withBulkGuideFlags(
+  List<SubjectInfo> list,
+  int schoolClass, {
+  GuideFlagsFetch? fetchFlags,
+  GuideChaptersFetch? fetchChapters,
+  GuideSetCountFetch? fetchSetCount,
+  GuideBankPresenceFetch? probeBank,
+}) async {
+  Map<String, bool>? flags;
+  try {
+    flags = await (fetchFlags ?? loadGuideFlags)(
+      schoolClass,
+    ).timeout(const Duration(seconds: 10));
+  } catch (_) {
+    flags = null;
+  }
+  final known = flags;
+  if (known == null) {
+    return withGuideFlags(
+      list,
+      schoolClass,
+      fetchChapters: fetchChapters,
+      fetchSetCount: fetchSetCount,
+      probeBank: probeBank,
+    );
+  }
+  return GuideFlagsResult(
+    subjects: list.map((s) {
+      final hasGuide = known[s.id] ?? false;
+      if (hasGuide == s.hasGuide) return s;
+      return SubjectInfo(
+        id: s.id,
+        nameBn: s.nameBn,
+        nameEn: s.nameEn,
+        locked: s.locked,
+        chapterCount: s.chapterCount,
+        hasGuide: hasGuide,
+        guideChapterCount: s.guideChapterCount,
+        guideSetCount: s.guideSetCount,
+      );
+    }).toList(),
+    complete: true,
+  );
 }
 
 Future<GuideFlagsResult> withGuideFlags(

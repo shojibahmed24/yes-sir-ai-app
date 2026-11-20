@@ -14,19 +14,16 @@ import '../../core/services/books_service.dart';
 import '../../core/services/resolve_school_class.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/subjects_strings.dart';
-import '../../l10n/pages/guide_bank_strings.dart';
 import '../../l10n/pages/home_strings.dart';
 import '../../theme/themed_scaffold.dart';
 import '../../theme/widgets/app_state_view.dart';
 import '../../theme/widgets/section_header.dart';
 import '../learn/learn_store.dart';
 import '../learn/widgets/digits.dart';
-import '../learn/widgets/subject_guide_card.dart';
 import 'widgets/class_selector.dart';
-import 'widgets/subject_card.dart';
+import 'widgets/subjects_grid.dart';
 import 'widgets/subjects_overall_card.dart';
 import 'widgets/home_bottom_nav.dart';
-import 'widgets/home_empty_state.dart';
 
 /// Subjects screen with a manual refresh: the cache-once home
 /// grid never refetches on mount, so new server subjects appear
@@ -45,6 +42,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   bool? _futureBn;
   int? _schoolClass;
   int? _selectedClass;
+  String _query = '';
 
   // M5: class comes from the saved profile via resolveSchoolClass
   // (same helper ChaptersScreen uses) — never hardcoded 6. The
@@ -79,7 +77,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       builder: (context, locale, _) {
         final bn = locale.languageCode == 'bn';
         final s = bn ? subjectsStringsBn : subjectsStringsEn;
-        final gs = bn ? guideBankStringsBn : guideBankStringsEn;
         final nav = bn ? homeStringsBn : homeStringsEn;
         if (_future == null || _futureBn != bn) {
           _future = _loadFuture(bn);
@@ -151,6 +148,16 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     s: s,
                   ),
                   const SizedBox(height: 16),
+                  TextField(
+                    onChanged: (v) => setState(() => _query = v),
+                    decoration: InputDecoration(
+                      hintText: s['searchSubjects']!,
+                      prefixIcon: const Icon(Icons.search),
+                      isDense: true,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   SubjectsOverallCard(
                     title: s['overall']!,
                     booksLine: '${numStr(supplied, bn)} ${s['booksSupplied']!}',
@@ -160,46 +167,17 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                   const SizedBox(height: 16),
                   SectionHeader(title: s['allSubjects']!),
                   const SizedBox(height: 8),
-                  if (subjects.isEmpty) ...[
-                    HomeEmptyState(
-                      message: nav['noSubjects']!,
-                      actionLabel: nav['subjectsRetry']!,
-                      onAction: () => setState(() => _future = null),
-                    ),
-                  ] else ...[
-                    ...subjects.map(
-                      (subj) => Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: SubjectCard(
-                              name: subj.name(bn),
-                              chapters: subj.chapterCount,
-                              done: opened
-                                  .where((c) => c.startsWith('${subj.id}|'))
-                                  .length,
-                              locked: subj.locked,
-                              guideOnly: subj.locked && subj.hasGuide,
-                              guideLabel: s['guideAvailable']!,
-                              subjectId: subj.id,
-                              chaptersLabel: s['chapters']!,
-                              lockedLabel:
-                                  '${s['locked']!} — ${s['lockedHint']!}',
-                            ),
-                          ),
-                          // Renders nothing for guide-less subjects.
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: SubjectGuideCard(
-                              subjectId: subj.id,
-                              bn: bn,
-                              s: gs,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  SubjectsGrid(
+                    subjects: subjects
+                        .where((subj) => subjectMatches(subj, _query))
+                        .toList(),
+                    opened: opened,
+                    bn: bn,
+                    emptyMessage: _query.trim().isEmpty
+                        ? nav['noSubjects']!
+                        : s['noMatch']!,
+                    onRetry: () => setState(() => _future = null),
+                  ),
                   const SizedBox(height: 8),
                   Card(
                     child: Padding(

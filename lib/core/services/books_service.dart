@@ -135,12 +135,14 @@ class BooksService {
       final lang = bangla ? 'bn' : 'en';
       final subjRes = await client
           .from('subjects')
-          .select('id, name_bn, name_en').timeout(const Duration(seconds: 10));
+          .select('id, name_bn, name_en')
+          .timeout(const Duration(seconds: 10));
       final bookRes = await client
           .from('books_public')
           .select('id, subject_id, title, supplied')
           .eq('class_id', schoolClass)
-          .eq('language', lang).timeout(const Duration(seconds: 10));
+          .eq('language', lang)
+          .timeout(const Duration(seconds: 10));
       final books = _rows(bookRes);
       final bookSubject = <String, String>{};
       final suppliedSubjects = <String>{};
@@ -153,7 +155,8 @@ class BooksService {
         final chapRes = await client
             .from('chapters')
             .select('book_id')
-            .inFilter('book_id', books.map((b) => '${b['id']}').toList()).timeout(const Duration(seconds: 10));
+            .inFilter('book_id', books.map((b) => '${b['id']}').toList())
+            .timeout(const Duration(seconds: 10));
         for (final c in _rows(chapRes)) {
           final s = bookSubject['${c['book_id']}'];
           if (s != null) counts[s] = (counts[s] ?? 0) + 1;
@@ -170,7 +173,7 @@ class BooksService {
         );
       }).toList();
       _sortSubjects(out);
-      final enriched = await withGuideFlags(out, schoolClass);
+      final enriched = await withBulkGuideFlags(out, schoolClass);
       if (enriched.complete) {
         _subjectsCache.set(key, enriched.subjects);
         await persistSubjectsList(key, enriched.subjects);

@@ -297,7 +297,8 @@ Deno.serve(async (req) => {
   const action = body.action;
   if (action !== 'list' && action !== 'sets' &&
       action !== 'guideChapters' && action !== 'guideLessons' &&
-      action !== 'search' && action !== 'get') {
+      action !== 'search' && action !== 'get' &&
+      action !== 'guideFlags') {
     return json({ error: 'bad-request' }, 400);
   }
   const supabase = createClient(supabaseUrl, serviceKey);
@@ -340,6 +341,112 @@ Deno.serve(async (req) => {
       action: 'get',
       question: shapeListRow(data as unknown as Record<string, unknown>, true),
     });
+  }
+
+  // 'guideFlags' (quick-load, 2026-11-21): ONE call returns, for
+  // every subject of a class, whether a guide exists at all. The
+  // client used to make up to three Edge calls per locked subject
+  // (chapters -> sets -> bank rows) before the subject list could
+  // render; this replaces that fan-out with a single request.
+  // Presence only (limits of 1 head-count), never the full counts:
+  // counts stay the job of guideChapters/sets when a subject is
+  // actually opened. Unknown classes simply have no flags.
+  if (action === 'guideFlags') {
+    const cls = body.classId;
+    if (typeof cls !== 'number' || !Number.isInteger(cls) || cls < 1) {
+      return json({ error: 'bad-request' }, 400);
+    }
+    const wanted = Array.isArray(body.subjects)
+      ? body.subjects.filter((s) => typeof s === 'string') as string[]
+      : null;
+    // Class 9-10 shared book (same rule as every scoped action):
+    // a class-10 subject with no own book row falls back to 9's.
+    const loadBooks = async (c: number) => {
+      const res = await supabase
+        .from('books')
+        .select('id, subject_id')
+        .eq('class_id', c);
+      return res;
+    };
+    const own = await loadBooks(cls);
+    if (own.error) {
+      if (isMissingTable(own.error)) {
+        return json({ error: 'guide-tables-missing' }, 500);
+      }
+      return json({ error: 'query-failed' }, 500);
+    }
+    let bookRows = (own.data ?? []) as { id: string; subject_id: string }[];
+    if (cls === 10) {
+      const nine = await loadBooks(9);
+      if (nine.error) return json({ error: 'query-failed' }, 500);
+      const have = new Set(bookRows.map((b) => b.subject_id));
+      for (const b of (nine.data ?? []) as { id: string; subject_id: string }[]) {
+        if (!have.has(b.subject_id)) bookRows.push(b);
+      }
+    }
+    const bySubject = new Map<string, string[]>();
+    for (const b of bookRows) {
+      const list = bySubject.get(b.subject_id) ?? [];
+      list.push(b.id);
+      bySubject.set(b.subject_id, list);
+    }
+    const subjects = (wanted ?? [...bySubject.keys()])
+      .filter((s) => bySubject.has(s));
+    const exists = async (build: () => { then: unknown }): Promise<boolean | null> => {
+      try {
+        const res = await (build() as unknown as Promise<{
+          data: unknown[] | null;
+          error: { code?: string } | null;
+        }>);
+        if (res.error) return null;
+        if (!Array.isArray(res.data)) return null;
+        return res.data.length > 0;
+      } catch {
+        return null;
+      }
+    };
+    const probe = async (subject: string) => {
+      const ids = bySubject.get(subject)!;
+      // limit(1) instead of an exact count: presence must stop at the
+      // first hit, never scan a 6,000-row chapter (that alone cost
+      // seconds per class on the first request).
+      const base = () =>
+        supabase
+          .from('guide_questions')
+          .select('id')
+          .in('book_id', ids)
+          .limit(1);
+      // 1) real chapters, 2) chapter-less bank rows, 3) model sets.
+      // Stops at the first hit, so a normal subject costs one query.
+      let chapters = await exists(() =>
+        base().is('set_id', null).not('chapter_number', 'is', null));
+      if (chapters === null) {
+        // Pre-migration server (no chapter_number): fall back to
+        // bank-row presence, which is what the old client probe did.
+        chapters = false;
+      }
+      let bank = false;
+      let sets = false;
+      if (!chapters) {
+        bank = (await exists(() => base().is('set_id', null))) ?? false;
+      }
+      if (!chapters && !bank) {
+        sets = (await exists(() => base().not('set_id', 'is', null))) ?? false;
+      }
+      return {
+        subject,
+        flags: {
+          hasGuide: chapters || bank || sets,
+          chapters,
+          bank,
+          sets,
+        },
+      };
+    };
+    const resolved = await Promise.all(subjects.map(probe));
+    const flags: Record<string, unknown> = {};
+    for (const r of resolved) flags[r.subject] = r.flags;
+    return json({ found: true, action: 'guideFlags', classId: cls, flags });
   }
 
   const classId = body.classId;
