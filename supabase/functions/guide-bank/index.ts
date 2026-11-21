@@ -753,6 +753,12 @@ Deno.serve(async (req) => {
   }
 
   if (action === 'guideLessons') {
+    // Optional chapter scope (U10): with it the counts match the
+    // chapter-scoped list the student opens.
+    const lessonChapter =
+      typeof body.chapter === 'number' && Number.isInteger(body.chapter)
+        ? body.chapter
+        : null;
     // Exact native counts (lessons.ts): distinct lesson values
     // via paged lesson values, then one exact head-count per
     // lesson (total + keyed) — same shape as guideChapters, but
@@ -768,26 +774,33 @@ Deno.serve(async (req) => {
     // is optional for chapter-less browsing).
     const nativeResult = await fetchNativeGuideLessonCounts({
       fetchLessonPage: async (from, to) => {
-        const res = await supabase
+        let q = supabase
           .from('guide_questions')
           .select('lesson')
           .in('book_id', bookIds)
           .is('set_id', null)
-          .not('lesson', 'is', null)
-          .range(from, to);
+          .not('lesson', 'is', null);
+        // Optional chapter scope (U10): subject-wide lesson counts did
+        // not match the chapter-scoped list. A lesson label like "1.5"
+        // exists in another chapter too, so counting it here showed
+        // "সৃজনশীল ৩" while the chapter list was empty.
+        if (lessonChapter !== null) q = q.eq('chapter_number', lessonChapter);
+        const res = await q.range(from, to);
         return { data: res.data, error: res.error };
       },
       countTotal: async (lesson) => {
-        const res = await supabase
+        let q = supabase
           .from('guide_questions')
           .select('id', { count: 'exact', head: true })
           .in('book_id', bookIds)
           .is('set_id', null)
           .eq('lesson', lesson);
+        if (lessonChapter !== null) q = q.eq('chapter_number', lessonChapter);
+        const res = await q;
         return { count: res.count, error: res.error };
       },
       countKeyed: async (lesson) => {
-        const res = await supabase
+        let q = supabase
           .from('guide_questions')
           .select('id', { count: 'exact', head: true })
           .in('book_id', bookIds)
@@ -795,6 +808,8 @@ Deno.serve(async (req) => {
           .eq('lesson', lesson)
           .not('answer_key', 'is', null)
           .neq('answer_key', '');
+        if (lessonChapter !== null) q = q.eq('chapter_number', lessonChapter);
+        const res = await q;
         return { count: res.count, error: res.error };
       },
     });

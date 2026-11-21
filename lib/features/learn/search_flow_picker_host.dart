@@ -18,7 +18,9 @@ import 'search_flow_controller.dart';
 import 'search_flow_types.dart';
 
 String? globalPickerSelectedId(
-    SearchFlowController c, SearchFlowBrowseExtras extras) {
+  SearchFlowController c,
+  SearchFlowBrowseExtras extras,
+) {
   if (extras.setId != null) return 'set:${extras.setId}';
   final t = c.type;
   if (t != null && c.chapter != null && c.source == 'guide') {
@@ -107,6 +109,29 @@ void onGlobalPickerBranch({
   if (node.kind == GlobalPickerNodeKind.chapter && c.source == 'guide') {
     final n = int.tryParse(node.id.split(':').last);
     if (n == null) return;
+    // Server lessons for THIS chapter (chapter-scoped counts), then
+    // the lazy per-lesson type counts — the two must agree.
+    extras
+        .loadChapterLessons(
+          subject: c.effectiveSubjectId,
+          schoolClass: c.effectiveClass,
+          chapter: n,
+        )
+        .then((_) {
+          final srv = extras.chapterLessons[n];
+          extras.lessonCounts.load(
+            subject: c.effectiveSubjectId,
+            schoolClass: c.effectiveClass,
+            chapter: n,
+            lessons:
+                (srv ?? lessonsForChapter(c.subjectId, c.schoolClass, n)).keys,
+            types: searchFlowTypesFor(
+              guide: true,
+              subject: c.effectiveSubjectId,
+              schoolClass: c.effectiveClass,
+            ),
+          );
+        });
     extras.lessonCounts.load(
       subject: c.effectiveSubjectId,
       schoolClass: c.effectiveClass,
@@ -154,7 +179,9 @@ class GlobalPickerEnglishHost {
 /// same subject (dedupe keys match), so warming while the
 /// user taps that subject costs no second network run.
 void prefetchFirstSubjectPickerData(
-    SearchFlowController c, SearchFlowBrowseExtras extras) {
+  SearchFlowController c,
+  SearchFlowBrowseExtras extras,
+) {
   () async {
     try {
       if (c.subjects.length < 2) return;

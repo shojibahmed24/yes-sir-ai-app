@@ -39,6 +39,30 @@ class SearchFlowBrowseExtras {
   Map<String, int> serverLessons = const {};
   bool serverLessonsLoading = false;
 
+  /// Chapter-scoped server lessons (U10): counts here match the list
+  /// the student opens, unlike the subject-wide lesson column where a
+  /// label like "1.5" also exists in another chapter.
+  final Map<int, Map<String, int>> chapterLessons = {};
+  final Set<int> _chapterRequested = {};
+
+  Future<void> loadChapterLessons({
+    required String subject,
+    required int schoolClass,
+    required int chapter,
+  }) async {
+    if (chapterLessons.containsKey(chapter) ||
+        !_chapterRequested.add(chapter)) {
+      return;
+    }
+    final out = await _fetchServerLessons(subject, schoolClass, chapter);
+    if (out == null) {
+      _chapterRequested.remove(chapter); // retry next open
+      return;
+    }
+    chapterLessons[chapter] = out;
+    _notify();
+  }
+
   /// Paper-II section pick (english-2nd only). Null = none.
   String? paper2Section;
 
@@ -223,13 +247,15 @@ class SearchFlowBrowseExtras {
   /// picker hides and lesson stays optional either way.
   Future<Map<String, int>?> _fetchServerLessons(
     String subjectId,
-    int schoolClass,
-  ) async {
+    int schoolClass, [
+    int? chapter,
+  ]) async {
     if (AppConfig.guideBankEndpoint.isEmpty) return null;
     final res = await edgePost({
       'action': 'guideLessons',
       'classId': schoolClass,
       'subject': subjectId,
+      if (chapter != null) 'chapter': chapter,
     }, endpoint: AppConfig.guideBankEndpoint).catchError((_) => null);
     if (res == null || res['found'] != true) return null;
     final list = res['lessons'];

@@ -35,6 +35,7 @@ const Map<String, String> guideBankStringsBn = {
       'সার্ভারে পৌঁছানো যায়নি, আর সংরক্ষিত সেটও নেই। আবার চেষ্টা করো।',
   'modelTestNoKeyed': 'এই সেটে চাবিযুক্ত MCQ পাওয়া যায়নি।',
   'modelTestStart': 'শুরু করুন',
+  'noKeyedStart': 'চাবি নেই — শুরু করা যায় না',
   'unkeyedExcludedSuffix': 'টি প্রশ্নের চাবি নেই — স্কোরিং থেকে বাদ',
   'answerUnavailable': 'এই গাইড প্রশ্নের উত্তর এখনো যুক্ত হয়নি',
   'answerFailed': 'ব্যাখ্যা তৈরি করা যায়নি',
@@ -66,9 +67,9 @@ const Map<String, String> guideBankStringsBn = {
   'verbatimCorrectedNote': 'গাইডে ছাপা উত্তরে ভুল ছিল',
   // Label fix (2026-11-01): AI-written text is NEVER titled as
   // the guide's answer. No-verbatim cards read exactly this.
-  'aiAnswerTitle': 'AI ব্যাখ্যা (গাইডে ছাপা নেই)',
+  'aiAnswerTitle': 'AI ব্যাখ্যা (গাইডে লিখিত সমাধান নেই)',
   'aiAnswerNoGuideNote':
-      'গাইডে এই প্রশ্নের লেখা সমাধান পাওয়া যায়নি — নিচের উত্তরটি AI লিখেছে, এটি গাইডের লেখা নয়',
+      'উপরের উত্তরটি গাইডের চাবি থেকে নেওয়া। গাইডে এই প্রশ্নের লিখিত সমাধান ছাপা নেই, তাই নিচের ব্যাখ্যাটি AI লিখেছে — এটি গাইডের লিখিত সমাধান নয়।',
   'verbatimErrorNote':
       'গাইডে ছাপা উত্তর ভুল প্রমাণিত, সংশোধন এখনো তৈরি হয়নি — নিচে এআই ব্যাখ্যা দেখুন',
   'explainDetailed': 'সারাংশসহ দেখাও',
@@ -126,6 +127,7 @@ const Map<String, String> guideBankStringsEn = {
   'modelTestsUnavailable': 'Server unreachable and no cached sets. Try again.',
   'modelTestNoKeyed': 'No keyed MCQs found in this set.',
   'modelTestStart': 'Start',
+  'noKeyedStart': 'No key — cannot start',
   'unkeyedExcludedSuffix': ' questions have no key — excluded from scoring',
   'answerUnavailable': 'This guide question is not connected yet',
   'answerFailed': 'Explanation could not be generated',
@@ -148,9 +150,9 @@ const Map<String, String> guideBankStringsEn = {
   'verbatimGuideTitle': 'Guide answer',
   'verbatimCorrectedTitle': 'Corrected answer',
   'verbatimCorrectedNote': 'The printed guide answer was wrong',
-  'aiAnswerTitle': 'AI explanation (not printed in the guide)',
+  'aiAnswerTitle': 'AI explanation (no written solution in the guide)',
   'aiAnswerNoGuideNote':
-      'No written guide solution was found for this question in the guide — the answer below was written by AI and is not the guide\'s text',
+      'The answer above comes from the guide key. The guide has no printed written solution for this question, so the explanation below was written by AI — it is not the guide\'s text.',
   'verbatimErrorNote':
       'The printed guide answer was proven wrong and no correction is ready yet — see the AI explanation below',
   'explainDetailed': 'Show with summary',

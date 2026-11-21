@@ -151,7 +151,12 @@ GlobalPickerTree buildGlobalPickerTree({
     switch (node.kind) {
       case GlobalPickerNodeKind.chapter:
         final n = int.tryParse(node.id.split(':').last) ?? 0;
-        final lessons = lessonsForChapter(c.subjectId, c.schoolClass, n);
+        // Chapter-scoped server lessons win when loaded (U10);
+        // static maps are only a pre-load fallback.
+        final srv = extras.chapterLessons[n];
+        final lessons = srv != null
+            ? {for (final k in srv.keys) k: k}
+            : lessonsForChapter(c.subjectId, c.schoolClass, n);
         // No lesson rows for this chapter: go straight to the types.
         if (lessons.isEmpty) return typesOf(n, null);
         return lessonHubNodes(

@@ -27,15 +27,19 @@ class _LoadedSets {
   final List<GuideModelSetInfo>? meta;
   final List<GuideModelSet> cached;
   final int schoolClass;
-  const _LoadedSets({required this.meta, required this.cached, required this.schoolClass});
+  const _LoadedSets({
+    required this.meta,
+    required this.cached,
+    required this.schoolClass,
+  });
 }
 
 /// R7: readable set name, not the raw id ('model-test-3' →
 /// 'মডেল টেস্ট 3'; other ids: separators become spaces).
 String _displaySetId(String id, Map<String, String> s) =>
     id.startsWith('model-test-')
-        ? "${s['modelTestWord']!} ${id.substring('model-test-'.length)}"
-        : id.replaceAll('-', ' ').replaceAll('_', ' ');
+    ? "${s['modelTestWord']!} ${id.substring('model-test-'.length)}"
+    : id.replaceAll('-', ' ').replaceAll('_', ' ');
 
 class _SetRow {
   final String setId;
@@ -50,7 +54,9 @@ class _SetRow {
 /// carry hasKey booleans only, so their keyed count uses
 /// serverHasKey, not the index-based keyedCount.
 List<_SetRow> _mergeRows(
-    List<GuideModelSetInfo>? meta, List<GuideModelSet> cached) {
+  List<GuideModelSetInfo>? meta,
+  List<GuideModelSet> cached,
+) {
   final byId = {for (final s in cached) s.setId: s};
   final rows = <_SetRow>[];
   if (meta != null) {
@@ -60,8 +66,14 @@ List<_SetRow> _mergeRows(
   }
   for (final s in cached) {
     if (meta == null || !meta.any((m) => m.setId == s.setId)) {
-      rows.add(_SetRow(s.setId, s.questions.length,
-          s.questions.where((q) => q.serverHasKey).length, s));
+      rows.add(
+        _SetRow(
+          s.setId,
+          s.questions.length,
+          s.questions.where((q) => q.serverHasKey).length,
+          s,
+        ),
+      );
     }
   }
   return rows;
@@ -75,8 +87,7 @@ class GuideModelTestListScreen extends StatefulWidget {
       _GuideModelTestListScreenState();
 }
 
-class _GuideModelTestListScreenState
-    extends State<GuideModelTestListScreen> {
+class _GuideModelTestListScreenState extends State<GuideModelTestListScreen> {
   String? _startingSetId;
 
   Future<void> _start(
@@ -97,44 +108,55 @@ class _GuideModelTestListScreenState
     setState(() => _startingSetId = row.setId);
     List<GuideBankQuestion>? rows = row.cached?.questions;
     if (rows == null || rows.isEmpty) {
-      rows = await modelTestSetService.fetchSetRows(subject, row.setId,
-          schoolClass: schoolClass);
+      rows = await modelTestSetService.fetchSetRows(
+        subject,
+        row.setId,
+        schoolClass: schoolClass,
+      );
       if (rows != null) {
-        final cached = await modelTestSetService.cachedSets(subject,
-            schoolClass: schoolClass);
+        final cached = await modelTestSetService.cachedSets(
+          subject,
+          schoolClass: schoolClass,
+        );
         final merged = [
-          for (final c in cached) if (c.setId != row.setId) c,
-          GuideModelSet(
-              setId: row.setId, subjectId: subject, questions: rows),
+          for (final c in cached)
+            if (c.setId != row.setId) c,
+          GuideModelSet(setId: row.setId, subjectId: subject, questions: rows),
         ];
-        await modelTestSetService.cacheSets(subject, merged,
-            schoolClass: schoolClass);
+        await modelTestSetService.cacheSets(
+          subject,
+          merged,
+          schoolClass: schoolClass,
+        );
       }
     }
     if (rows == null) {
       if (mounted) {
         setState(() => _startingSetId = null);
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(s['modelTestsUnavailable']!)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(s['modelTestsUnavailable']!)));
       }
       return;
     }
     // Phase-5 decision 3: Paper-II sets have no MCQ rows —
     // keyed gapbox/table/verbs rows are playable there
     // (other subjects stay MCQ-only; option-less rows drop).
-    final candidates =
-        GuideQuizService.modelTestCandidates(rows, subject);
-    final items = await guideQuizService.resolveKeys(candidates,
-        subject: subject,
-        schoolClass: schoolClass,
-        bangla: bangla,
-        limit: candidates.length);
+    final candidates = GuideQuizService.modelTestCandidates(rows, subject);
+    final items = await guideQuizService.resolveKeys(
+      candidates,
+      subject: subject,
+      schoolClass: schoolClass,
+      bangla: bangla,
+      limit: candidates.length,
+    );
     if (items.isEmpty || !context.mounted) {
       if (mounted) {
         setState(() => _startingSetId = null);
         if (items.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(s['modelTestNoKeyed']!)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(s['modelTestNoKeyed']!)));
         }
       }
       return;
@@ -172,21 +194,33 @@ class _GuideModelTestListScreenState
             // Sets are class-keyed: resolve the saved class first
             // instead of taking the service's documented fallback.
             future: Future.wait([
-              resolveSchoolClass().then((c) async => _LoadedSets(
-                    meta: await modelTestSetService.fetchSetsFromServer(
-                        subject,
-                        schoolClass: c),
-                    cached: await modelTestSetService.cachedSets(
-                      subject,
-                      schoolClass: c,
-                    ),
+              resolveSchoolClass().then(
+                (c) async => _LoadedSets(
+                  meta: await modelTestSetService.fetchSetsFromServer(
+                    subject,
                     schoolClass: c,
-                  )),
+                  ),
+                  cached: await modelTestSetService.cachedSets(
+                    subject,
+                    schoolClass: c,
+                  ),
+                  schoolClass: c,
+                ),
+              ),
               billingService.isPremium(),
             ]),
             builder: (context, snap) {
               if (!snap.hasData) {
-                return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [const CircularProgressIndicator(), const SizedBox(height: 12), Text(s['loading']!)]));
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 12),
+                      Text(s['loading']!),
+                    ],
+                  ),
+                );
               }
               final loaded = snap.data![0] as _LoadedSets;
               final isPremium = snap.data![1] as bool;
@@ -215,25 +249,33 @@ class _GuideModelTestListScreenState
                   for (final row in rows) ...[
                     PracticeCard(
                       title: _displaySetId(row.setId, s),
-                      subtitle: '${numStr(row.total, bn)}${s['questionsSuffix']!} · ${numStr(row.keyed, bn)}${s['keyedSuffix']!}${row.unkeyed > 0 ? ' · ${numStr(row.unkeyed, bn)}${s['unkeyedExcludedSuffix']!}' : ''}',
-                      icon: row.keyed == 0
-                          ? Icons.lock
-                          : Icons.assignment,
+                      subtitle:
+                          '${numStr(row.total, bn)}${s['questionsSuffix']!} · ${numStr(row.keyed, bn)}${s['keyedSuffix']!}${row.unkeyed > 0 ? ' · ${numStr(row.unkeyed, bn)}${s['unkeyedExcludedSuffix']!}' : ''}',
+                      icon: row.keyed == 0 ? Icons.lock : Icons.assignment,
                       trailing: _startingSetId == row.setId
-                          ? const SizedBox(width: 18, height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          // A disabled "Start" read as a broken button.
+                          // No keyed MCQs = the set cannot be scored, so
+                          // say why instead of offering a dead action.
+                          : row.keyed == 0
+                          ? Text(
+                              s['noKeyedStart']!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            )
                           : ElevatedButton(
-                              onPressed: row.keyed == 0
-                                  ? null
-                                  : () => _start(
-                                        context,
-                                        subject,
-                                        row,
-                                        loaded.schoolClass,
-                                        isPremium,
-                                        bn,
-                                        s,
-                                      ),
+                              onPressed: () => _start(
+                                context,
+                                subject,
+                                row,
+                                loaded.schoolClass,
+                                isPremium,
+                                bn,
+                                s,
+                              ),
                               child: Text(s['modelTestStart']!),
                             ),
                     ),
