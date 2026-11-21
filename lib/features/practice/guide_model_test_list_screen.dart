@@ -228,9 +228,22 @@ class _GuideModelTestListScreenState extends State<GuideModelTestListScreen> {
               if (loaded.meta == null && loaded.cached.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text(
-                    s['modelTestsUnavailable']!,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s['modelTestsUnavailable']!,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        // Offline/cold start: a retry must not need
+                        // leaving the screen and coming back.
+                        onPressed: () => setState(() {}),
+                        child: Text(s['retry']!),
+                      ),
+                    ],
                   ),
                 );
               }
