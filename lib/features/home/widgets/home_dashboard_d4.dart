@@ -50,14 +50,20 @@ class HomeWeekActivity extends StatelessWidget {
                   Expanded(
                     child: Column(
                       children: [
-                        Container(
-                          height: active[i] ? 34 : 10,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            color: active[i]
-                                ? AppTheme.primary
-                                : colors.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(6),
+                        SizedBox(
+                          height: 32,
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              width: 14,
+                              height: active[i] ? 28 : 8,
+                              decoration: BoxDecoration(
+                                color: active[i]
+                                    ? AppTheme.primary
+                                    : colors.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 6),
