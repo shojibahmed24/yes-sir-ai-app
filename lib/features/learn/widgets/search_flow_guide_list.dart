@@ -81,6 +81,26 @@ class SearchFlowGuideListView extends StatelessWidget {
     return setDisplayTitle(q.setId!, bn, g.parts.first.$1 + 1);
   }
 
+  /// Group marks text (B4): a creative row's own marks are ONE part's
+  /// marks, so the row used to read "2 marks" for a 10-mark question.
+  /// The total is printed evidence (sum of the parts' printed marks);
+  /// if any part has no printed marks, no total is shown — never a
+  /// guessed number.
+  String? _groupMarks(GroupedRows g) {
+    final n = g.parts.length;
+    if (type != SearchFlowType.creative || g.stimulusId == null || n < 2) {
+      return null;
+    }
+    var sum = 0;
+    for (final p in g.parts) {
+      final m = p.$2.marks;
+      if (m == null) return null;
+      sum += m;
+    }
+    final parts = gs['groupParts']!.replaceAll('{n}', numStr(n, bn));
+    return '${numStr(sum, bn)} ${gs['marksWord']!} · $parts';
+  }
+
   Widget _row(GroupedRows g, bool locked) {
     final first = g.parts.first;
     final q = first.$2;
@@ -116,6 +136,7 @@ class SearchFlowGuideListView extends StatelessWidget {
       chapterNumber: chapterNumber,
       boardLabel: boardLabel,
       numberLabel: '#${numStr(first.$1 + 1, bn)}',
+      marksLabel: _groupMarks(g),
       onTap: open,
     );
   }
@@ -160,17 +181,6 @@ class SearchFlowGuideListView extends StatelessWidget {
           Text(showing),
           const SizedBox(height: 8),
           for (final g in groups) ...[
-            if (g.stimulusId != null && g.parts.length > 1)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  s['groupParts']!.replaceAll(
-                    '{n}',
-                    numStr(g.parts.length, bn),
-                  ),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
             // Step 7 (Fix A): a creative group opens worker E's
             // grouped view with ALL currently loaded parts; any
             // other row keeps the single-question path. Known

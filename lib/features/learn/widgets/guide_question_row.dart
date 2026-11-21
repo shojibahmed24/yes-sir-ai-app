@@ -21,6 +21,7 @@ class GuideQuestionRow extends StatelessWidget {
     required this.onTap,
     this.boardLabel,
     this.numberLabel,
+    this.marksLabel,
   });
   final GuideBankQuestion question;
   final bool locked;
@@ -28,6 +29,11 @@ class GuideQuestionRow extends StatelessWidget {
   final String subjectId;
   final int chapterNumber;
   final VoidCallback onTap;
+
+  /// Ready-made marks text. Used for a creative GROUP, where the
+  /// row's own `question.marks` is only one part's marks (2 of 10) —
+  /// the caller passes the group's printed total instead.
+  final String? marksLabel;
 
   /// Board/year label parsed from the row's setId; null for
   /// non-board rows. Never invented when the id has no board shape.
@@ -82,7 +88,9 @@ class GuideQuestionRow extends StatelessWidget {
             Chip(label: Text(_typeLabel())),
             if (numberLabel != null) Chip(label: Text(numberLabel!)),
             if (boardLabel != null) Chip(label: Text(boardLabel!)),
-            if (question.marks != null)
+            if (marksLabel != null)
+              Chip(label: Text(marksLabel!))
+            else if (question.marks != null)
               Chip(label: Text('${question.marks} ${s['marksWord']!}')),
             // Pilot (lesson 2.1): practice-work rows are NOT
             // textbook solutions — say so on the row itself, so
