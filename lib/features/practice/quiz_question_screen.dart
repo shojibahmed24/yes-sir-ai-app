@@ -14,17 +14,20 @@ import 'package:yes_sir_ai/core/services/quiz_explanation_service.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
 import 'package:yes_sir_ai/features/practice/quiz_explanation_body.dart';
 import 'package:yes_sir_ai/features/practice/widgets/practice_widgets.dart';
+import 'package:yes_sir_ai/features/practice/widgets/option_letter.dart';
 import 'package:yes_sir_ai/features/practice/widgets/quiz_footer_actions.dart';
 import 'package:yes_sir_ai/features/practice/widgets/quiz_question_header.dart';
 import 'package:yes_sir_ai/features/practice/widgets/quiz_source_header.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/quiz_question_strings.dart';
 import '../../theme/themed_scaffold.dart';
+
 class QuizQuestionScreen extends StatefulWidget {
   const QuizQuestionScreen({super.key});
   @override
   State<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
 }
+
 class _QuizQuestionScreenState extends State<QuizQuestionScreen>
     with WidgetsBindingObserver {
   late List<QuizItem> _items;
@@ -52,8 +55,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
     WidgetsBinding.instance.addObserver(this);
     if (PracticeSession.quizItems.isEmpty) {
       // Deep-link fallback: a bank set, labelled as such.
-      PracticeSession.quizItems =
-          practiceService.dailyQuizFor(PracticeSession.selectedSubject);
+      PracticeSession.quizItems = practiceService.dailyQuizFor(
+        PracticeSession.selectedSubject,
+      );
       PracticeSession.quizSource = 'bankFallback';
       PracticeSession.quizShortfall = 0;
     }
@@ -69,7 +73,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
       _inBackground = state != AppLifecycleState.resumed;
 
   @override
-  void dispose() { WidgetsBinding.instance.removeObserver(this); _timer?.cancel(); _elapsed.dispose(); super.dispose(); }
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    _elapsed.dispose();
+    super.dispose();
+  }
+
   QuizItem get _q => _items[_index];
   bool get _isChecked => _checked.contains(_index);
   bool get _isLast => _index == _items.length - 1;
@@ -82,15 +92,25 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
     for (final e in _answers.entries) {
       if (_items[e.key].isCorrect(e.value)) correct++;
     }
-    final attempt = Attempt(kind: 'quiz', testId: 'quiz-${PracticeSession.selectedSubject}',
-        subject: PracticeSession.selectedSubject, chapter: PracticeSession.selectedSubject,
-        correct: correct, total: _items.length, seconds: _elapsed.value,
-        date: PracticeSession.today(),
-        answers: {for (final e in _answers.entries) _items[e.key].id: e.value},
-        // Phase 2: persist the actual wrong items (guide items
-        // included) so weak chapters + revision can use them.
-        wrongItems: [for (final e in _answers.entries)
-          if (!_items[e.key].isCorrect(e.value)) _items[e.key]]);
+    final attempt = Attempt(
+      kind: 'quiz',
+      testId: 'quiz-${PracticeSession.selectedSubject}',
+      subject: PracticeSession.selectedSubject,
+      // Chapter is not known at quiz level; the subject id used to
+      // be written here, corrupting the saved attempt record.
+      chapter: '',
+      correct: correct,
+      total: _items.length,
+      seconds: _elapsed.value,
+      date: PracticeSession.today(),
+      answers: {for (final e in _answers.entries) _items[e.key].id: e.value},
+      // Phase 2: persist the actual wrong items (guide items
+      // included) so weak chapters + revision can use them.
+      wrongItems: [
+        for (final e in _answers.entries)
+          if (!_items[e.key].isCorrect(e.value)) _items[e.key],
+      ],
+    );
     await practiceService.recordAttempt(attempt);
     // Phase 17 (L8): best-effort server progress write, local first.
     await progressService.syncToServer();
@@ -102,8 +122,12 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
     if (!_isChecked) {
       if (!_answers.containsKey(_index)) {
         final bangla = languageNotifier.value.languageCode == 'bn';
-        final msg = bangla ? quizQuestionStringsBn['selectFirst']! : quizQuestionStringsEn['selectFirst']!;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        final msg = bangla
+            ? quizQuestionStringsBn['selectFirst']!
+            : quizQuestionStringsEn['selectFirst']!;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
         return;
       }
       setState(() => _checked.add(_index));
@@ -140,8 +164,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
         _explanationModel[index] = res.aiModel;
       } else if (res.outcome == ExplanationOutcome.demo) {
         _explanations[index] = res.text;
-        _explanationKind[index] =
-            res.demoKind == 'bank' ? 'demo-bank' : 'demo';
+        _explanationKind[index] = res.demoKind == 'bank' ? 'demo-bank' : 'demo';
       } else if (res.serverKeyMissing) {
         _explanationKind[index] = 'serverKeyMissing';
       } else if (res.guideMissing) {
@@ -156,9 +179,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
   /// bank with the same seed and reset all per-question state.
   void _switchToBank() {
     final items = practiceService.dailyQuizFor(
-        PracticeSession.selectedSubject,
-        seedKey: PracticeSession.quizSeedKey,
-        count: 20);
+      PracticeSession.selectedSubject,
+      seedKey: PracticeSession.quizSeedKey,
+      count: 20,
+    );
     PracticeSession.quizItems = items;
     PracticeSession.quizSource = 'bankFallback';
     PracticeSession.quizShortfall = 0;
@@ -178,73 +202,113 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Locale>(valueListenable: languageNotifier, builder: (context, locale, _) {
-      final s = locale.languageCode == 'bn' ? quizQuestionStringsBn : quizQuestionStringsEn;
-      final bangla = locale.languageCode == 'bn';
-      final chosen = _answers[_index];
-      return ThemedScaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/practice'),
-          ),
-          title: Text(s['title']!),
-        ),
-        body: ListView(padding: const EdgeInsets.all(16), children: [
-          QuizSourceHeader(
-            source: PracticeSession.quizSource,
-            shortfall: PracticeSession.quizShortfall,
-            count: _items.length,
-            isRevision: PracticeSession.quizIsRevision,
-            s: s,
-            onBankSet: _switchToBank,
-          ),
-          const SizedBox(height: 8),
-          QuizQuestionHeader(
-            label: "${s['qLabel']!} ${_index + 1}/${_items.length}",
-            progress: (_index + 1) / _items.length,
-            elapsed: _elapsed,
-            chapter: practiceService.chapterOf(_q.id, bangla),
-          ),
-          QuizQuestionCard(item: _q, bangla: bangla, hint: s['multiKeyHint']!),
-          const SizedBox(height: 12),
-          for (int i = 0; i < _q.options.length; i++) Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: OptionTile(label: bangla ? 'কখগঘ'[i] : 'ABCD'[i], text: _q.options[i], selected: chosen == i,
-                correct: _isChecked ? _q.isCorrect(i) : null,
-                onTap: _isChecked ? null : () => setState(() => _answers[_index] = i)),
-          ),
-          if (_isChecked) ...[
-            const SizedBox(height: 8),
-            QuizCheckedCard(
-              correct: chosen != null && _q.isCorrect(chosen),
-              s: s,
-              acceptedAnswers: _q.acceptedOptionTexts,
-              loading: _loadingExplanation.contains(_index),
-              kind: _explanationKind[_index],
-              text: _explanations[_index],
-              aiProvider:
-                  _explanationProvider[_index] ?? 'unknown',
-              aiModel: _explanationModel[_index],
+    return ValueListenableBuilder<Locale>(
+      valueListenable: languageNotifier,
+      builder: (context, locale, _) {
+        final s = locale.languageCode == 'bn'
+            ? quizQuestionStringsBn
+            : quizQuestionStringsEn;
+        final bangla = locale.languageCode == 'bn';
+        final chosen = _answers[_index];
+        return ThemedScaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/practice'),
             ),
-          ],
-          const SizedBox(height: 16),
-          Row(children: [
-            Expanded(child: OutlinedButton(onPressed: _index > 0 ? () => setState(() => _index--) : null, child: Text(s['prev']!))),
-            const SizedBox(width: 8),
-            Expanded(child: ElevatedButton(onPressed: _primary, child: Text(!_isChecked ? s['submit']! : (_isLast ? s['finish']! : s['next']!)))),
-          ]),
-          const SizedBox(height: 8),
-          QuizFooterActions(
-            questionId: _q.id,
-            s: s,
-            onSkip: () {
-              _answers.remove(_index);
-              if (_isLast) { _finish(); } else { setState(() => _index++); }
-            },
+            title: Text(s['title']!),
           ),
-        ]),
-      );
-    });
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              QuizSourceHeader(
+                source: PracticeSession.quizSource,
+                shortfall: PracticeSession.quizShortfall,
+                count: _items.length,
+                isRevision: PracticeSession.quizIsRevision,
+                s: s,
+                onBankSet: _switchToBank,
+              ),
+              const SizedBox(height: 8),
+              QuizQuestionHeader(
+                label: "${s['qLabel']!} ${_index + 1}/${_items.length}",
+                progress: (_index + 1) / _items.length,
+                elapsed: _elapsed,
+                chapter: practiceService.chapterOf(_q.id, bangla),
+              ),
+              QuizQuestionCard(
+                item: _q,
+                bangla: bangla,
+                hint: s['multiKeyHint']!,
+              ),
+              const SizedBox(height: 12),
+              for (int i = 0; i < _q.options.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: OptionTile(
+                    label: optionLetter(i, bangla),
+                    text: _q.options[i],
+                    selected: chosen == i,
+                    correct: _isChecked ? _q.isCorrect(i) : null,
+                    onTap: _isChecked
+                        ? null
+                        : () => setState(() => _answers[_index] = i),
+                  ),
+                ),
+              if (_isChecked) ...[
+                const SizedBox(height: 8),
+                QuizCheckedCard(
+                  correct: chosen != null && _q.isCorrect(chosen),
+                  s: s,
+                  acceptedAnswers: _q.acceptedOptionTexts,
+                  loading: _loadingExplanation.contains(_index),
+                  kind: _explanationKind[_index],
+                  text: _explanations[_index],
+                  aiProvider: _explanationProvider[_index] ?? 'unknown',
+                  aiModel: _explanationModel[_index],
+                ),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _index > 0
+                          ? () => setState(() => _index--)
+                          : null,
+                      child: Text(s['prev']!),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _primary,
+                      child: Text(
+                        !_isChecked
+                            ? s['submit']!
+                            : (_isLast ? s['finish']! : s['next']!),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              QuizFooterActions(
+                questionId: _q.id,
+                s: s,
+                onSkip: () {
+                  _answers.remove(_index);
+                  if (_isLast) {
+                    _finish();
+                  } else {
+                    setState(() => _index++);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

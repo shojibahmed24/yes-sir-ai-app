@@ -154,9 +154,16 @@ class QuizResultsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      PracticeSession.quizItems = practiceService.quizFor(
-                        attempt.subject,
-                      );
+                      // Retake the SAME questions: the old path fetched
+                      // the 5-question demo bank instead of the guide
+                      // set the student had just finished.
+                      final same = attempt.answers.keys
+                          .map(practiceService.findQuestion)
+                          .whereType<QuizItem>()
+                          .toList();
+                      PracticeSession.quizItems = same.isNotEmpty
+                          ? same
+                          : practiceService.quizFor(attempt.subject);
                       PracticeSession.selectedSubject = attempt.subject;
                       context.go('/quiz');
                     },
