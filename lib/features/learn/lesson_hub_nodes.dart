@@ -3,7 +3,24 @@
 // Extracted so global_picker_tree.dart stays under the 250-line cap.
 import 'global_picker_model.dart';
 import 'lesson_hub_route.dart';
+import 'lesson_order.dart';
 import 'search_flow_lesson_counts.dart';
+
+/// Row subtitle: the "extra set" marker for a compilation heading,
+/// plus the type counts when they are known.
+String? _subtitleFor(
+  LessonEntry e,
+  SearchFlowLessonCounts counts,
+  int chapter,
+  Map<String, String> s,
+  bool bn,
+) {
+  final parts = <String>[
+    if (e.compilation) s['extraSetLabel'] ?? '',
+    lessonCountsLine(counts.of(chapter, e.value), s, bn) ?? '',
+  ].where((p) => p.isNotEmpty).toList();
+  return parts.isEmpty ? null : parts.join(' · ');
+}
 
 List<GlobalPickerNode> lessonHubNodes({
   required String subject,
@@ -31,11 +48,13 @@ List<GlobalPickerNode> lessonHubNodes({
         ),
       ),
     ),
-    for (final e in lessons.entries)
+    for (final e in orderLessonEntries(lessons))
       GlobalPickerNode(
-        id: 'lesson:$chapter:${e.key}',
-        title: e.key == e.value ? e.key : '${e.key} · ${e.value}',
-        subtitle: lessonCountsLine(counts.of(chapter, e.key), s, bn),
+        id: 'lesson:$chapter:${e.value}',
+        // B11: syllabus order (১.১ → ১.১.৪), compilation headings at
+        // the end and marked as a set — never mixed into the lessons.
+        title: e.title == e.value ? e.value : '${e.value} · ${e.title}',
+        subtitle: _subtitleFor(e, counts, chapter, s, bn),
         kind: GlobalPickerNodeKind.lesson,
         hasChildren: false,
         pick: GlobalPickerPick.route(
@@ -43,8 +62,8 @@ List<GlobalPickerNode> lessonHubNodes({
             subject: subject,
             schoolClass: schoolClass,
             chapter: chapter,
-            lesson: e.key,
-            title: e.key == e.value ? e.key : '${e.key} · ${e.value}',
+            lesson: e.value,
+            title: e.title == e.value ? e.value : '${e.value} · ${e.title}',
           ),
         ),
       ),
