@@ -301,12 +301,14 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(
+                  SizedBox(
+                    width: 52,
+                    height: 48,
                     child: OutlinedButton(
                       onPressed: _index > 0
                           ? () => setState(() => _index--)
                           : null,
-                      child: Text(s['prev']!),
+                      child: const Icon(Icons.arrow_back),
                     ),
                   ),
                   const SizedBox(width: 8),

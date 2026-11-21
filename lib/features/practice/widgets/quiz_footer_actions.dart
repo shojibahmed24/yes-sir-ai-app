@@ -47,16 +47,19 @@ class _QuizFooterActionsState extends State<QuizFooterActions> {
       if (!mounted) return;
       setState(() => _savedIds.remove(id));
       if (removed) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(s['unsavedMsg']!)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(s['unsavedMsg']!)));
       }
     } else {
       final newlySaved = await practiceService.saveQuestion(id);
       if (!mounted) return;
       setState(() => _savedIds.add(id));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              newlySaved ? s['savedMsg']! : s['alreadySavedMsg']!)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(newlySaved ? s['savedMsg']! : s['alreadySavedMsg']!),
+        ),
+      );
     }
   }
 
@@ -64,33 +67,29 @@ class _QuizFooterActionsState extends State<QuizFooterActions> {
   Widget build(BuildContext context) {
     final s = widget.s;
     final isSaved = _savedIds.contains(widget.questionId);
-    return Column(children: [
-      Row(children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: _toggleSave,
-            icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
-            label: Text(isSaved ? s['savedState']! : s['save']!),
-          ),
+    // Three compact icon actions instead of two labelled rows: the
+    // screen had six competing buttons per question.
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton.filledTonal(
+          onPressed: _toggleSave,
+          tooltip: isSaved ? s['savedState']! : s['save']!,
+          icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
         ),
         const SizedBox(width: 8),
-        Expanded(
-          child: TextButton(
-            onPressed: widget.onSkip,
-            child: Text(s['skip']!),
-          ),
+        IconButton.filledTonal(
+          onPressed: widget.onSkip,
+          tooltip: s['skip']!,
+          icon: const Icon(Icons.skip_next),
         ),
-      ]),
-      const SizedBox(height: 8),
-      Row(children: [
-        Expanded(
-          child: TextButton.icon(
-            onPressed: () => context.go('/saved'),
-            icon: const Icon(Icons.bookmark),
-            label: Text(s['viewSaved']!),
-          ),
+        const SizedBox(width: 8),
+        IconButton.filledTonal(
+          onPressed: () => context.go('/saved'),
+          tooltip: s['viewSaved']!,
+          icon: const Icon(Icons.bookmarks_outlined),
         ),
-      ]),
-    ]);
+      ],
+    );
   }
 }
