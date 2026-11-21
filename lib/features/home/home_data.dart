@@ -27,6 +27,7 @@ class HomeData {
     required this.savedCount,
     required this.schoolClass,
     required this.progress,
+    required this.opened,
   });
   final LearnSummary summary;
   final int savedCount;
@@ -34,6 +35,9 @@ class HomeData {
 
   /// Real streak / xp / goal / weak chapters / week activity (D1–D4).
   final ProgressSummary progress;
+
+  /// Class-stamped chapter keys — per-subject progress % (D5).
+  final List<String> opened;
 }
 
 Future<HomeData> loadHomeData() async {
@@ -42,6 +46,7 @@ Future<HomeData> loadHomeData() async {
     LocalStore.savedQuestions(),
     profileService.loadSchoolClass(),
     progressService.summary(),
+    LearnStore.chaptersList(),
   ]);
   final saved = results[1] as List<String>;
   return HomeData(
@@ -49,5 +54,6 @@ Future<HomeData> loadHomeData() async {
     savedCount: saved.length,
     schoolClass: results[2] as int?,
     progress: results[3] as ProgressSummary,
+    opened: results[4] as List<String>,
   );
 }

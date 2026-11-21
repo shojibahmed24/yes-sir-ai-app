@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/models/backend_models.dart';
 import '../../../core/services/books_service.dart';
+import '../../learn/learn_store.dart';
 import '../../../l10n/pages/home_strings.dart';
 import '../../../theme/staggered_list.dart';
 import '../home_design.dart';
@@ -43,24 +44,41 @@ List<SubjectInfo> visibleHomeSubjects(List<SubjectInfo> all) =>
 /// (chapters, else model-test sets, else a generic guide note —
 /// labelled as guide, never passed off as textbook chapters);
 /// textbook subjects show their textbook count.
-String _tileLabel(SubjectInfo s, bool bn) {
+String _tileLabel(
+  SubjectInfo s,
+  bool bn,
+  int? schoolClass,
+  List<String> opened,
+) {
+  final done = schoolClass == null
+      ? 0
+      : LearnStore.openedChapterCount(opened, schoolClass, s.id);
+  final pct = s.chapterCount > 0
+      ? ((done / s.chapterCount) * 100).clamp(0, 100).round()
+      : null;
+  final suffix = pct == null ? '' : ' · $pct%';
   if (s.locked && s.hasGuide) {
     if (s.guideSetCount > 0) {
-      final suffix = bn
+      final sets = bn
           ? homeStringsBn['guideSets']!
           : homeStringsEn['guideSets']!;
-      return bn ? '${s.guideSetCount}$suffix' : '${s.guideSetCount} $suffix';
+      final base = bn ? '${s.guideSetCount}$sets' : '${s.guideSetCount} $sets';
+      return '$base$suffix';
     }
     if (s.guideChapterCount > 0) {
-      return bn
+      final base = bn
           ? '${s.guideChapterCount}টি গাইড অধ্যায়'
           : '${s.guideChapterCount} guide chapters';
+      return '$base$suffix';
     }
     return bn
         ? homeStringsBn['guideAvailable']!
         : homeStringsEn['guideAvailable']!;
   }
-  return bn ? '${s.chapterCount}টি অধ্যায়' : '${s.chapterCount} chapters';
+  final base = bn
+      ? '${s.chapterCount}টি অধ্যায়'
+      : '${s.chapterCount} chapters';
+  return '$base$suffix';
 }
 
 /// True when two subject lists would render identical tiles.
@@ -91,6 +109,7 @@ class HomeSubjectGrid extends StatefulWidget {
     required this.chooseClassTitle,
     required this.chooseClassBody,
     required this.chooseClassAction,
+    this.opened = const [],
     this.service,
   });
   final bool bn;
@@ -100,6 +119,9 @@ class HomeSubjectGrid extends StatefulWidget {
   final String chooseClassTitle;
   final String chooseClassBody;
   final String chooseClassAction;
+
+  /// Class-stamped opened chapter keys → per-subject % (D5).
+  final List<String> opened;
 
   /// Overridable for tests; production uses the global service.
   final BooksService? service;
@@ -224,8 +246,18 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
               children: [
                 Expanded(
                   child: HomeSubjectTile(
-                    name: paperSubjectName(visible[r].id, visible[r].name(widget.bn), widget.bn, widget.schoolClass),
-                    chaptersLabel: _tileLabel(visible[r], widget.bn),
+                    name: paperSubjectName(
+                      visible[r].id,
+                      visible[r].name(widget.bn),
+                      widget.bn,
+                      widget.schoolClass,
+                    ),
+                    chaptersLabel: _tileLabel(
+                      visible[r],
+                      widget.bn,
+                      widget.schoolClass,
+                      widget.opened,
+                    ),
                     subjectId: visible[r].id,
                   ),
                 ),
@@ -233,8 +265,18 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
                 if (r + 1 < visible.length)
                   Expanded(
                     child: HomeSubjectTile(
-                      name: paperSubjectName(visible[r + 1].id, visible[r + 1].name(widget.bn), widget.bn, widget.schoolClass),
-                      chaptersLabel: _tileLabel(visible[r + 1], widget.bn),
+                      name: paperSubjectName(
+                        visible[r + 1].id,
+                        visible[r + 1].name(widget.bn),
+                        widget.bn,
+                        widget.schoolClass,
+                      ),
+                      chaptersLabel: _tileLabel(
+                        visible[r + 1],
+                        widget.bn,
+                        widget.schoolClass,
+                        widget.opened,
+                      ),
                       subjectId: visible[r + 1].id,
                     ),
                   )

@@ -287,6 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           HomeSubjectGrid(
                             bn: bn,
                             schoolClass: data.schoolClass,
+                            opened: data.opened,
                             loadingLabel: s['loadingSubjects']!,
                             noSubjectsLabel: s['noSubjects']!,
                             chooseClassTitle: s['chooseClassTitle']!,
