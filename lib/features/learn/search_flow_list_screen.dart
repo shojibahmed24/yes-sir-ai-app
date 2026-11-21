@@ -74,6 +74,9 @@ class SearchFlowListScreen extends StatefulWidget {
   final Future<bool> Function()? premiumCheck;
   final GuideFlowListService? listService;
 
+  GuideFlowListService get _listSvc =>
+      widget.listService ?? guideFlowListService;
+
   @override
   State<SearchFlowListScreen> createState() => _SearchFlowListScreenState();
 }
@@ -147,15 +150,14 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
             _guideHasMore = page.hasMore;
           });
         } else {
-          final page = await (widget.listService ?? guideFlowListService)
-              .fetchPage(
-                subject: widget.subjectId,
-                schoolClass: widget.schoolClass,
-                chapter: widget.chapterNumber,
-                type: widget.type,
-                lesson: widget.lesson,
-                section: widget.section,
-              );
+          final page = await _listSvc.fetchPage(
+            subject: widget.subjectId,
+            schoolClass: widget.schoolClass,
+            chapter: widget.chapterNumber,
+            type: widget.type,
+            lesson: widget.lesson,
+            section: widget.section,
+          );
           if (!mounted) return;
           setState(() {
             _loading = false;
@@ -246,7 +248,7 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
       });
       return;
     }
-    final page = await guideFlowListService.fetchPage(
+    final page = await _listSvc.fetchPage(
       subject: widget.subjectId,
       schoolClass: widget.schoolClass,
       chapter: widget.chapterNumber,
