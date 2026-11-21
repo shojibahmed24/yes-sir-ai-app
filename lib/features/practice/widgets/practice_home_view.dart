@@ -3,6 +3,7 @@
 // practice_screen.dart so the screen stays under the 250-line cap.
 import 'package:flutter/material.dart';
 
+import '../../../core/models/backend_models.dart';
 import '../../../core/services/progress_service.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../theme/widgets/section_header.dart';
@@ -22,11 +23,16 @@ class PracticeHomeView extends StatelessWidget {
     required this.onSubject,
     required this.onGuideModel,
     required this.onBankModel,
+    this.subjects = const [],
   });
 
   final Map<String, String> s;
   final bool bangla;
   final ProgressSummary sum;
+
+  /// Every visible subject (A4): the section used to hardcode maths +
+  /// science, so classes with 16 subjects could practise only two.
+  final List<SubjectInfo> subjects;
   final String selectedSubject;
   final bool startingDaily;
   final String? startingSubject;
@@ -88,33 +94,51 @@ class PracticeHomeView extends StatelessWidget {
         const SizedBox(height: Sp.xl),
         SectionHeader(title: s['bySubject']!),
         const SizedBox(height: Sp.sm),
-        PracticeCard(
-          title: s['maths']!,
-          subtitle: selectedSubject == 'math' ? s['selected']! : '',
-          icon: Icons.calculate,
-          onTap: startingSubject != null ? null : () => onSubject('math'),
-          trailing: startingSubject == 'math'
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : null,
-        ),
-        const SizedBox(height: Sp.md),
-        PracticeCard(
-          title: s['science']!,
-          subtitle: selectedSubject == 'science' ? s['selected']! : '',
-          icon: Icons.biotech,
-          onTap: startingSubject != null ? null : () => onSubject('science'),
-          trailing: startingSubject == 'science'
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : null,
-        ),
+        if (subjects.isEmpty) ...[
+          PracticeCard(
+            title: s['maths']!,
+            subtitle: selectedSubject == 'math' ? s['selected']! : '',
+            icon: Icons.calculate,
+            onTap: startingSubject != null ? null : () => onSubject('math'),
+            trailing: startingSubject == 'math'
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
+          ),
+          const SizedBox(height: Sp.md),
+          PracticeCard(
+            title: s['science']!,
+            subtitle: selectedSubject == 'science' ? s['selected']! : '',
+            icon: Icons.biotech,
+            onTap: startingSubject != null ? null : () => onSubject('science'),
+            trailing: startingSubject == 'science'
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
+          ),
+        ] else
+          for (final sub in subjects) ...[
+            PracticeCard(
+              title: sub.name(bangla),
+              subtitle: sub.id == selectedSubject ? s['selected']! : '',
+              icon: Icons.menu_book,
+              onTap: startingSubject != null ? null : () => onSubject(sub.id),
+              trailing: startingSubject == sub.id
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : null,
+            ),
+            const SizedBox(height: Sp.md),
+          ],
         if (startingSubject != null)
           Padding(
             padding: const EdgeInsets.only(top: Sp.sm),

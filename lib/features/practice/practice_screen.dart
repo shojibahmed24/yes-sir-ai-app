@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yes_sir_ai/core/models/backend_models.dart';
 import 'package:yes_sir_ai/core/services/practice_service.dart';
+import 'package:yes_sir_ai/core/services/books_service.dart';
+import 'package:yes_sir_ai/core/services/resolve_school_class.dart';
 import 'package:yes_sir_ai/core/services/profile_service.dart';
 import 'package:yes_sir_ai/core/services/progress_service.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
@@ -195,6 +197,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
     context.go('/quiz');
   }
 
+  /// Every visible subject for the current profile class (A4).
+  Future<List<SubjectInfo>> _subjectList(bool bangla) async {
+    final cls = await resolveSchoolClass();
+    return booksService.subjectsAsync(cls, bangla);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Locale>(
@@ -216,23 +224,27 @@ class _PracticeScreenState extends State<PracticeScreen> {
             future: progressService.summary(),
             builder: (context, snap) {
               final sum = snap.data ?? ProgressSummary.empty;
-              return PracticeHomeView(
-                s: s,
-                bangla: bangla,
-                sum: sum,
-                selectedSubject: PracticeSession.selectedSubject,
-                startingDaily: _startingDaily,
-                startingSubject: _startingSubject,
-                onDaily: () => _startDaily(
-                  context,
-                  PracticeSession.selectedSubject,
-                  bangla,
-                  s,
+              return FutureBuilder<List<SubjectInfo>>(
+                future: _subjectList(bangla),
+                builder: (context, subSnap) => PracticeHomeView(
+                  s: s,
+                  bangla: bangla,
+                  sum: sum,
+                  subjects: subSnap.data ?? const [],
+                  selectedSubject: PracticeSession.selectedSubject,
+                  startingDaily: _startingDaily,
+                  startingSubject: _startingSubject,
+                  onDaily: () => _startDaily(
+                    context,
+                    PracticeSession.selectedSubject,
+                    bangla,
+                    s,
+                  ),
+                  onWeak: () => _startRevision(context, sum.weakItems),
+                  onSubject: (sub) => _startPractice(context, sub, bangla, s),
+                  onGuideModel: () => context.go('/guide-model-tests'),
+                  onBankModel: () => context.go('/model-tests'),
                 ),
-                onWeak: () => _startRevision(context, sum.weakItems),
-                onSubject: (sub) => _startPractice(context, sub, bangla, s),
-                onGuideModel: () => context.go('/guide-model-tests'),
-                onBankModel: () => context.go('/model-tests'),
               );
             },
           ),
