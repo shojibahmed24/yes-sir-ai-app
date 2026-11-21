@@ -125,7 +125,7 @@ class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
   /// grounding reloads first, then chains into the explanation
   /// in the same tap; an option-less MCQ never calls the model
   /// (the section shows the honest note instead).
-  Future<void> _requestExplanation() async {
+  Future<void> _requestExplanation({String style = 'steps'}) async {
     if (_explaining) return;
     var grounding = _grounding;
     if (grounding == null || !grounding.found) {
@@ -161,7 +161,7 @@ class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
     }
     try {
       final attempt = await structuredExplanationService
-          .explainStructured(grounding: grounding, style: 'steps', bangla: bn)
+          .explainStructured(grounding: grounding, style: style, bangla: bn)
           .timeout(const Duration(seconds: 120));
       if (!mounted) return;
       setState(() {
@@ -258,14 +258,26 @@ class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
                       explanationRequested: _explanationRequested,
                       explaining: _explaining,
                       stepsOnly: _stepsOnly,
-                      onExplainDetailed: () => setState(() {
-                        _showExplanation = true;
-                        _stepsOnly = false;
-                      }),
-                      onExplainSteps: () => setState(() {
-                        _showExplanation = true;
-                        _stepsOnly = true;
-                      }),
+                      onExplainDetailed: () {
+                        setState(() {
+                          _showExplanation = true;
+                          _stepsOnly = false;
+                        });
+                        // Flag-only before: with no attempt yet the
+                        // tap generated nothing and looked dead.
+                        if (!_explanationRequested) {
+                          _requestExplanation(style: 'detailed');
+                        }
+                      },
+                      onExplainSteps: () {
+                        setState(() {
+                          _showExplanation = true;
+                          _stepsOnly = true;
+                        });
+                        if (!_explanationRequested) {
+                          _requestExplanation(style: 'steps');
+                        }
+                      },
                       onRequestExplanation: _requestExplanation,
                       onAskAi: () => openGuideChat(context, q),
                       subjectId: GuideAnswerHolder.subjectId,

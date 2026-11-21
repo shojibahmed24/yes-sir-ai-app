@@ -21,6 +21,7 @@ import 'dart:io';
 import '../models/backend_models.dart';
 import 'ai_provider_service.dart';
 import 'app_config.dart';
+import 'edge_post.dart';
 import 'structured_prompts.dart';
 
 /// Attribution from the Edge response itself — never the
@@ -53,8 +54,7 @@ class OpenRouterClient {
   Future<GenResult> chatRaw({
     required String systemPrompt,
     required String userPrompt,
-  }) =>
-      _generate(systemPrompt: systemPrompt, userPrompt: userPrompt);
+  }) => _generate(systemPrompt: systemPrompt, userPrompt: userPrompt);
 
   /// Full-context call. userQuestion is the student's typed
   /// follow-up (chat) or null. Prompt built exactly as before;
@@ -82,8 +82,10 @@ class OpenRouterClient {
     userContent.write(optionsPromptBlock(ctx));
     if (ctx.answerKey.isNotEmpty) {
       final correct = ctx.correctOptionText;
-      userContent.writeln('Verified correct answer: ${ctx.answerKey}'
-          '${correct == null ? '' : " — exact text: '$correct'"}');
+      userContent.writeln(
+        'Verified correct answer: ${ctx.answerKey}'
+        '${correct == null ? '' : " — exact text: '$correct'"}',
+      );
     }
     // Phase 3 chunk grounding: at most 3 chunks, each cited
     // with its own book page range. Chunks are OCR chapter
@@ -92,36 +94,41 @@ class OpenRouterClient {
     final chunks = ctx.chunkTexts.take(3).toList();
     if (chunks.isNotEmpty) {
       userContent.writeln(
-          'Book chapter text for this question (same book and chapter):');
+        'Book chapter text for this question (same book and chapter):',
+      );
       for (var i = 0; i < chunks.length; i++) {
         final range = i < ctx.chunkPageRanges.length
             ? ctx.chunkPageRanges[i]
             : '';
         userContent.writeln(
-            'Chunk ${i + 1}${range.isNotEmpty ? ' (pages $range)' : ''}: ${chunks[i]}');
+          'Chunk ${i + 1}${range.isNotEmpty ? ' (pages $range)' : ''}: ${chunks[i]}',
+        );
       }
       userContent.writeln(
-          'Base the explanation on the question and this chapter text.');
+        'Base the explanation on the question and this chapter text.',
+      );
     } else {
       // Honest fallback: no chapter text exists for this
       // question, so the prompt must NOT claim it. The
       // explanation is grounded in the verbatim question
       // only (or chapter-only where a real chapter exists).
       userContent.writeln(
-          'No chapter text is available for this question. '
-          'Explain ONLY from the verbatim book question above, '
-          'and do NOT claim chapter-text grounding.');
+        'No chapter text is available for this question. '
+        'Explain ONLY from the verbatim book question above, '
+        'and do NOT claim chapter-text grounding.',
+      );
     }
     if (followUp.isNotEmpty) {
       userContent.writeln('Student follow-up question: $followUp');
     }
     userContent.writeln('Explain in style: $style.');
     return _generate(
-      systemPrompt: 'You are a school teacher. Explain ONLY the '
+      systemPrompt:
+          'You are a school teacher. Explain ONLY the '
           'given textbook question, in the requested style, in '
           '${bangla ? 'Bangla' : 'English'}. '
           '${bangla ? 'Write EVERYTHING in Bangla, in easy simple '
-          'words a class 9 student understands. ' : ''}'
+                    'words a class 9 student understands. ' : ''}'
           'Write every math '
           'formula in LaTeX wrapped in \$...\$ delimiters so it '
           'renders as typeset math, never caret-text. Use only the book '
@@ -189,15 +196,19 @@ class OpenRouterClient {
     required String provider,
   }) async {
     final req = await client.postUrl(Uri.parse(url));
-    req.headers.set('Authorization', 'Bearer ${AppConfig.supabaseAnonKey}');
+    req.headers.set('Authorization', 'Bearer ${edgeAuthToken()}');
     req.headers.set('apikey', AppConfig.supabaseAnonKey);
     req.headers.set('Content-Type', 'application/json');
-    req.add(utf8.encode(jsonEncode({
-      'generate': true,
-      'systemPrompt': systemPrompt,
-      'userPrompt': userPrompt,
-      'provider': provider,
-    })));
+    req.add(
+      utf8.encode(
+        jsonEncode({
+          'generate': true,
+          'systemPrompt': systemPrompt,
+          'userPrompt': userPrompt,
+          'provider': provider,
+        }),
+      ),
+    );
     final res = await req.close();
     final body = await res.transform(utf8.decoder).join();
     final data = jsonDecode(body);

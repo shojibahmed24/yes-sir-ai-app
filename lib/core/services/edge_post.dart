@@ -14,6 +14,19 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show compute;
 
 import 'app_config.dart';
+import 'supabase_client.dart';
+
+/// The Authorization token for Edge calls: the signed-in student's own
+/// access token when a session exists, otherwise the anon key.
+///
+/// Why this matters: explain-question enforces a real session (it
+/// meters the daily generation quota). Sending the anon key made every
+/// AI explanation return 401 "sign-in-required" — the whole AI feature
+/// looked broken.
+String edgeAuthToken() {
+  final token = supabaseOrNull?.auth.currentSession?.accessToken;
+  return (token == null || token.isEmpty) ? AppConfig.supabaseAnonKey : token;
+}
 
 /// Connection reuse: created once, kept alive with idle connections.
 final HttpClient _sharedClient = HttpClient()
@@ -47,7 +60,7 @@ Future<Map<String, dynamic>?> edgePost(
     final req = await _sharedClient
         .postUrl(Uri.parse(url))
         .timeout(_openTimeout);
-    req.headers.set('Authorization', 'Bearer ${AppConfig.supabaseAnonKey}');
+    req.headers.set('Authorization', 'Bearer ${edgeAuthToken()}');
     req.headers.set('apikey', AppConfig.supabaseAnonKey);
     req.headers.set('Content-Type', 'application/json');
     req.add(utf8.encode(jsonEncode(body)));

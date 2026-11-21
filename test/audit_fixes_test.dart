@@ -3,8 +3,10 @@
 // pollute saved questions (the Saved list showed dead 'book:' rows).
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yes_sir_ai/core/models/creative_marks_parts.dart';
 import 'package:yes_sir_ai/features/learn/class_choices.dart';
 import 'package:yes_sir_ai/features/learn/learn_store.dart';
+import 'package:yes_sir_ai/features/learn/widgets/creative_part_marks.dart';
 
 void main() {
   test('classChoices always offers classes 1–10', () {
@@ -39,5 +41,29 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     expect(await LearnStore.toggleSaved('mq1'), isTrue);
     expect(await LearnStore.isSaved('mq1'), isTrue);
+  });
+
+  test('creative parts order as ক→ঘ, not alphabetically', () {
+    // The reported bug: alphabetical ids put ga before ka, so the
+    // 1-mark slot showed a 3-mark question.
+    expect(partOrderOf('x-creative-003-ka'), 0);
+    expect(partOrderOf('x-creative-003-kha'), 1);
+    expect(partOrderOf('x-creative-003-ga'), 2);
+    expect(partOrderOf('x-creative-003-gha'), 3);
+    expect(partOrderOf('x-part-2'), 1);
+    expect(partOrderOf('unknown'), 99);
+  });
+
+  test('marks_parts Map is parsed in ক→ঘ order', () {
+    expect(
+      normalizeMarksParts({'ক': 1, 'খ': 2, 'গ': 3, 'ঘ': 4}),
+      [1, 2, 3, 4],
+    );
+    expect(
+      normalizeMarksParts({'ka': 1, 'kha': 2, 'ga': 3, 'gha': 4}),
+      [1, 2, 3, 4],
+    );
+    expect(normalizeMarksParts([1, 2, 3, 4]), [1, 2, 3, 4]);
+    expect(normalizeMarksParts({'ক': 1, 'গ': 3}), isNull); // gap
   });
 }

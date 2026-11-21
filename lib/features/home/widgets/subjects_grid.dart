@@ -7,11 +7,9 @@
 // subject really has guide content.
 import 'package:flutter/material.dart';
 import '../../../core/models/backend_models.dart';
-import '../../../l10n/pages/guide_bank_strings.dart';
 import '../../../l10n/pages/home_strings.dart';
 import '../../../l10n/pages/subjects_strings.dart';
 import '../../learn/learn_store.dart';
-import '../../learn/widgets/subject_guide_card.dart';
 import 'home_empty_state.dart';
 import 'subject_card.dart';
 
@@ -83,7 +81,6 @@ class SubjectsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = bn ? subjectsStringsBn : subjectsStringsEn;
-    final gs = bn ? guideBankStringsBn : guideBankStringsEn;
     final nav = bn ? homeStringsBn : homeStringsEn;
     // Classes 1–5 have no books or guides yet: say so instead of
     // listing every subject as "not added" (owner decision).
@@ -141,18 +138,13 @@ class SubjectsGrid extends StatelessWidget {
               ),
             ),
           ),
-          for (final subj in group.subjects) _card(context, subj, s, gs),
+          for (final subj in group.subjects) _card(context, subj, s),
         ],
       ],
     );
   }
 
-  Widget _card(
-    BuildContext context,
-    SubjectInfo subj,
-    Map<String, String> s,
-    Map<String, String> gs,
-  ) {
+  Widget _card(BuildContext context, SubjectInfo subj, Map<String, String> s) {
     return Column(
       children: [
         Padding(
@@ -174,11 +166,9 @@ class SubjectsGrid extends StatelessWidget {
             lockedLabel: '${s['locked']!} — ${s['lockedHint']!}',
           ),
         ),
-        // Renders nothing for guide-less subjects.
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: SubjectGuideCard(subjectId: subj.id, bn: bn, s: gs),
-        ),
+        // One card per subject: the guide entry lives inside the
+        // subject (detail / guide-only tap), so the extra "গাইড প্রশ্ন"
+        // card was a duplicate option for the same destination.
       ],
     );
   }

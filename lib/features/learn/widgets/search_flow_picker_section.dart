@@ -91,8 +91,14 @@ class SearchFlowPickerSection extends StatelessWidget {
               english: english,
             ),
           ),
-        // Board tile (migration 018): guide source only.
-        if (c.source == 'guide')
+        // Board questions are SUBJECT-wide, not chapter-scoped: one
+        // entry at the root only. Showing it inside every chapter made
+        // the same 984-question set look chapter-specific.
+        if (c.source == 'guide' &&
+            c.chapter == null &&
+            extras.setId == null &&
+            !paper2Mode &&
+            !banglaFirst)
           SearchFlowBoardTile(
             subjectId: c.effectiveSubjectId,
             schoolClass: c.effectiveClass,
