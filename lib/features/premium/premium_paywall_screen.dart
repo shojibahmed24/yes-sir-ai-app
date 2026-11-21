@@ -97,7 +97,22 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
         title: Text(s['paywallTitle']!),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                for (var i = 0; i < 2; i++)
+                  Container(
+                    height: 88,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+              ],
+            )
           : ListView(
               padding: EdgeInsets.fromLTRB(
                 24,

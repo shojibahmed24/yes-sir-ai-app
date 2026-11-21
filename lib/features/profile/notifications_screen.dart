@@ -97,7 +97,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         title: Text(s['title']!),
       ),
       body: !_loaded
-          ? const Center(child: CircularProgressIndicator())
+          ? ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                for (var i = 0; i < 3; i++)
+                  Container(
+                    height: 72,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+              ],
+            )
           : ListView(
               padding: EdgeInsets.fromLTRB(
                 24,
