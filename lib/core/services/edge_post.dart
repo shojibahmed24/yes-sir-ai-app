@@ -56,11 +56,29 @@ Future<Map<String, dynamic>?> edgePost(
 }) async {
   final url = endpoint ?? AppConfig.explainEndpoint;
   if (url.isEmpty) return null;
+  final token = edgeAuthToken();
+  final first = await _sendEdge(url, body, token);
+  if (first != null) return first;
+  if (token != AppConfig.supabaseAnonKey) {
+    // A stale/expired session token must never break PUBLIC reads
+    // (guide-bank lists, chapters, flags). One retry as anon keeps the
+    // whole guide flow alive; explain-question still requires a real
+    // session and will keep returning 401 as designed.
+    return _sendEdge(url, body, AppConfig.supabaseAnonKey);
+  }
+  return null;
+}
+
+Future<Map<String, dynamic>?> _sendEdge(
+  String url,
+  Map<String, dynamic> body,
+  String token,
+) async {
   try {
     final req = await _sharedClient
         .postUrl(Uri.parse(url))
         .timeout(_openTimeout);
-    req.headers.set('Authorization', 'Bearer ${edgeAuthToken()}');
+    req.headers.set('Authorization', 'Bearer $token');
     req.headers.set('apikey', AppConfig.supabaseAnonKey);
     req.headers.set('Content-Type', 'application/json');
     req.add(utf8.encode(jsonEncode(body)));

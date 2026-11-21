@@ -18,7 +18,10 @@ Map<String, bool>? parseGuideFlagsResponse(Map<String, dynamic>? res) {
   flags.forEach((key, value) {
     if (value is Map) out['$key'] = value['hasGuide'] == true;
   });
-  return out;
+  // An empty map means the class answered nothing useful (cold or
+  // partial): treat it as unknown so callers fall back to the
+  // per-subject probe instead of locking every subject.
+  return out.isEmpty ? null : out;
 }
 
 /// One request per class; subjects without a book row are absent from

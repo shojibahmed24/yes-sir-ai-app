@@ -95,7 +95,7 @@ Future<GuideFlagsResult> withBulkGuideFlags(
   try {
     flags = await (fetchFlags ?? loadGuideFlags)(
       schoolClass,
-    ).timeout(const Duration(seconds: 10));
+    ).timeout(const Duration(seconds: 3));
   } catch (_) {
     flags = null;
   }
