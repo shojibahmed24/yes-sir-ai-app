@@ -13,6 +13,7 @@ import 'search_flow_bangla_papers.dart';
 import 'search_flow_chapter_fetch.dart';
 import 'search_flow_list_query.dart';
 import 'search_flow_types.dart';
+import '../../core/services/school_class_cache.dart';
 
 class SearchFlowController {
   SearchFlowController({
@@ -35,7 +36,9 @@ class SearchFlowController {
   final int? initialChapter;
   final VoidCallback onChanged;
 
-  int schoolClass = 6;
+  /// Starts from the startup cache so the first frame already shows
+  /// the saved class (B8), never a flash of the fallback 6.
+  int schoolClass = SchoolClassCache.value ?? 6;
   bool bangla = true;
   List<SubjectInfo> subjects = [];
   String subjectId = 'math';
@@ -80,9 +83,11 @@ class SearchFlowController {
 
   Future<void> init(bool bn) async {
     bangla = bn;
-    final saved = await profileService.loadSchoolClass().catchError(
-      (_) => null,
-    );
+    // Cache first (B8): the first frame is already correct.
+    final saved =
+        SchoolClassCache.value ??
+        await profileService.loadSchoolClass().catchError((_) => null);
+    if (saved != null) SchoolClassCache.set(saved);
     final cls = initialSchoolClass ?? saved ?? 6;
     subjects = splitBanglaSubjects(
       await booksService
@@ -118,6 +123,8 @@ class SearchFlowController {
   Future<void> changeClass(int cls, bool bn) async {
     bangla = bn;
     schoolClass = cls;
+    // Write-through so every later screen starts at this class (B8).
+    SchoolClassCache.set(cls);
     subjects = splitBanglaSubjects(
       await booksService
           .subjectsAsync(cls, bn)
