@@ -9,6 +9,17 @@ const Map<String, String> notificationsStringsBn = {
   'streakTitle': 'ডেইলি স্ট্রিক ধরে রাখো!',
   'streakBody':
       'আজকের কুইজ এখনো শেষ করোনি। রাত ১২টার আগেই শেষ করে ৭ দিনের স্ট্রিক বজায় রাখো।',
+  'weakTitle': 'দুর্বল অধ্যায় রিভিশন',
+  'weakBody':
+      'আগের ভুলগুলো থেকে দুর্বল অধ্যায় তৈরি হয়েছে — একবার রিভিশন দাও।',
+  'testTitle': 'সাপ্তাহিক মডেল টেস্ট',
+  'testBody': 'এই সপ্তাহের মডেল টেস্ট দিয়ে নিজেকে যাচাই করো।',
+  'goalTitle': 'আজকের লক্ষ্য বাকি',
+  'goalBody': 'আজকের পড়ার লক্ষ্য এখনো পূরণ হয়নি।',
+  'savedTitle': 'সেভ করা প্রশ্ন',
+  'savedBody': '{n}টি সেভ করা প্রশ্ন রিভিশনের অপেক্ষায়।',
+  'recentTitle': 'সাম্প্রতিক প্রশ্ন',
+  'recentBody': 'আগে খোলা প্রশ্নগুলোতে ফিরে যাও।',
   'goQuiz': 'কুইজে যাও',
   'aiTitle': 'স্যার AI তোমার প্রশ্নের সমাধান প্রস্তুত করেছে',
   'aiBody': 'সাধারণ গণিত ৩য় অধ্যায়ের ৫ম প্রশ্নের ধাপে ধাপে সমাধান রেডি আছে।',
@@ -16,9 +27,6 @@ const Map<String, String> notificationsStringsBn = {
   'badgeTitle': 'নতুন ব্যাজ অর্জিত হয়েছে!',
   'badgeBody': "তুমি 'স্ট্রিক মাস্টার' ব্যাজ এবং +৫০ XP অর্জন করেছ।",
   'earlier': 'আগের সংরক্ষিত',
-  'testTitle': 'নতুন মডেল টেস্ট আপলোড হয়েছে',
-  'testBody':
-      '১০ম শ্রেণির পদার্থবিজ্ঞান ৩য় অধ্যায়: বল ও গতির ওপর ২০ নম্বরের লাইভ টেস্ট।',
   'parentTitle': 'অভিভাবক ড্যাশবোর্ড আপডেট',
   'parentBody': 'আপনার সাপ্তাহিক অগ্রগতির রিপোর্ট সফলভাবে তৈরি হয়েছে।',
   'prefs': 'বিজ্ঞপ্তি পছন্দসমূহ',
@@ -40,6 +48,13 @@ const Map<String, String> notificationsStringsEn = {
   'streakTitle': 'Keep your daily streak!',
   'streakBody':
       "Today's quiz is not finished yet. Finish before midnight to keep the 7-day streak.",
+  'weakTitle': 'Revise weak chapters',
+  'weakBody': 'Your earlier mistakes formed weak chapters — revise them once.',
+  'goalBody': "Today's study goal is not complete yet.",
+  'savedTitle': 'Saved questions',
+  'savedBody': '{n} saved questions are waiting for revision.',
+  'recentTitle': 'Recent questions',
+  'recentBody': 'Return to the questions you opened earlier.',
   'goQuiz': 'Go to quiz',
   'aiTitle': 'Sir AI has prepared your solution',
   'aiBody':
@@ -48,9 +63,6 @@ const Map<String, String> notificationsStringsEn = {
   'badgeTitle': 'New badge earned!',
   'badgeBody': "You earned the 'Streak Master' badge and +50 XP.",
   'earlier': 'Earlier',
-  'testTitle': 'New model test uploaded',
-  'testBody':
-      'Class 10 Physics, Chapter 3: Force and Motion, 20-mark live test.',
   'parentTitle': 'Parent dashboard update',
   'parentBody': 'Your weekly progress report has been prepared successfully.',
   'prefs': 'Notification preferences',

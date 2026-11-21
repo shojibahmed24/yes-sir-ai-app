@@ -10,24 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/notifications_strings.dart';
 import '../../theme/app_theme.dart';
+import 'notification_feed.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
-
-class _Notif {
-  final String id;
-  final IconData icon;
-  final String title;
-  final String body;
-  final String action;
-  final String route;
-  const _Notif(
-    this.id,
-    this.icon,
-    this.title,
-    this.body,
-    this.action,
-    this.route,
-  );
-}
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -40,6 +24,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Set<String> _read = {};
   bool _cleared = false;
   bool _loaded = false;
+  List<NotifItem> _feed = const [];
 
   @override
   void initState() {
@@ -49,10 +34,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
+    final feed = await buildNotificationFeed(bn: isBangla);
     if (!mounted) return;
     setState(() {
       _read = (prefs.getStringList('ys_notif_read') ?? const []).toSet();
       _cleared = prefs.getBool('ys_notif_cleared') ?? false;
+      _feed = feed;
       _loaded = true;
     });
   }
@@ -67,9 +54,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   // delivered notifications. With no push/local notification pipeline
   // yet, the honest screen is the empty state (the screen's own
   // `empty` text), never invented items.
-  List<_Notif> _items(Map<String, String> s) => const [];
+  List<NotifItem> _items(Map<String, String> s) => _feed;
 
-  void _open(_Notif item, Map<String, String> s) {
+  void _open(NotifItem item, Map<String, String> s) {
     setState(() => _read.add(item.id));
     _persist();
     showDialog<void>(
@@ -97,7 +84,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final s = isBangla ? notificationsStringsBn : notificationsStringsEn;
-    final items = _cleared ? const <_Notif>[] : _items(s);
+    final items = _cleared ? const <NotifItem>[] : _items(s);
     return ThemedScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -200,7 +187,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _tile(_Notif item, Map<String, String> s) {
+  Widget _tile(NotifItem item, Map<String, String> s) {
     final isUnread = !_read.contains(item.id);
     return Card(
       child: ListTile(
