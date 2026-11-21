@@ -18,13 +18,15 @@ class OnboardingStep3Screen extends StatelessWidget {
     return ValueListenableBuilder<Locale>(
       valueListenable: languageNotifier,
       builder: (context, locale, _) {
-        final s =
-            isBangla ? onboardingStep3StringsBn : onboardingStep3StringsEn;
+        final s = isBangla
+            ? onboardingStep3StringsBn
+            : onboardingStep3StringsEn;
         return OnboardingShell(
           stepLabel: s['step']!,
           title: s['title']!,
           subtitle: s['subtitle']!,
           step: 3,
+          heroIcon: Icons.insights,
           nextLabel: s['start']!,
           skipLabel: s['skip']!,
           onNext: () async {
@@ -42,16 +44,24 @@ class OnboardingStep3Screen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _stat(context, Icons.local_fire_department, s['streak']!,
-                      s['streakDetail']!),
+                  _stat(
+                    context,
+                    Icons.local_fire_department,
+                    s['streak']!,
+                    s['streakDetail']!,
+                  ),
                   const SizedBox(height: 12),
                   _stat(context, Icons.verified, s['quiz']!, s['quizDetail']!),
                   const SizedBox(height: 16),
-                  Text('• ${s['point1']!}',
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    '• ${s['point1']!}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 6),
-                  Text('• ${s['point2']!}',
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    '• ${s['point2']!}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ],
               ),
             ),
@@ -62,7 +72,11 @@ class OnboardingStep3Screen extends StatelessWidget {
   }
 
   Widget _stat(
-      BuildContext context, IconData icon, String title, String detail) {
+    BuildContext context,
+    IconData icon,
+    String title,
+    String detail,
+  ) {
     return Row(
       children: [
         Icon(icon, color: const Color(0xFFB45309)),

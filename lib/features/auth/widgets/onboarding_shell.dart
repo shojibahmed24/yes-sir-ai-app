@@ -21,6 +21,9 @@ class OnboardingShell extends StatelessWidget {
   // no previous step, so its screen passes showBack: false.
   final VoidCallback? onBack;
   final bool showBack;
+
+  /// Optional brand illustration for the step (tinted glyph circle).
+  final IconData? heroIcon;
   const OnboardingShell({
     super.key,
     required this.stepLabel,
@@ -34,6 +37,7 @@ class OnboardingShell extends StatelessWidget {
     required this.onSkip,
     this.onBack,
     this.showBack = true,
+    this.heroIcon,
   });
 
   @override
@@ -46,23 +50,42 @@ class OnboardingShell extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (heroIcon != null) ...[
+              FadeSlide(
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.primary.withValues(alpha: 0.10),
+                  ),
+                  child: Icon(heroIcon, size: 44, color: AppTheme.primary),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
             FadeSlide(
               child: Text(
                 stepLabel,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppTheme.primaryDark,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(color: AppTheme.primaryDark),
               ),
             ),
             const SizedBox(height: 8),
             FadeSlide(
               delayMs: 80,
-              child: Text(title, style: Theme.of(context).textTheme.displayLarge),
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.displayLarge,
+              ),
             ),
             const SizedBox(height: 8),
             FadeSlide(
               delayMs: 160,
-              child: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+              child: Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
             const SizedBox(height: 20),
             FadeSlide(delayMs: 240, child: content),
@@ -74,7 +97,9 @@ class OnboardingShell extends StatelessWidget {
               child: AuthPrimaryButton(label: nextLabel, onPressed: onNext),
             ),
             const SizedBox(height: 8),
-            Center(child: AuthTextLink(label: skipLabel, onPressed: onSkip)),
+            Center(
+              child: AuthTextLink(label: skipLabel, onPressed: onSkip),
+            ),
           ],
         ),
       ),

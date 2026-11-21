@@ -17,13 +17,15 @@ class OnboardingStep2Screen extends StatelessWidget {
     return ValueListenableBuilder<Locale>(
       valueListenable: languageNotifier,
       builder: (context, locale, _) {
-        final s =
-            isBangla ? onboardingStep2StringsBn : onboardingStep2StringsEn;
+        final s = isBangla
+            ? onboardingStep2StringsBn
+            : onboardingStep2StringsEn;
         return OnboardingShell(
           stepLabel: s['step']!,
           title: s['title']!,
           subtitle: s['subtitle']!,
           step: 2,
+          heroIcon: Icons.chat_bubble_outline,
           nextLabel: s['next']!,
           skipLabel: s['skip']!,
           onNext: () => context.go('/onboarding-3'),
@@ -38,16 +40,24 @@ class OnboardingStep2Screen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(s['tip']!,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.secondary,
-                          )),
+                  Text(
+                    s['tip']!,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelLarge?.copyWith(color: AppTheme.secondary),
+                  ),
                   const SizedBox(height: 4),
-                  Text(s['tipText']!,
-                      style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                    s['tipText']!,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 16),
-                  _point(context, Icons.lightbulb, s['point1']!,
-                      s['point1Detail']!),
+                  _point(
+                    context,
+                    Icons.lightbulb,
+                    s['point1']!,
+                    s['point1Detail']!,
+                  ),
                   const SizedBox(height: 12),
                   _point(context, Icons.mic, s['point2']!, s['point2Detail']!),
                 ],
@@ -60,7 +70,11 @@ class OnboardingStep2Screen extends StatelessWidget {
   }
 
   Widget _point(
-      BuildContext context, IconData icon, String title, String detail) {
+    BuildContext context,
+    IconData icon,
+    String title,
+    String detail,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

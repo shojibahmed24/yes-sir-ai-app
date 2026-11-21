@@ -17,13 +17,15 @@ class OnboardingStep1Screen extends StatelessWidget {
     return ValueListenableBuilder<Locale>(
       valueListenable: languageNotifier,
       builder: (context, locale, _) {
-        final s =
-            isBangla ? onboardingStep1StringsBn : onboardingStep1StringsEn;
+        final s = isBangla
+            ? onboardingStep1StringsBn
+            : onboardingStep1StringsEn;
         return OnboardingShell(
           stepLabel: s['step']!,
           title: s['title']!,
           subtitle: s['subtitle']!,
           step: 1,
+          heroIcon: Icons.search,
           // Step 1 is the onboarding entry: no previous step exists,
           // and going "back" to splash would just forward again.
           showBack: false,
@@ -69,12 +71,13 @@ class OnboardingStep1Screen extends StatelessWidget {
       children: [
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
         Flexible(
-          child: Text(value,
-              textAlign: TextAlign.right,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: AppTheme.primaryDark)),
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(color: AppTheme.primaryDark),
+          ),
         ),
       ],
     );
