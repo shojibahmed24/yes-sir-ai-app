@@ -27,8 +27,10 @@ class PracticeService {
   /// Saved question's subject from its BANK (ids stored bare):
   /// mq/mm/mp = maths, sq/sm/sp = science; else null (never guess).
   String? subjectOf(String id) {
-    if (id.startsWith('mq') || id.startsWith('mm') || id.startsWith('mp')) return 'math';
-    if (id.startsWith('sq') || id.startsWith('sm') || id.startsWith('sp')) return 'science';
+    if (id.startsWith('mq') || id.startsWith('mm') || id.startsWith('mp'))
+      return 'math';
+    if (id.startsWith('sq') || id.startsWith('sm') || id.startsWith('sp'))
+      return 'science';
     return null;
   }
 
@@ -38,45 +40,74 @@ class PracticeService {
   /// Bank quiz set: up to [count] questions (Phase 2 size 20),
   /// seeded per day. Sync, no network. A 5-item bank pool
   /// yields 5 items — the pool is never padded by repetition.
-  List<QuizItem> dailyQuizFor(String subject,
-          {String? seedKey, int count = 20}) =>
-      questionGeneration.selectQuestions(
-          pool: quizFor(subject), count: count,
-          seedKey: seedKey ?? 'daily-$subject-${PracticeSession.today()}',
-          chapterOf: (q) => chapterOf(q.id, true));
+  List<QuizItem> dailyQuizFor(
+    String subject, {
+    String? seedKey,
+    int count = 20,
+  }) => questionGeneration.selectQuestions(
+    pool: quizFor(subject),
+    count: count,
+    seedKey: seedKey ?? 'daily-$subject-${PracticeSession.today()}',
+    chapterOf: (q) => chapterOf(q.id, true),
+  );
 
   List<PracticeProblem> practiceFor(String subject) => subject == 'science'
-      ? const [PracticeProblem(id: 'sp1', questionBn: 'বেগ নির্ণয়ের সূত্র লেখো।',
-          questionEn: 'Write the formula for velocity.',
-          answerBn: 'বেগ = দূরত্ব ÷ সময়।', answerEn: 'Velocity = distance ÷ time.')]
-      : const [PracticeProblem(id: 'mp1',
-          questionBn: '৩:৫ অনুপাতে ৪০টি কলম ভাগ করলে কয়টি করে পাবে?',
-          questionEn: 'Divide 40 pens in ratio 3:5. How many each?',
-          answerBn: 'মোট ৮ ভাগ, প্রতি ভাগ ৫টি — ১৫টি ও ২৫টি।',
-          answerEn: 'Total 8 parts, 5 each — 15 and 25.')];
+      ? const [
+          PracticeProblem(
+            id: 'sp1',
+            questionBn: 'বেগ নির্ণয়ের সূত্র লেখো।',
+            questionEn: 'Write the formula for velocity.',
+            answerBn: 'বেগ = দূরত্ব ÷ সময়।',
+            answerEn: 'Velocity = distance ÷ time.',
+          ),
+        ]
+      : const [
+          PracticeProblem(
+            id: 'mp1',
+            questionBn: '৩:৫ অনুপাতে ৪০টি কলম ভাগ করলে কয়টি করে পাবে?',
+            questionEn: 'Divide 40 pens in ratio 3:5. How many each?',
+            answerBn: 'মোট ৮ ভাগ, প্রতি ভাগ ৫টি — ১৫টি ও ২৫টি।',
+            answerEn: 'Total 8 parts, 5 each — 15 and 25.',
+          ),
+        ];
 
   /// DEMO-ONLY bank solutions (mq/sq), NOT book-verified/AI;
   /// labelled DEMO fallback only — a live no-match NEVER falls back here.
-  String explanation(String id, bool bangla) =>
-      bankExplanation(id, bangla);
+  String explanation(String id, bool bangla) => bankExplanation(id, bangla);
 
   /// Test seam: default delegates to the real services; tests
   /// override them to throw/hang, proving the fallbacks below.
   Future<List<BookQuestion>?> fetchBookProbe({
-    required String subject, required int schoolClass, required bool bangla,
+    required String subject,
+    required int schoolClass,
+    required bool bangla,
   }) => questionGeneration.fetchBookQuestions(
-      subject: subject, schoolClass: schoolClass, bangla: bangla);
+    subject: subject,
+    schoolClass: schoolClass,
+    bangla: bangla,
+  );
 
   Future<List<QuizItem>> fetchGuideDaily({
-    required String subject, required int schoolClass, required bool bangla,
+    required String subject,
+    required int schoolClass,
+    required bool bangla,
     required String day,
   }) => guideQuizService.dailyGuideQuiz(
-      subject: subject, schoolClass: schoolClass, bangla: bangla, day: day);
+    subject: subject,
+    schoolClass: schoolClass,
+    bangla: bangla,
+    day: day,
+  );
 
   Future<List<QuizItem>> fetchPracticeGuide({
-    required String subject, required int schoolClass, required bool bangla,
+    required String subject,
+    required int schoolClass,
+    required bool bangla,
   }) => guideQuizService.practiceGuideQuiz(
-      subject: subject, schoolClass: schoolClass, bangla: bangla);
+    subject: subject,
+    schoolClass: schoolClass,
+    bangla: bangla,
+  );
 
   /// Daily quiz: guide set of up to 20, never silently bank.
   /// Guide throw/timeout -> EMPTY guide items (the screen asks
@@ -90,25 +121,39 @@ class PracticeService {
     required int schoolClass,
     required bool bangla,
     String? day,
-    Duration bookProbeTimeout = const Duration(seconds: 10),
-    Duration guideTimeout = const Duration(seconds: 40),
+    Duration bookProbeTimeout = const Duration(seconds: 1),
+    Duration guideTimeout = const Duration(seconds: 5),
   }) async {
     final d = day ?? PracticeSession.today();
     final seedKey = questionGeneration.dailySeedKey(schoolClass, subject, d);
     List<BookQuestion>? book;
     try {
-      book = await fetchBookProbe(subject: subject, schoolClass: schoolClass, bangla: bangla).timeout(bookProbeTimeout);
-    } catch (_) { book = null; }
+      book = await fetchBookProbe(
+        subject: subject,
+        schoolClass: schoolClass,
+        bangla: bangla,
+      ).timeout(bookProbeTimeout);
+    } catch (_) {
+      book = null;
+    }
     List<QuizItem> guideItems;
     try {
-      guideItems = await fetchGuideDaily(subject: subject, schoolClass: schoolClass, bangla: bangla, day: d).timeout(guideTimeout);
-    } catch (_) { guideItems = []; }
+      guideItems = await fetchGuideDaily(
+        subject: subject,
+        schoolClass: schoolClass,
+        bangla: bangla,
+        day: d,
+      ).timeout(guideTimeout);
+    } catch (_) {
+      guideItems = [];
+    }
     return GeneratedSet(
-        items: guideItems,
-        source: QuestionSource.guide,
-        seedKey: seedKey,
-        bookQuestionsIndexed: book?.length ?? 0,
-        guideShortfall: GuideQuizService.quizLimit - guideItems.length);
+      items: guideItems,
+      source: QuestionSource.guide,
+      seedKey: seedKey,
+      bookQuestionsIndexed: book?.length ?? 0,
+      guideShortfall: GuideQuizService.quizLimit - guideItems.length,
+    );
   }
 
   /// Subject practice: same guide-first, never-silent rule as
@@ -122,14 +167,21 @@ class PracticeService {
   }) async {
     List<QuizItem> guideItems;
     try {
-      guideItems = await fetchPracticeGuide(subject: subject, schoolClass: schoolClass, bangla: bangla).timeout(guideTimeout);
-    } catch (_) { guideItems = []; }
+      guideItems = await fetchPracticeGuide(
+        subject: subject,
+        schoolClass: schoolClass,
+        bangla: bangla,
+      ).timeout(guideTimeout);
+    } catch (_) {
+      guideItems = [];
+    }
     return GeneratedSet(
-        items: guideItems,
-        source: QuestionSource.guide,
-        seedKey: 'practice-$subject-${PracticeSession.today()}',
-        bookQuestionsIndexed: 0,
-        guideShortfall: GuideQuizService.quizLimit - guideItems.length);
+      items: guideItems,
+      source: QuestionSource.guide,
+      seedKey: 'practice-$subject-${PracticeSession.today()}',
+      bookQuestionsIndexed: 0,
+      guideShortfall: GuideQuizService.quizLimit - guideItems.length,
+    );
   }
 
   /// Weak revision: the user's ACTUAL wrong answers, newest first,
@@ -180,11 +232,19 @@ class PracticeService {
 
   String _bnDigits(String s) {
     const bn = '০১২৩৪৫৬৭৮৯';
-    return s.split('').map((c) { final d = int.tryParse(c); return d == null ? c : bn[d]; }).join();
+    return s.split('').map((c) {
+      final d = int.tryParse(c);
+      return d == null ? c : bn[d];
+    }).join();
   }
 
   QuizItem? findQuestion(String id) {
-    for (final q in [...mathQuiz(), ...scienceQuiz(), ...modelMath(), ...modelScience()]) {
+    for (final q in [
+      ...mathQuiz(),
+      ...scienceQuiz(),
+      ...modelMath(),
+      ...modelScience(),
+    ]) {
       if (q.id == id) return q;
     }
     return null;
@@ -195,17 +255,36 @@ class PracticeService {
     final client = supabaseOrNull;
     if (client != null) {
       try {
-        await client.from('quiz_attempts').insert(
-            {'test_id': a.testId, 'score': a.correct, 'total': a.total});
-      } catch (_) {/* local copy saved; sync retry is review work */}
+        await client.from('quiz_attempts').insert({
+          'test_id': a.testId,
+          'score': a.correct,
+          'total': a.total,
+        });
+      } catch (_) {
+        /* local copy saved; sync retry is review work */
+      }
     }
     return a;
   }
 
-  Future<void> saveAttempt({required String testId, required int score, required int total}) async {
-    await recordAttempt(Attempt(kind: 'quiz', testId: testId, subject: '',
-        chapter: '', correct: score, total: total, seconds: 0,
-        date: PracticeSession.today(), answers: {}));
+  Future<void> saveAttempt({
+    required String testId,
+    required int score,
+    required int total,
+  }) async {
+    await recordAttempt(
+      Attempt(
+        kind: 'quiz',
+        testId: testId,
+        subject: '',
+        chapter: '',
+        correct: score,
+        total: total,
+        seconds: 0,
+        date: PracticeSession.today(),
+        answers: {},
+      ),
+    );
   }
 
   /// True only when [id] was newly saved (H3).
