@@ -130,7 +130,7 @@ class QuizResultsScreen extends StatelessWidget {
                         child: PracticeCard(
                           title: w,
                           icon: Icons.lightbulb,
-                          onTap: () => context.go('/books/viewer'),
+                          onTap: () => context.go('/books'),
                         ),
                       ),
                   if (wrongItems.isNotEmpty) ...[

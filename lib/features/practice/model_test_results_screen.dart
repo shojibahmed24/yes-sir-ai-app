@@ -31,8 +31,15 @@ class ModelTestResultsScreen extends StatelessWidget {
     final models = attempts.where((a) => a.kind == 'model').toList();
     if (models.isEmpty) return (null, <QuizItem>[], null);
     final last = models.last;
-    final test = modelTestService.modelTests().where((t) => t.id == last.testId).toList();
-    return (last, test.isEmpty ? practiceService.modelMath() : test.first.items, null);
+    final test = modelTestService
+        .modelTests()
+        .where((t) => t.id == last.testId)
+        .toList();
+    return (
+      last,
+      test.isEmpty ? practiceService.modelMath() : test.first.items,
+      null,
+    );
   }
 
   /// Bangla guide-set grade for the just-finished run, only when
@@ -47,17 +54,25 @@ class ModelTestResultsScreen extends StatelessWidget {
   /// so a grade problem can never break the results screen.
   Future<_RunGrade?> _banglaGrade(Attempt attempt, List<QuizItem> items) async {
     try {
-      if (attempt.subject != 'bangla' || !attempt.testId.startsWith('guide:')) return null;
+      if (attempt.subject != 'bangla' || !attempt.testId.startsWith('guide:'))
+        return null;
       final setId = attempt.testId.substring('guide:'.length);
       if (setId.isEmpty || items.isEmpty) return null;
       final schoolClass = await resolveSchoolClass();
-      final infos = await modelTestSetService.fetchSetsFromServer('bangla', schoolClass: schoolClass);
+      final infos = await modelTestSetService.fetchSetsFromServer(
+        'bangla',
+        schoolClass: schoolClass,
+      );
       if (infos == null) return null;
       final matches = infos.where((i) => i.setId == setId).toList();
       if (matches.isEmpty) return null;
       final bands = matches.first.gradeBands;
       if (bands == null || bands.isEmpty) return null;
-      final rows = await modelTestSetService.fetchSetRows('bangla', setId, schoolClass: schoolClass);
+      final rows = await modelTestSetService.fetchSetRows(
+        'bangla',
+        setId,
+        schoolClass: schoolClass,
+      );
       if (rows == null) return null;
       final marksById = <String, int>{};
       for (final r in rows) {
@@ -85,118 +100,224 @@ class ModelTestResultsScreen extends StatelessWidget {
     }
   }
 
-  String _fmt(int sec) => '${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}';
+  String _fmt(int sec) =>
+      '${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Locale>(valueListenable: languageNotifier, builder: (context, locale, _) {
-      final s = locale.languageCode == 'bn' ? modelTestResultsStringsBn : modelTestResultsStringsEn;
-      final bangla = locale.languageCode == 'bn';
-      // Phase 17 (L3): consume the one-shot time-up flag here, so
-      // the message survives navigation and is shown on this screen.
-      // Cleared at once: revisiting results later must not re-show it.
-      final timeUp = PracticeSession.timeUpAutoSubmit;
-      PracticeSession.timeUpAutoSubmit = false;
-      return ThemedScaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/practice'),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: languageNotifier,
+      builder: (context, locale, _) {
+        final s = locale.languageCode == 'bn'
+            ? modelTestResultsStringsBn
+            : modelTestResultsStringsEn;
+        final bangla = locale.languageCode == 'bn';
+        // Phase 17 (L3): consume the one-shot time-up flag here, so
+        // the message survives navigation and is shown on this screen.
+        // Cleared at once: revisiting results later must not re-show it.
+        final timeUp = PracticeSession.timeUpAutoSubmit;
+        PracticeSession.timeUpAutoSubmit = false;
+        return ThemedScaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/practice'),
+            ),
+            title: Text(s['title']!),
           ),
-          title: Text(s['title']!),
-        ),
-        body: FutureBuilder<(Attempt?, List<QuizItem>, _RunGrade?)>(future: _load(), builder: (context, snap) {
-          if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-          final attempt = snap.data!.$1;
-          final items = snap.data!.$2;
-          final grade = snap.data!.$3;
-          if (attempt == null) {
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Text(s['noResult']!, style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8), Text(s['noResultSub']!),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: () => context.go('/model-tests'), child: Text(s['retake']!)),
-            ]);
-          }
-          final skipped = attempt.total - attempt.answers.length;
-          final wrong = attempt.answers.length - attempt.correct;
-          final weak = <String>{};
-          for (final q in items) {
-            final a = attempt.answers[q.id];
-            if (a != null && !q.isCorrect(a)) weak.add(practiceService.chapterOf(q.id, bangla));
-          }
-          return ListView(padding: const EdgeInsets.all(16), children: [
-            if (timeUp)
-              Card(
-                  child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(children: [
-                        const Icon(Icons.timer_off),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(s['timeUp']!)),
-                      ]))),
-            if (timeUp) const SizedBox(height: 12),
-            ScoreHeader(score: '${attempt.correct} / ${attempt.total}', total: '${attempt.percent}% • +${attempt.xp} XP', message: s['message']!),
-            const SizedBox(height: 12),
-            if (grade != null)
-              Card(
-                  child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text("${s['grade']!}: ${grade.letter} (${grade.total}/${grade.max})"))),
-            if (grade != null) const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: PracticeCard(title: '${attempt.correct}', subtitle: s['correct']!)),
-              const SizedBox(width: 8),
-              Expanded(child: PracticeCard(title: '$wrong', subtitle: s['wrong']!)),
-              const SizedBox(width: 8),
-              Expanded(child: PracticeCard(title: '$skipped', subtitle: s['skipped']!)),
-            ]),
-            const SizedBox(height: 12),
-            Text("${s['timeUsed']!}: ${_fmt(attempt.seconds)}", style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 8),
-            ProgressBar(value: attempt.percent / 100),
-            const SizedBox(height: 16),
-            Text(s['weakTitle']!, style: Theme.of(context).textTheme.headlineLarge),
-            const SizedBox(height: 8),
-            if (weak.isEmpty) Text(s['allCorrect']!)
-            else for (final w in weak) Padding(padding: const EdgeInsets.only(bottom: 8),
-                child: PracticeCard(title: w, icon: Icons.warning_amber, trailing: ElevatedButton(onPressed: () => context.go('/books/viewer'), child: Text(s['readAgain']!)))),
-            const SizedBox(height: 16),
-            if (attempt.flagged.isNotEmpty) ...[
-              Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(
-                  "${s['flaggedTitle']!}: ${[for (int i = 0; i < items.length; i++) if (attempt.flagged.contains(items[i].id)) '${i + 1}'].join(', ')}"))),
-              const SizedBox(height: 16),
-            ],
-            Text(s['reviewTitle']!, style: Theme.of(context).textTheme.headlineLarge),
-            const SizedBox(height: 8),
-            for (final q in items) Padding(padding: const EdgeInsets.only(bottom: 8), child: () {
-              final a = attempt.answers[q.id];
-              final flaggedMark = attempt.flagged.contains(q.id) ? " · ${s['flaggedLabel']!}" : '';
-              final sub = (a == null
-                  ? s['skippedLabel']!
-                  : "${s['yourAnswer']!}: ${q.options[a]} · ${s['correctAnswer']!}: ${q.acceptedOptionTexts.join(' / ')}") + flaggedMark;
-              return PracticeCard(title: bangla ? q.questionBn : q.questionEn, subtitle: sub, maxTitleLines: null,
-                  icon: a == null ? Icons.remove_circle_outline : (q.isCorrect(a) ? Icons.check_circle : Icons.cancel));
-            }()),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: () {
-              final test = modelTestService.modelTests().where((t) => t.id == attempt.testId).toList();
-              if (test.isNotEmpty) {
-                PracticeSession.modelTestId = test.first.id;
-                PracticeSession.modelSubject = test.first.subject;
-                PracticeSession.modelItems = test.first.items;
-                PracticeSession.modelMinutes = test.first.minutes;
-                context.go('/model-test-exam');
-              } else {
-                context.go('/model-tests');
+          body: FutureBuilder<(Attempt?, List<QuizItem>, _RunGrade?)>(
+            future: _load(),
+            builder: (context, snap) {
+              if (!snap.hasData)
+                return const Center(child: CircularProgressIndicator());
+              final attempt = snap.data!.$1;
+              final items = snap.data!.$2;
+              final grade = snap.data!.$3;
+              if (attempt == null) {
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    Text(
+                      s['noResult']!,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(s['noResultSub']!),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.go('/model-tests'),
+                      child: Text(s['retake']!),
+                    ),
+                  ],
+                );
               }
-            }, child: Text(s['retake']!)),
-            const SizedBox(height: 8),
-            TextButton(onPressed: () => context.go('/home'), child: Text(s['home']!)),
-          ]);
-        }),
-      );
-    });
+              final skipped = attempt.total - attempt.answers.length;
+              final wrong = attempt.answers.length - attempt.correct;
+              final weak = <String>{};
+              for (final q in items) {
+                final a = attempt.answers[q.id];
+                if (a != null && !q.isCorrect(a))
+                  weak.add(practiceService.chapterOf(q.id, bangla));
+              }
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  if (timeUp)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.timer_off),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(s['timeUp']!)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (timeUp) const SizedBox(height: 12),
+                  ScoreHeader(
+                    score: '${attempt.correct} / ${attempt.total}',
+                    total: '${attempt.percent}% • +${attempt.xp} XP',
+                    message: s['message']!,
+                  ),
+                  const SizedBox(height: 12),
+                  if (grade != null)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          "${s['grade']!}: ${grade.letter} (${grade.total}/${grade.max})",
+                        ),
+                      ),
+                    ),
+                  if (grade != null) const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PracticeCard(
+                          title: '${attempt.correct}',
+                          subtitle: s['correct']!,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: PracticeCard(
+                          title: '$wrong',
+                          subtitle: s['wrong']!,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: PracticeCard(
+                          title: '$skipped',
+                          subtitle: s['skipped']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "${s['timeUsed']!}: ${_fmt(attempt.seconds)}",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  ProgressBar(value: attempt.percent / 100),
+                  const SizedBox(height: 16),
+                  Text(
+                    s['weakTitle']!,
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  if (weak.isEmpty)
+                    Text(s['allCorrect']!)
+                  else
+                    for (final w in weak)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: PracticeCard(
+                          title: w,
+                          icon: Icons.warning_amber,
+                          trailing: ElevatedButton(
+                            onPressed: () => context.go('/books'),
+                            child: Text(s['readAgain']!),
+                          ),
+                        ),
+                      ),
+                  const SizedBox(height: 16),
+                  if (attempt.flagged.isNotEmpty) ...[
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          "${s['flaggedTitle']!}: ${[for (int i = 0; i < items.length; i++)
+                            if (attempt.flagged.contains(items[i].id)) '${i + 1}'].join(', ')}",
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  Text(
+                    s['reviewTitle']!,
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  for (final q in items)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: () {
+                        final a = attempt.answers[q.id];
+                        final flaggedMark = attempt.flagged.contains(q.id)
+                            ? " · ${s['flaggedLabel']!}"
+                            : '';
+                        final sub =
+                            (a == null
+                                ? s['skippedLabel']!
+                                : "${s['yourAnswer']!}: ${q.options[a]} · ${s['correctAnswer']!}: ${q.acceptedOptionTexts.join(' / ')}") +
+                            flaggedMark;
+                        return PracticeCard(
+                          title: bangla ? q.questionBn : q.questionEn,
+                          subtitle: sub,
+                          maxTitleLines: null,
+                          icon: a == null
+                              ? Icons.remove_circle_outline
+                              : (q.isCorrect(a)
+                                    ? Icons.check_circle
+                                    : Icons.cancel),
+                        );
+                      }(),
+                    ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      final test = modelTestService
+                          .modelTests()
+                          .where((t) => t.id == attempt.testId)
+                          .toList();
+                      if (test.isNotEmpty) {
+                        PracticeSession.modelTestId = test.first.id;
+                        PracticeSession.modelSubject = test.first.subject;
+                        PracticeSession.modelItems = test.first.items;
+                        PracticeSession.modelMinutes = test.first.minutes;
+                        context.go('/model-test-exam');
+                      } else {
+                        context.go('/model-tests');
+                      }
+                    },
+                    child: Text(s['retake']!),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => context.go('/home'),
+                    child: Text(s['home']!),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 }
 

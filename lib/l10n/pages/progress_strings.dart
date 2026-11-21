@@ -2,6 +2,7 @@
 const Map<String, String> progressStringsBn = {
   'title': 'আমার অগ্রগতি',
   'level': 'লেভেল',
+  'streakOnly': 'তোমার পড়ার অগ্রগতি',
   'streak': 'দিনের স্ট্রিক',
   'week': 'সব রানের সারাংশ',
   'today': 'আজকের কাজ',
@@ -9,8 +10,10 @@ const Map<String, String> progressStringsBn = {
   'achievements': 'কৃতিত্ব',
   'goalTitle': 'আজকের লক্ষ্য',
   'minutes': 'মিনিট',
-  'noGoal': 'কোনো দৈনিক লক্ষ্য এখনো সেট করা হয়নি — সেটিংস থেকে মিনিটে লক্ষ্য বাছো, তাহলে এখানে রিং দেখাবে।',
-  'serverNote': 'সার্ভার থেকে আনা অগ্রগতি — এই ডিভাইসে এখনো কোনো রান সেভ হয়নি, তাই নিচের কাজগুলো আজকের হিসেবে দেখাচ্ছে।',
+  'noGoal':
+      'কোনো দৈনিক লক্ষ্য এখনো সেট করা হয়নি — সেটিংস থেকে মিনিটে লক্ষ্য বাছো, তাহলে এখানে রিং দেখাবে।',
+  'serverNote':
+      'সার্ভার থেকে আনা অগ্রগতি — এই ডিভাইসে এখনো কোনো রান সেভ হয়নি, তাই নিচের কাজগুলো আজকের হিসেবে দেখাচ্ছে।',
   'chapters': 'টি অধ্যায়',
   'noData': 'এখনো কোনো অগ্রগতি নেই',
   'noDataSub': 'একটি কুইজ বা মডেল টেস্ট শেষ করলেই এখানে আসল অগ্রগতি দেখাবে।',
@@ -25,6 +28,7 @@ const Map<String, String> progressStringsBn = {
 const Map<String, String> progressStringsEn = {
   'title': 'My Progress',
   'level': 'Level',
+  'streakOnly': 'Your study progress',
   'streak': '-day streak',
   'week': 'All Runs Summary',
   'today': "Today's Tasks",
@@ -32,11 +36,14 @@ const Map<String, String> progressStringsEn = {
   'achievements': 'Achievements',
   'goalTitle': "Today's Goal",
   'minutes': 'min',
-  'noGoal': 'No daily goal is set yet — pick a goal in minutes from Settings and the ring will show here.',
-  'serverNote': 'Progress fetched from the server — no run is saved on this device yet, so the tasks below show as today’s.',
+  'noGoal':
+      'No daily goal is set yet — pick a goal in minutes from Settings and the ring will show here.',
+  'serverNote':
+      'Progress fetched from the server — no run is saved on this device yet, so the tasks below show as today’s.',
   'chapters': 'chapters',
   'noData': 'No progress yet',
-  'noDataSub': 'Finish a quiz or model test and real progress will appear here.',
+  'noDataSub':
+      'Finish a quiz or model test and real progress will appear here.',
   'runs': 'runs',
   'avg': 'Average score',
   'taskQuiz': 'Finish a quiz today',
@@ -47,5 +54,21 @@ const Map<String, String> progressStringsEn = {
 };
 
 // Weekday short names for the 7-day streak row (M4 audit fix).
-const List<String> progressWeekdaysBn = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি'];
-const List<String> progressWeekdaysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const List<String> progressWeekdaysBn = [
+  'রবি',
+  'সোম',
+  'মঙ্গল',
+  'বুধ',
+  'বৃহ',
+  'শুক্র',
+  'শনি',
+];
+const List<String> progressWeekdaysEn = [
+  'Sun',
+  'Mon',
+  'Tue',
+  'Wed',
+  'Thu',
+  'Fri',
+  'Sat',
+];

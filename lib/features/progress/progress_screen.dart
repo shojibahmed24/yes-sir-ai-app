@@ -124,7 +124,12 @@ class ProgressScreen extends StatelessWidget {
                   if (sum.totalAttempts == 0 && hasServerNumbers)
                     const SizedBox(height: 12),
                   ProgressHero(
-                    title: "${s['level']!} ${sum.level} · ${sum.xp} XP",
+                    // Level/XP are only shown when the app actually has
+                    // XP data (server summaries force 0/1, which read
+                    // as "you have earned nothing" even with a streak).
+                    title: sum.xp > 0
+                        ? "${s['level']!} ${sum.level} · ${sum.xp} XP"
+                        : s['streakOnly']!,
                     goalProgress: sum.goalProgress,
                     showProgress: sum.goalMinutes > 0,
                   ),

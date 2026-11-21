@@ -150,7 +150,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   const SizedBox(height: 12),
                   OutlinedButton(
                     onPressed: () => context.go('/quiz'),
-                    child: Text(s['badgeQuiz5']!),
+                    // The button opens the quiz; the old label was the
+                    // name of a badge, not an action.
+                    child: Text(s['startQuiz'] ?? s['badgeQuiz5']!),
                   ),
                 ],
               );
