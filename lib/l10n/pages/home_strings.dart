@@ -80,6 +80,14 @@ const Map<String, String> homeStringsBn = {
   'planQuiz': 'স্ট্রিক কুইজ শেষ করো',
   'planRevision': 'দুর্বল অধ্যায় রিভিশন',
   'planTest': 'সাপ্তাহিক মডেল টেস্ট',
+  'weekTitle': 'এই সপ্তাহ',
+  'weekActive': '{n}/৭ দিন সক্রিয়',
+  'weakTitle': 'দুর্বল অধ্যায়',
+  'weakEmpty': 'এখনো কোনো দুর্বল অধ্যায় নেই — ভালো চলছে!',
+  'revise': 'রিভিশন',
+  'weeklyTest': 'সাপ্তাহিক মডেল টেস্ট',
+  'daysLeft': '{n} দিন বাকি',
+  'start': 'শুরু',
 };
 const Map<String, String> homeStringsEn = {
   'greeting': 'Hello',
@@ -152,4 +160,12 @@ const Map<String, String> homeStringsEn = {
   'planQuiz': 'Finish the streak quiz',
   'planRevision': 'Revise weak chapters',
   'planTest': 'Weekly model test',
+  'weekTitle': 'This week',
+  'weekActive': '{n}/7 days active',
+  'weakTitle': 'Weak chapters',
+  'weakEmpty': 'No weak chapters yet — keep it up!',
+  'revise': 'Revise',
+  'weeklyTest': 'Weekly model test',
+  'daysLeft': '{n} days left',
+  'start': 'Start',
 };

@@ -22,6 +22,7 @@ import 'widgets/home_top_bar.dart';
 import 'widgets/home_hero_card.dart';
 import 'widgets/home_stats_row.dart';
 import 'widgets/home_dashboard_cards.dart';
+import 'widgets/home_dashboard_d4.dart';
 import 'widgets/home_subject_grid.dart';
 import 'widgets/home_search_field.dart';
 import 'widgets/home_bottom_nav.dart';
@@ -57,6 +58,45 @@ class _HomeScreenState extends State<HomeScreen> {
       problem: int.tryParse(p[3]) ?? 1,
       schoolClass: schoolClass,
     );
+  }
+
+  static const _bnDays = ['সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি', 'রবি'];
+  static const _enDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  bool _activeOn(DateTime day, List<String>? dates) {
+    for (final raw in dates ?? const <String>[]) {
+      final p = raw.split('T').first.split('-');
+      if (p.length < 3) continue;
+      if (int.tryParse(p[0]) == day.year &&
+          int.tryParse(p[1]) == day.month &&
+          int.tryParse(p[2]) == day.day) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  List<String> _weekdayLabels(bool bn, List<String>? dates) {
+    final now = DateTime.now();
+    final names = bn ? _bnDays : _enDays;
+    return [
+      for (var i = 6; i >= 0; i--)
+        names[now.subtract(Duration(days: i)).weekday - 1],
+    ];
+  }
+
+  List<bool> _weekActive(List<String>? dates) {
+    final now = DateTime.now();
+    return [
+      for (var i = 6; i >= 0; i--)
+        _activeOn(now.subtract(Duration(days: i)), dates),
+    ];
+  }
+
+  int _daysToSaturday() {
+    final now = DateTime.now();
+    final delta = (DateTime.saturday - now.weekday + 7) % 7;
+    return delta == 0 ? 7 : delta;
   }
 
   @override
@@ -197,6 +237,40 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             (s['planTest']!, false, '/guide-model-tests'),
                           ],
+                        ),
+                        const SizedBox(height: HomeDesign.sectionGap),
+                        HomeWeekActivity(
+                          title: s['weekTitle']!,
+                          days: _weekdayLabels(
+                            bn,
+                            data?.progress.activityDates,
+                          ),
+                          active: _weekActive(data?.progress.activityDates),
+                          countLabel: s['weekActive']!.replaceFirst(
+                            '{n}',
+                            '${_weekActive(data?.progress.activityDates).where((x) => x).length}',
+                          ),
+                        ),
+                        const SizedBox(height: HomeDesign.blockGap),
+                        HomeWeakTopics(
+                          title: s['weakTitle']!,
+                          labels: [
+                            for (final w
+                                in (data?.progress.weakChapters ?? const [])
+                                    .take(2))
+                              w.label(bn),
+                          ],
+                          emptyLabel: s['weakEmpty']!,
+                          actionLabel: s['revise']!,
+                        ),
+                        const SizedBox(height: HomeDesign.blockGap),
+                        HomeUpcomingTest(
+                          title: s['weeklyTest']!,
+                          daysLeftLabel: s['daysLeft']!.replaceFirst(
+                            '{n}',
+                            '${_daysToSaturday()}',
+                          ),
+                          actionLabel: s['start']!,
                         ),
                         const SizedBox(height: HomeDesign.sectionGap),
                         SectionHeader(
