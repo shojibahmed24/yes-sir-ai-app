@@ -37,8 +37,14 @@ import 'home_subject_tile.dart';
 /// subjectsAsync) is ALSO shown, and its tile goes to the new
 /// search flow instead of the textbook chapters — so Class 9/10
 /// Math is no longer an empty home.
-List<SubjectInfo> visibleHomeSubjects(List<SubjectInfo> all) =>
-    all.where((x) => !x.locked || x.hasGuide).toList();
+///
+/// [flagsComplete] false = some subject's guide state is UNKNOWN
+/// (a probe failed). Hiding those made Home claim "no subjects
+/// found", so unknown is never rendered as "no guide".
+List<SubjectInfo> visibleHomeSubjects(
+  List<SubjectInfo> all, {
+  bool flagsComplete = true,
+}) => flagsComplete ? all.where((x) => !x.locked || x.hasGuide).toList() : all;
 
 /// Tile subtitle: guide-only subjects show their GUIDE count
 /// (chapters, else model-test sets, else a generic guide note —
@@ -134,6 +140,10 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
   List<SubjectInfo>? _subjects;
   bool _loadFailed = false;
 
+  /// False when the last fetch could not resolve every subject's
+  /// guide state (unknown ≠ no guide): locked tiles stay visible.
+  bool _flagsComplete = true;
+
   @override
   void initState() {
     super.initState();
@@ -179,8 +189,11 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
     if (_subjects == null || !_sameSubjects(_subjects!, result.subjects)) {
       setState(() {
         _subjects = result.subjects;
+        _flagsComplete = result.complete;
         _loadFailed = false;
       });
+    } else if (_flagsComplete != result.complete) {
+      setState(() => _flagsComplete = result.complete);
     }
   }
 
@@ -226,7 +239,10 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
       }
       return Text(widget.loadingLabel);
     }
-    final visible = visibleHomeSubjects(subjects);
+    final visible = visibleHomeSubjects(
+      subjects,
+      flagsComplete: _flagsComplete,
+    );
     if (visible.isEmpty) return Text(widget.noSubjectsLabel);
     // Batch 2, item 2: the old GridView fixed every tile height
     // via childAspectRatio 1.3, so a 2-3 line Bangla name at

@@ -105,21 +105,46 @@ class SubjectInfo {
 enum SubjectsFetchKind { server, demo, failed }
 
 class SubjectsFetchResult {
-  const SubjectsFetchResult({required this.subjects, required this.kind});
+  const SubjectsFetchResult({
+    required this.subjects,
+    required this.kind,
+    this.complete = true,
+  });
   final List<SubjectInfo> subjects;
   final SubjectsFetchKind kind;
+
+  /// False when a guide-flag probe was inconclusive, so "locked and
+  /// no guide" cannot be trusted. Callers must then show the subject
+  /// anyway instead of hiding it (unknown is not "no guide").
+  final bool complete;
 }
 
 class LessonResult {
   final String question, answerBn, answerEn;
   final bool found;
-  const LessonResult({required this.question, required this.answerBn, required this.answerEn, required this.found});
-  static const noMatch = LessonResult(question: '', answerBn: '', answerEn: '', found: false);
+  const LessonResult({
+    required this.question,
+    required this.answerBn,
+    required this.answerEn,
+    required this.found,
+  });
+  static const noMatch = LessonResult(
+    question: '',
+    answerBn: '',
+    answerEn: '',
+    found: false,
+  );
 }
 
 class PracticeProblem {
   final String id, questionBn, questionEn, answerBn, answerEn;
-  const PracticeProblem({required this.id, required this.questionBn, required this.questionEn, required this.answerBn, required this.answerEn});
+  const PracticeProblem({
+    required this.id,
+    required this.questionBn,
+    required this.questionEn,
+    required this.answerBn,
+    required this.answerEn,
+  });
 }
 
 class QuizItem {
@@ -140,11 +165,15 @@ class QuizItem {
 
   /// Multi-key judgment: any accepted index earns full marks;
   /// empty set = single-key, only correctIndex. Accepted texts.
-  bool isCorrect(int selected) =>
-      correctIndices.isEmpty ? selected == correctIndex : correctIndices.contains(selected);
+  bool isCorrect(int selected) => correctIndices.isEmpty
+      ? selected == correctIndex
+      : correctIndices.contains(selected);
   List<String> get acceptedOptionTexts {
     final idx = correctIndices.isEmpty ? [correctIndex] : correctIndices;
-    return idx.where((i) => i >= 0 && i < options.length).map((i) => options[i]).toList();
+    return idx
+        .where((i) => i >= 0 && i < options.length)
+        .map((i) => options[i])
+        .toList();
   }
 
   // Phase 2 (2026-10-31): weak-revision persistence. A finished
@@ -169,7 +198,9 @@ class QuizItem {
       questionEn: j['questionEn'] as String? ?? '',
       options: opts is List ? opts.map((e) => e.toString()).toList() : const [],
       correctIndex: (j['correctIndex'] as num?)?.toInt() ?? 0,
-      correctIndices: acc is List ? acc.whereType<num>().map((n) => n.toInt()).toList() : const [],
+      correctIndices: acc is List
+          ? acc.whereType<num>().map((n) => n.toInt()).toList()
+          : const [],
     );
   }
 }

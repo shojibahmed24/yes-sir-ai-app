@@ -181,6 +181,9 @@ class BooksService {
       return SubjectsFetchResult(
         subjects: enriched.subjects,
         kind: SubjectsFetchKind.server,
+        // Incomplete flags mean some subject's guide state is
+        // unknown; Home must not hide those subjects.
+        complete: enriched.complete,
       );
     } catch (_) {
       return SubjectsFetchResult(
