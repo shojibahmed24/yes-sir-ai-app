@@ -92,10 +92,39 @@ class BookLibraryScreen extends StatelessWidget {
                     s['subtitle']!,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  Text(
-                    '${bn ? 'ক্লাস' : 'Class'} ${numStr(cls, bn)} · '
-                    '${numStr(books.length, bn)} ${s['booksCount']!}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  const SizedBox(height: 10),
+                  // Header stat card (S6.5): class, total books and
+                  // supplied (openable) books at a glance.
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _Stat(
+                              value:
+                                  '${bn ? 'ক্লাস' : 'Class'} ${numStr(cls, bn)}',
+                              label: s['classLabel'] ?? '',
+                            ),
+                          ),
+                          Expanded(
+                            child: _Stat(
+                              value: numStr(books.length, bn),
+                              label: s['booksCount']!,
+                            ),
+                          ),
+                          Expanded(
+                            child: _Stat(
+                              value: numStr(open.length, bn),
+                              label: s['unlockedLabel'] ?? '',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   if (books.isEmpty) Text(s['noBooks']!),
@@ -186,6 +215,25 @@ class BookLibraryScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// One header stat (value on top, label below).
+class _Stat extends StatelessWidget {
+  const _Stat({required this.value, required this.label});
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(value, style: Theme.of(context).textTheme.titleLarge),
+        if (label.isNotEmpty)
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+      ],
     );
   }
 }

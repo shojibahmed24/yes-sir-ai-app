@@ -11,6 +11,8 @@ const Map<String, String> bookLibraryStringsBn = {
   'lockedSub': 'এই বিষয়ের বই এখনো দেওয়া হয়নি, তাই লেসন খোলা যাবে না',
   'class6Only': 'শুধু ক্লাস ৬ — অন্য ক্লাসের বই এলে এখানে আসবে',
   'booksCount': 'টি বই',
+  'classLabel': 'শ্রেণি',
+  'unlockedLabel': 'খোলা বই',
   'lockedNoLesson': 'লক করা বই থেকে লেসন খোলা যাবে না',
   'continueNoBook': 'এখনো কোনো বই খোলা হয়নি — প্রথম বইটি খোলো',
   'loading': 'বই লোড হচ্ছে…',
@@ -31,6 +33,8 @@ const Map<String, String> bookLibraryStringsEn = {
   'class6Only':
       "Class 6 only — other classes' books will appear here when supplied",
   'booksCount': 'books',
+  'classLabel': 'Class',
+  'unlockedLabel': 'Open books',
   'lockedNoLesson': 'No lesson can be opened from a locked book',
   'continueNoBook': 'No book opened yet — open the first book',
   'loading': 'Loading books…',
