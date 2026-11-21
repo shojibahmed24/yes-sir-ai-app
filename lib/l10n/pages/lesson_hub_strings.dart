@@ -15,6 +15,13 @@ const Map<String, String> lessonHubStringsBn = {
   'board': 'বোর্ড প্রশ্ন',
   'boardSub': 'বোর্ডের বছরভিত্তিক প্রশ্ন',
   'note': 'সব প্রশ্ন গাইড বই থেকেই — বাইরের কিছু নয়।',
+  // B12: only types this lesson actually has are offered.
+  'countSuffix': '{n}টি প্রশ্ন',
+  'loadingCounts': 'প্রশ্ন গোনা হচ্ছে…',
+  'emptyTitle': 'এই লেসনে কোনো প্রশ্ন নেই',
+  'emptyBody':
+      'গাইডে এই লেসনের নিচে কোনো প্রশ্ন ছাপা নেই। “সব লেসন” খুলে অধ্যায়ের বাকি প্রশ্ন দেখো।',
+  'showAllLessons': 'সব লেসন দেখাও',
 };
 
 const Map<String, String> lessonHubStringsEn = {
@@ -25,7 +32,7 @@ const Map<String, String> lessonHubStringsEn = {
   'mcq': 'Multiple choice (MCQ)',
   'mcqSub': 'One-mark MCQ bank',
   'creative': 'Creative',
-  'creativeSub': 'Stimulus + ka/kha/ga/gha, board style',
+  'creativeSub': 'Stimulus + ক/খ/গ/ঘ, like the board',
   'short': 'Short answer',
   'shortSub': 'Short questions and answers',
   'model': 'Model test',
@@ -33,4 +40,10 @@ const Map<String, String> lessonHubStringsEn = {
   'board': 'Board questions',
   'boardSub': 'Board questions by year',
   'note': 'Every question comes from the guide book — nothing outside it.',
+  'countSuffix': '{n} questions',
+  'loadingCounts': 'Counting questions…',
+  'emptyTitle': 'No questions in this lesson',
+  'emptyBody':
+      'The guide prints nothing under this lesson. Open “All lessons” to see the rest of the chapter.',
+  'showAllLessons': 'Show all lessons',
 };
