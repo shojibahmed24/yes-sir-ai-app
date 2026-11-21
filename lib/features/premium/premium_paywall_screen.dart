@@ -221,6 +221,15 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
                     onPressed: _comingSoon,
                     child: Text(s['comingSoon']!),
                   ),
+                if (!_isPremium)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      s['comingSoonNote']!,
+                      style: Theme.of(context).textTheme.bodySmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 const SizedBox(height: 12),
                 OutlinedButton(onPressed: _restore, child: Text(s['restore']!)),
                 const SizedBox(height: 12),
