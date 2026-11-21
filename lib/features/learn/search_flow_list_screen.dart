@@ -74,14 +74,16 @@ class SearchFlowListScreen extends StatefulWidget {
   final Future<bool> Function()? premiumCheck;
   final GuideFlowListService? listService;
 
-  GuideFlowListService get _listSvc =>
-      widget.listService ?? guideFlowListService;
-
   @override
   State<SearchFlowListScreen> createState() => _SearchFlowListScreenState();
 }
 
 class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
+  /// Retry, paging and the first load must all use the same service —
+  /// falling back to the global singleton made injected fakes (tests)
+  /// and the real cache diverge.
+  GuideFlowListService get _listSvc =>
+      widget.listService ?? guideFlowListService;
   bool _loading = true;
   GuideFlowMode _mode = GuideFlowMode.serverFiltered;
   List<GuideBankQuestion> _guideRows = [];
