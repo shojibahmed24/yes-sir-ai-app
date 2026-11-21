@@ -1,15 +1,13 @@
 // Home lower sections (weak chapters, recommendations, recent
 // books), split out of home_screen.dart to keep it under the
 // 250-line cap. Behaviour matches the old inline sections, except
-// empty states are now HomeEmptyState cards with an action instead
-// of a bare "nothing yet" line (dashboard redesign, Phase 4).
+// empty states are one compact card row with a text action (A12).
 import 'package:flutter/material.dart';
 
 import '../learn/lesson_selection.dart';
 import '../learn/widgets/digits.dart';
 import '../learn/widgets/mock_data.dart';
 import 'home_design.dart';
-import 'widgets/home_empty_state.dart';
 
 class HomeLowerSections extends StatelessWidget {
   const HomeLowerSections({
@@ -36,6 +34,26 @@ class HomeLowerSections extends StatelessWidget {
   final VoidCallback onSearch;
   final VoidCallback onSeeSubjects;
 
+  /// S12: home's lower sections all speak one language now — a card row
+  /// with the message and a text action, not a big empty block.
+  Widget _emptyRow(
+    BuildContext context,
+    String message,
+    String action,
+    VoidCallback onTap,
+  ) {
+    return Card(
+      child: ListTile(
+        title: Text(message),
+        trailing: Text(
+          action,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+
   String _subjectName(String id) => subjectNameFor(id, bn);
 
   @override
@@ -49,11 +67,7 @@ class HomeLowerSections extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         if (lastLesson == null)
-          HomeEmptyState(
-            message: s['noLastStudied']!,
-            actionLabel: s['findQuestions']!,
-            onAction: onSearch,
-          )
+          _emptyRow(context, s['noLastStudied']!, s['findQuestions']!, onSearch)
         else
           Card(
             child: ListTile(
@@ -73,11 +87,7 @@ class HomeLowerSections extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         if (recentBooks.isEmpty)
-          HomeEmptyState(
-            message: s['noRecentBook']!,
-            actionLabel: s['seeAll']!,
-            onAction: onSeeSubjects,
-          )
+          _emptyRow(context, s['noRecentBook']!, s['seeAll']!, onSeeSubjects)
         else
           ...recentBooks.map((e) {
             final parts = e.split('|');

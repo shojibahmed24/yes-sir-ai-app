@@ -106,6 +106,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final weakDone = data?.progress.weakItems.isEmpty ?? true;
     final goalDone = (data?.progress.goalProgress ?? 0) >= 1;
     final savedCount = data?.savedCount ?? 0;
+    // Never show the same task twice: the two rotating slots pick from
+    // revision / goal / saved, so each weekday gives a distinct pair.
+    final savedSlot = weekday.isEven || weekday % 4 == 3;
     return [
       (s['planQuiz']!, quizDone, '/practice'),
       if (weekday.isEven)
@@ -114,8 +117,10 @@ class _HomeScreenState extends State<HomeScreen> {
         (s['dailyGoal']!, goalDone, '/today'),
       if (weekday >= DateTime.saturday)
         (s['planTest']!, false, '/guide-model-tests')
+      else if (savedSlot)
+        (s['qaSaved']!, savedCount == 0, '/saved')
       else
-        (s['planRevision']!, weakDone || savedCount == 0, '/saved'),
+        (s['planRevision']!, weakDone, '/practice'),
     ];
   }
 
