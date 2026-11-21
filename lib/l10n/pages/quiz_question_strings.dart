@@ -9,6 +9,10 @@ const Map<String, String> quizQuestionStringsBn = {
   'paletteTitle': 'প্রশ্ন প্যালেট',
   'answered': '{n}টি উত্তর দেওয়া',
   'unanswered': '{n}টি বাকি',
+  'finishTitle': 'সাবমিট করবেন?',
+  'finishBody':
+      '{n}টি প্রশ্নের উত্তর এখনো দেওয়া হয়নি। তবুও সাবমিট করলে ওগুলো বাদ যাবে।',
+  'submitNow': 'সাবমিট করো',
   'qLabel': 'প্রশ্ন',
   'tipTitle': 'স্যারের সহজ ব্যাখ্যা',
   'next': 'পরের প্রশ্ন',
@@ -57,6 +61,10 @@ const Map<String, String> quizQuestionStringsEn = {
   'paletteTitle': 'Question palette',
   'answered': '{n} answered',
   'unanswered': '{n} left',
+  'finishTitle': 'Submit now?',
+  'finishBody':
+      '{n} questions are still unanswered. Submitting now skips them.',
+  'submitNow': 'Submit',
   'qLabel': 'Question',
   'tipTitle': "Teacher's Easy Explanation",
   'next': 'Next Question',

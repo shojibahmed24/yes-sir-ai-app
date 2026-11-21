@@ -133,10 +133,39 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
       setState(() => _checked.add(_index));
       _loadExplanation(_index);
     } else if (_isLast) {
-      _finish();
+      _confirmFinish();
     } else {
       setState(() => _index++);
     }
+  }
+
+  /// Q4: finishing with unanswered questions asks first — the old
+  /// Finish submitted silently and the student lost easy marks.
+  Future<void> _confirmFinish() async {
+    final unanswered = _items.length - _answers.length;
+    if (unanswered <= 0) {
+      _finish();
+      return;
+    }
+    final s = isBangla ? quizQuestionStringsBn : quizQuestionStringsEn;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s['finishTitle']!),
+        content: Text(s['finishBody']!.replaceFirst('{n}', '$unanswered')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s['stay']!),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s['submitNow']!),
+          ),
+        ],
+      ),
+    );
+    if (go == true && mounted) await _finish();
   }
 
   /// Fetches 'স্যারের সহজ ব্যাখ্যা' for one checked question.
