@@ -42,7 +42,7 @@ Future<GuideFlowPage> guideFlowCreativePatternPage({
   required String? lesson,
   required int scanOffset,
 }) async {
-  const pageSize = 20;
+  const pageSize = 10;
   const maxPages = 50;
   final matched = <GuideBankQuestion>[];
   var scan = scanOffset;
@@ -128,7 +128,7 @@ Future<GuideFlowJump> guideFlowCreativePatternJump({
   required String? lesson,
   required int position,
 }) async {
-  const pageSize = 20;
+  const pageSize = 10;
   var scan = 0;
   var seen = 0;
   var sawLessonTag = false;

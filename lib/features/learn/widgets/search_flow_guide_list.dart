@@ -6,6 +6,11 @@
 // interim limit of a group split across a page boundary.
 // Practice-work lists carry the warning banner. The parent owns
 // paging state and the paywall gate; this widget only renders.
+//
+// Paging (B2): the list is a builder that asks for the next page
+// when the scroll position gets close to the end, so the student
+// never taps "load more". A footer spinner marks an in-flight page
+// and the first page stays at 10 rows.
 import 'package:flutter/material.dart';
 
 import '../../../core/models/guide_bank_model.dart';
@@ -128,53 +133,92 @@ class SearchFlowGuideListView extends StatelessWidget {
               .replaceAll('{total}', numStr(total!, bn))
               .replaceAll('{shown}', numStr(rows.length, bn))
         : s['showingOf']!.replaceAll('{shown}', numStr(rows.length, bn));
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        if (type == SearchFlowType.practiceWork)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(s['practiceWorkWarning']!),
-            ),
-          ),
-        Text(showing),
-        const SizedBox(height: 8),
-        for (final g in groups) ...[
-          if (g.stimulusId != null && g.parts.length > 1)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                s['groupParts']!.replaceAll('{n}', numStr(g.parts.length, bn)),
-                style: Theme.of(context).textTheme.bodyMedium,
+    return NotificationListener<ScrollNotification>(
+      // Auto-page: request the next page ~600px before the end.
+      // The parent guards duplicate calls (_loadingMore), so a
+      // fast scroll cannot append the same page twice.
+      onNotification: (n) {
+        if (!hasMore) return false;
+        if (n.metrics.pixels >= n.metrics.maxScrollExtent - 600) {
+          onLoadMore();
+        }
+        return false;
+      },
+      child: ListView(
+        // PageStorageKey keeps the scroll offset when the student
+        // opens a question and comes back (B6).
+        key: const PageStorageKey<String>('search-flow-guide-list'),
+        padding: const EdgeInsets.all(20),
+        children: [
+          if (type == SearchFlowType.practiceWork)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(s['practiceWorkWarning']!),
               ),
             ),
-          // Step 7 (Fix A): a creative group opens worker E's
-          // grouped view with ALL currently loaded parts; any
-          // other row keeps the single-question path. Known
-          // limit kept, not hidden (server-paged lists only;
-          // set lists page by whole groups): a group split
-          // across a 20-row page boundary still renders as two
-          // groups until the next page loads (grouping above
-          // runs over all loaded rows, so loading more merges
-          // them); tapping the first half before that opens
-          // only that half — groups are never merged across
-          // rows that have not been loaded, so no wrong
-          // group can be assembled.
-          _row(
-            g,
-            !guideBankService.isUnlocked(
-              isPremium: isPremium,
-              index: g.parts.first.$1,
-              freeLimit: AppConfig.freeGuideLimit,
+          Text(showing),
+          const SizedBox(height: 8),
+          for (final g in groups) ...[
+            if (g.stimulusId != null && g.parts.length > 1)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  s['groupParts']!.replaceAll(
+                    '{n}',
+                    numStr(g.parts.length, bn),
+                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            // Step 7 (Fix A): a creative group opens worker E's
+            // grouped view with ALL currently loaded parts; any
+            // other row keeps the single-question path. Known
+            // limit kept, not hidden (server-paged lists only;
+            // set lists page by whole groups): a group split
+            // across a 20-row page boundary still renders as two
+            // groups until the next page loads (grouping above
+            // runs over all loaded rows, so loading more merges
+            // them); tapping the first half before that opens
+            // only that half — groups are never merged across
+            // rows that have not been loaded, so no wrong
+            // group can be assembled.
+            _row(
+              g,
+              !guideBankService.isUnlocked(
+                isPremium: isPremium,
+                index: g.parts.first.$1,
+                freeLimit: AppConfig.freeGuideLimit,
+              ),
             ),
-          ),
+          ],
+          if (hasMore) ...[
+            const SizedBox(height: 16),
+            // The next page loads by itself; this is only a status
+            // line, not an action the student must find.
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      s['loadingMore']!,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
-        if (hasMore) ...[
-          const SizedBox(height: 12),
-          OutlinedButton(onPressed: onLoadMore, child: Text(s['loadMore']!)),
-        ],
-      ],
+      ),
     );
   }
 }

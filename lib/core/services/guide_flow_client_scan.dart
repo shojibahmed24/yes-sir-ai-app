@@ -49,7 +49,7 @@ Future<GuideFlowPage> guideFlowClientPage({
       nextScanOffset: 0,
     );
   }
-  const pageSize = 20;
+  const pageSize = 10;
   final matched = <GuideBankQuestion>[];
   var scan = scanOffset;
   var exhausted = false;
@@ -130,7 +130,7 @@ Future<GuideFlowJump> guideFlowClientJump({
       outcome: GuideFlowJumpOutcome.filterPending,
     );
   }
-  const pageSize = 20;
+  const pageSize = 10;
   var scan = 0;
   var seen = 0;
   for (var pages = 0; pages < 100; pages++) {

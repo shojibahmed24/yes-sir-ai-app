@@ -38,7 +38,9 @@ class GuideFlowListService {
   final GuideFlowPageCache _pageCache = GuideFlowPageCache();
   final _inFlight = GuideFlowInflight();
 
-  static const pageSize = 20;
+  /// First paint size (B2): 10 rows render fast; the next page is
+  /// fetched in the background while the student reads.
+  static const pageSize = 10;
 
   Future<Map<String, dynamic>?> _list(Map<String, dynamic> body) async {
     if (!_customPost && AppConfig.guideBankEndpoint.isEmpty) return null;

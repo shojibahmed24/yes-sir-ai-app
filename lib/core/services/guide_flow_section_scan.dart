@@ -26,7 +26,7 @@ Future<GuideFlowPage> guideFlowSectionPage({
   required String? lesson,
   required int scanOffset,
 }) async {
-  const pageSize = 20;
+  const pageSize = 10;
   const fetchSize = 50;
   final matched = <GuideBankQuestion>[];
   var scan = scanOffset;
@@ -47,31 +47,34 @@ Future<GuideFlowPage> guideFlowSectionPage({
     if (res == null || res['found'] != true) {
       if (first) {
         return GuideFlowPage(
-            rows: const [],
-            total: null,
-            hasMore: false,
-            mode: res != null && res['reason'] == 'pilot-columns-missing'
-                ? GuideFlowMode.filterPending
-                : GuideFlowMode.unavailable,
-            nextScanOffset: 0);
+          rows: const [],
+          total: null,
+          hasMore: false,
+          mode: res != null && res['reason'] == 'pilot-columns-missing'
+              ? GuideFlowMode.filterPending
+              : GuideFlowMode.unavailable,
+          nextScanOffset: 0,
+        );
       }
       // Mid-scan failure: return what matched, keep the scan
       // offset so "আরো দেখুন" retries the same page — never a
       // false "end of list".
       return GuideFlowPage(
-          rows: matched,
-          total: null,
-          hasMore: true,
-          mode: GuideFlowMode.clientFiltered,
-          nextScanOffset: scan);
+        rows: matched,
+        total: null,
+        hasMore: true,
+        mode: GuideFlowMode.clientFiltered,
+        nextScanOffset: scan,
+      );
     }
     if (first && lesson != null && !res.containsKey('lesson')) {
       return const GuideFlowPage(
-          rows: [],
-          total: null,
-          hasMore: false,
-          mode: GuideFlowMode.filterPending,
-          nextScanOffset: 0);
+        rows: [],
+        total: null,
+        hasMore: false,
+        mode: GuideFlowMode.filterPending,
+        nextScanOffset: 0,
+      );
     }
     first = false;
     final rows = guideFlowRows(res);
@@ -85,11 +88,12 @@ Future<GuideFlowPage> guideFlowSectionPage({
     }
   }
   return GuideFlowPage(
-      rows: matched,
-      total: null,
-      hasMore: !exhausted,
-      mode: GuideFlowMode.clientFiltered,
-      nextScanOffset: scan);
+    rows: matched,
+    total: null,
+    hasMore: !exhausted,
+    mode: GuideFlowMode.clientFiltered,
+    nextScanOffset: scan,
+  );
 }
 
 /// Positional jump through a section scan: the Nth row of the
@@ -120,14 +124,20 @@ Future<GuideFlowJump> guideFlowSectionJump({
     if (res == null || res['found'] != true) {
       if (first && res != null && res['reason'] == 'pilot-columns-missing') {
         return const GuideFlowJump(
-            question: null, outcome: GuideFlowJumpOutcome.filterPending);
+          question: null,
+          outcome: GuideFlowJumpOutcome.filterPending,
+        );
       }
       return const GuideFlowJump(
-          question: null, outcome: GuideFlowJumpOutcome.unavailable);
+        question: null,
+        outcome: GuideFlowJumpOutcome.unavailable,
+      );
     }
     if (first && lesson != null && !res.containsKey('lesson')) {
       return const GuideFlowJump(
-          question: null, outcome: GuideFlowJumpOutcome.filterPending);
+        question: null,
+        outcome: GuideFlowJumpOutcome.filterPending,
+      );
     }
     first = false;
     final rows = guideFlowRows(res);
@@ -135,8 +145,7 @@ Future<GuideFlowJump> guideFlowSectionJump({
       if (r.section != section) continue;
       seen++;
       if (seen == position) {
-        return GuideFlowJump(
-            question: r, outcome: GuideFlowJumpOutcome.found);
+        return GuideFlowJump(question: r, outcome: GuideFlowJumpOutcome.found);
       }
     }
     scan += rows.length;
@@ -144,5 +153,7 @@ Future<GuideFlowJump> guideFlowSectionJump({
     if (rows.length < fetchSize || (total != null && scan >= total)) break;
   }
   return const GuideFlowJump(
-      question: null, outcome: GuideFlowJumpOutcome.notFound);
+    question: null,
+    outcome: GuideFlowJumpOutcome.notFound,
+  );
 }

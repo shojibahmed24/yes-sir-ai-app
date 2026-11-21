@@ -92,7 +92,7 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
   int _scanOffset = 0;
   List<GuideBankQuestion> _allSetRows = [];
   List<TextbookChapterQuestion> _bookRows = [];
-  int _visible = 20;
+  int _visible = 10;
   bool _isPremium = false;
 
   bool get _guide => widget.source == 'guide';
@@ -125,7 +125,7 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
                 ? GuideFlowMode.unavailable
                 : GuideFlowMode.serverFiltered;
             _allSetRows = rows ?? [];
-            _visible = 20;
+            _visible = 10;
           });
         } else if (widget.chapterless || widget.board) {
           // Chapterless or Board (018): same paging shape,
@@ -169,6 +169,7 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
             _guideHasMore = page.hasMore;
             _scanOffset = page.nextScanOffset;
           });
+          _prefetchNextPage(page.hasMore);
         }
       } else {
         final bn = languageNotifier.value.languageCode == 'bn';
@@ -209,6 +210,16 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
   /// of an unhandled async error.
   bool _loadingMore = false;
 
+  /// Background paging (B2): after the first 10 rows paint, the next
+  /// page starts loading so scrolling rarely waits. The state guard
+  /// stops a duplicate append when the scroll trigger also fires.
+  void _prefetchNextPage(bool hasMore) {
+    if (!hasMore || widget.setId != null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_loadingMore) _loadMoreGuide();
+    });
+  }
+
   Future<void> _loadMoreGuide() async {
     if (_loadingMore) return;
     _loadingMore = true;
@@ -223,7 +234,7 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
 
   Future<void> _loadMoreGuideInner() async {
     if (widget.setId != null) {
-      if (mounted) setState(() => _visible += 20);
+      if (mounted) setState(() => _visible += 10);
       return;
     }
     if (widget.chapterless || widget.board) {
@@ -410,7 +421,7 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
                     chapterNumber: widget.chapterNumber,
                     schoolClass: widget.schoolClass,
                   ),
-                  onLoadMore: () => setState(() => _visible += 20),
+                  onLoadMore: () => setState(() => _visible += 10),
                 ),
         );
       },

@@ -121,13 +121,18 @@ void main() {
         subject: 'math', schoolClass: 9, chapter: 2,
         type: SearchFlowType.mcq);
     expect(all.total, 25);
-    expect(all.rows.length, 20);
+    expect(all.rows.length, 10);
     expect(all.hasMore, isTrue);
     final p2 = await svc.fetchPage(
         subject: 'math', schoolClass: 9, chapter: 2,
+        type: SearchFlowType.mcq, offset: 10);
+    expect(p2.rows.length, 10);
+    expect(p2.hasMore, isTrue);
+    final p3 = await svc.fetchPage(
+        subject: 'math', schoolClass: 9, chapter: 2,
         type: SearchFlowType.mcq, offset: 20);
-    expect(p2.rows.length, 5);
-    expect(p2.hasMore, isFalse);
+    expect(p3.rows.length, 5);
+    expect(p3.hasMore, isFalse);
   });
 
   test('old server: mcq falls back to client scan, total unknown',
@@ -138,14 +143,14 @@ void main() {
         type: SearchFlowType.mcq);
     expect(p1.mode, GuideFlowMode.clientFiltered);
     expect(p1.total, isNull);
-    expect(p1.rows.length, 20);
+    expect(p1.rows.length, 10);
     expect(p1.rows.every((r) => r.questionType == 'mcq'), isTrue);
     expect(p1.hasMore, isTrue);
     final p2 = await svc.fetchPage(
         subject: 'math', schoolClass: 9, chapter: 2,
         type: SearchFlowType.mcq, scanOffset: p1.nextScanOffset);
-    expect(p2.rows.length, 5);
-    expect(p2.hasMore, isFalse);
+    expect(p2.rows.length, 10);
+    expect(p2.hasMore, isTrue);
   });
 
   test('old server: lesson filter and practice_work are pending, '
