@@ -19,6 +19,13 @@ Future<void> main() async {
     () async {
       // DEMO mode if no Supabase keys are configured - never crashes.
       await initBackend();
+      // Refresh the session once at start: an expired access token is
+      // what made every guide-bank call answer 401 after a while.
+      try {
+        await supabaseOrNull?.auth.refreshSession();
+      } catch (_) {
+        // Offline: the anon-retry path keeps public reads working.
+      }
       // No-op in DEMO mode; in real mode it routes password-recovery
       // email links to /reset-password (see auth_recovery_listener).
       startAuthRecoveryListener();
