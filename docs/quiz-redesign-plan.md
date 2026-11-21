@@ -25,6 +25,14 @@
 | Q4 | Submit সারাংশ (unanswered count) | নিশ্চিত করার আগে সতর্ক |
 | Q5 | অপশন ভিজ্যুয়াল পলিশ + ব্যাখ্যা সেকশন | selected/correct/wrong স্পষ্ট |
 
+## অবস্থা
+
+- ✅ Q1 exit confirmation
+- ✅ Q2 এক প্রাইমারি অ্যাকশন (prev আইকন + ৩ কম্প্যাক্ট আইকন)
+- ✅ Q3 প্রশ্ন প্যালেট (answered/unanswered/current, জাম্প)
+- ✅ Q4 submit সারাংশ (unanswered count)
+- ✅ Q5 রিভিউ: `OptionTile`-এ আগেই selected/correct/wrong animation (pop/shake, Reduced-Motion সম্মান) + `QuizCheckedCard` ব্যাখ্যা — নতুন ঝুঁকি না নিয়ে যাচাই করে “আছে” নিশ্চিত করা হয়েছে
+
 ## এই কমিটে (Q1)
 - ব্যাক বাটনে **exit confirmation** (bn/en), টাইমার বাতিল
 - স্ট্রিং: leaveTitle/leaveBody/stay/leave
