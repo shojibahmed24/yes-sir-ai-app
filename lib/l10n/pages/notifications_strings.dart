@@ -24,6 +24,9 @@ const Map<String, String> notificationsStringsBn = {
   'prefs': 'বিজ্ঞপ্তি পছন্দসমূহ',
   'clear': 'সব মুছে ফেলো',
   'empty': 'কোনো নোটিফিকেশন নেই।',
+  'emptyHint':
+      'Settings থেকে দৈনিক পড়া, স্ট্রিক ও সাপ্তাহিক টেস্টের রিমাইন্ডার ফোনে চালু করা যায়।',
+  'openSettings': 'নোটিফিকেশন সেটিংস',
   'open': 'খোলো',
   'prefsSub': 'কোন নোটিফিকেশন কখন পাবে তা ঠিক করো',
 };
@@ -53,6 +56,9 @@ const Map<String, String> notificationsStringsEn = {
   'prefs': 'Notification preferences',
   'clear': 'Clear all',
   'empty': 'No notifications.',
+  'emptyHint':
+      'Daily study, streak and weekly-test reminders are scheduled on your phone from Settings.',
+  'openSettings': 'Notification settings',
   'open': 'Open',
   'prefsSub': 'Decide which notifications you get and when',
 };

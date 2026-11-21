@@ -150,10 +150,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                 if (items.isEmpty) ...[
                   const SizedBox(height: 32),
+                  Icon(
+                    Icons.notifications_none,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     s['empty']!,
                     style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    s['emptyHint']!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push('/settings'),
+                      icon: const Icon(Icons.tune, size: 18),
+                      label: Text(s['openSettings']!),
+                    ),
                   ),
                 ] else ...[
                   // Phase 16 (M8): NO fake Today/Earlier grouping by
