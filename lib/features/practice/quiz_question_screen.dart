@@ -200,6 +200,35 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
     });
   }
 
+  /// Mid-attempt exit: answers live only in memory, so leaving without
+  /// asking silently discarded the run.
+  Future<void> _confirmLeave(
+    BuildContext context,
+    Map<String, String> s,
+  ) async {
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s['leaveTitle']!),
+        content: Text(s['leaveBody']!),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s['stay']!),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s['leave']!),
+          ),
+        ],
+      ),
+    );
+    if (leave == true && context.mounted) {
+      _timer?.cancel();
+      context.go('/practice');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Locale>(
@@ -214,7 +243,8 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/practice'),
+              // Leaving mid-attempt loses every answer. Ask first.
+              onPressed: () => _confirmLeave(context, s),
             ),
             title: Text(s['title']!),
           ),

@@ -1,6 +1,11 @@
 // quiz_question page strings - bn + en, written with the screen (page-wise rule).
 const Map<String, String> quizQuestionStringsBn = {
   'title': 'কুইজ প্রশ্ন',
+  'leaveTitle': 'কুইজ থেকে বের হবেন?',
+  'leaveBody':
+      'এখনো সাবমিট করা হয়নি — বের হলে এই রানের উত্তরগুলো হারিয়ে যাবে।',
+  'stay': 'থাকো',
+  'leave': 'বের হও',
   'qLabel': 'প্রশ্ন',
   'tipTitle': 'স্যারের সহজ ব্যাখ্যা',
   'next': 'পরের প্রশ্ন',
@@ -28,7 +33,8 @@ const Map<String, String> quizQuestionStringsBn = {
   'aiDemoBank': 'ডেমো ব্যাখ্যা — বইয়ের ইনডেক্সে এখনো যাচাই হয়নি',
   'notIndexed': 'এই প্রশ্নটি বইয়ের ইনডেক্সে পাওয়া যায়নি।',
   'askExact': 'হুবহু প্রশ্নটি সার্চে লেখো অথবা বইয়ের ছবি দাও।',
-  'aiServerKeyMissing': 'AI সার্ভারে চালু হয়নি — সার্ভারের চাবি এখনো বসানো হয়নি।',
+  'aiServerKeyMissing':
+      'AI সার্ভারে চালু হয়নি — সার্ভারের চাবি এখনো বসানো হয়নি।',
   'elapsed': 'সময়',
   'quizSourceGuide': 'গাইড',
   'quizSourceBank': 'ব্যাংক',
@@ -41,6 +47,10 @@ const Map<String, String> quizQuestionStringsBn = {
 };
 const Map<String, String> quizQuestionStringsEn = {
   'title': 'Quiz Question',
+  'leaveTitle': 'Leave the quiz?',
+  'leaveBody': 'This run is not submitted yet — leaving loses every answer.',
+  'stay': 'Stay',
+  'leave': 'Leave',
   'qLabel': 'Question',
   'tipTitle': "Teacher's Easy Explanation",
   'next': 'Next Question',
@@ -67,7 +77,8 @@ const Map<String, String> quizQuestionStringsEn = {
   'aiDemo': 'Demo explanation — verified against the book, not live AI',
   'aiDemoBank': 'Demo explanation — not yet verified against the book index',
   'notIndexed': 'This question was not found in the book index.',
-  'askExact': 'Type the exact question in Search or share a photo of the book page.',
+  'askExact':
+      'Type the exact question in Search or share a photo of the book page.',
   'aiServerKeyMissing':
       'AI is not enabled on the server yet — the server key has not been set.',
   'elapsed': 'Time',
