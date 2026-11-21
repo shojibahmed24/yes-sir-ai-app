@@ -26,21 +26,22 @@ class AuthScaffold extends StatelessWidget {
       backgroundColor: AppTheme.paper,
       body: Stack(
         children: [
-          // Soft background blobs (Warm Paper Scholar frosted look).
+          // Brand-family blobs (T4): one indigo→violet family, no amber
+          // on auth screens — the gold accent belongs to premium only.
           Positioned(
             top: -80,
             left: -60,
-            child: _blob(AppTheme.secondary.withValues(alpha: 0.12), 240),
+            child: _blob(AppTheme.secondary.withValues(alpha: 0.10), 260),
           ),
           Positioned(
             top: 240,
             right: -80,
-            child: _blob(AppTheme.amber.withValues(alpha: 0.16), 220),
+            child: _blob(AppTheme.primary.withValues(alpha: 0.07), 240),
           ),
           Positioned(
             bottom: -70,
             left: 40,
-            child: _blob(AppTheme.primary.withValues(alpha: 0.10), 280),
+            child: _blob(AppTheme.primaryDark.withValues(alpha: 0.06), 300),
           ),
           SafeArea(
             child: Column(
