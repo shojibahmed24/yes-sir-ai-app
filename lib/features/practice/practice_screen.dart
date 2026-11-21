@@ -59,7 +59,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
             schoolClass: schoolClass,
             bangla: bangla,
           )
-          .timeout(const Duration(seconds: 60));
+          .timeout(const Duration(seconds: 6));
       PracticeSession.selectedSubject = subject;
       PracticeSession.quizShortfall = gen.guideShortfall;
       PracticeSession.quizSeedKey = gen.seedKey;
@@ -89,15 +89,22 @@ class _PracticeScreenState extends State<PracticeScreen> {
       context.go('/quiz');
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(s['dailyError']!),
-          action: SnackBarAction(
-            label: s['retry']!,
-            onPressed: () => _startDaily(context, subject, bangla, s),
-          ),
-        ),
+      // A slow/failed guide fetch must not leave the spinner running:
+      // offer the bank set right away (it always exists).
+      if (mounted) setState(() => _startingDaily = false);
+      final useBank = await showGuideFallbackDialog(context);
+      if (!context.mounted) return;
+      if (!useBank) return;
+      PracticeSession.quizItems = practiceService.dailyQuizFor(
+        subject,
+        count: 20,
       );
+      PracticeSession.quizSource = 'bankFallback';
+      PracticeSession.quizShortfall = 0;
+      PracticeSession.quizIsRevision = false;
+      PracticeSession.selectedSubject = subject;
+      navigated = true;
+      context.go('/quiz');
     } finally {
       if (mounted && !navigated) setState(() => _startingDaily = false);
     }
@@ -135,7 +142,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
             schoolClass: schoolClass,
             bangla: bangla,
           )
-          .timeout(const Duration(seconds: 60));
+          .timeout(const Duration(seconds: 6));
       PracticeSession.selectedSubject = subject;
       PracticeSession.quizShortfall = gen.guideShortfall;
       PracticeSession.quizSeedKey = gen.seedKey;
