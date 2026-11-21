@@ -14,8 +14,9 @@ List<GuideBankQuestion> guideFlowRows(Map<String, dynamic> res) {
   if (q is! List) return const [];
   return q
       .whereType<Map>()
-      .map((m) =>
-          GuideBankQuestion.fromServerJson(Map<String, dynamic>.from(m)))
+      .map(
+        (m) => GuideBankQuestion.fromServerJson(Map<String, dynamic>.from(m)),
+      )
       .toList();
 }
 
@@ -30,13 +31,23 @@ Future<GuideFlowPage> guideFlowClientPage({
   required int scanOffset,
 }) async {
   if (lesson != null) {
-    return const GuideFlowPage(rows: [], total: null, hasMore: false,
-        mode: GuideFlowMode.filterPending, nextScanOffset: 0);
+    return const GuideFlowPage(
+      rows: [],
+      total: null,
+      hasMore: false,
+      mode: GuideFlowMode.filterPending,
+      nextScanOffset: 0,
+    );
   }
   final qType = searchFlowLegacyQuestionType(type);
   if (qType == null) {
-    return const GuideFlowPage(rows: [], total: null, hasMore: false,
-        mode: GuideFlowMode.filterPending, nextScanOffset: 0);
+    return const GuideFlowPage(
+      rows: [],
+      total: null,
+      hasMore: false,
+      mode: GuideFlowMode.filterPending,
+      nextScanOffset: 0,
+    );
   }
   const pageSize = 20;
   final matched = <GuideBankQuestion>[];
@@ -56,9 +67,25 @@ Future<GuideFlowPage> guideFlowClientPage({
     if (res == null || res['found'] != true) {
       // Mid-scan failure: return what matched, keep the scan
       // offset so "আরো দেখুন" retries the same page — never a
-      // false "end of list".
-      return GuideFlowPage(rows: matched, total: null, hasMore: true,
-          mode: GuideFlowMode.clientFiltered, nextScanOffset: scan);
+      // false "end of list". A failure before ANY row matched is
+      // not an empty list either: report unavailable so the screen
+      // shows a retry instead of "no questions found".
+      if (matched.isEmpty) {
+        return GuideFlowPage(
+          rows: const [],
+          total: null,
+          hasMore: false,
+          mode: GuideFlowMode.unavailable,
+          nextScanOffset: scan,
+        );
+      }
+      return GuideFlowPage(
+        rows: matched,
+        total: null,
+        hasMore: true,
+        mode: GuideFlowMode.clientFiltered,
+        nextScanOffset: scan,
+      );
     }
     final rows = guideFlowRows(res);
     for (final r in rows) {
@@ -70,8 +97,13 @@ Future<GuideFlowPage> guideFlowClientPage({
       exhausted = true;
     }
   }
-  return GuideFlowPage(rows: matched, total: null, hasMore: !exhausted,
-      mode: GuideFlowMode.clientFiltered, nextScanOffset: scan);
+  return GuideFlowPage(
+    rows: matched,
+    total: null,
+    hasMore: !exhausted,
+    mode: GuideFlowMode.clientFiltered,
+    nextScanOffset: scan,
+  );
 }
 
 /// Positional jump through a client scan: the Nth row of the
@@ -87,12 +119,16 @@ Future<GuideFlowJump> guideFlowClientJump({
 }) async {
   if (lesson != null) {
     return const GuideFlowJump(
-        question: null, outcome: GuideFlowJumpOutcome.filterPending);
+      question: null,
+      outcome: GuideFlowJumpOutcome.filterPending,
+    );
   }
   final qType = searchFlowLegacyQuestionType(type);
   if (qType == null) {
     return const GuideFlowJump(
-        question: null, outcome: GuideFlowJumpOutcome.filterPending);
+      question: null,
+      outcome: GuideFlowJumpOutcome.filterPending,
+    );
   }
   const pageSize = 20;
   var scan = 0;
@@ -108,15 +144,16 @@ Future<GuideFlowJump> guideFlowClientJump({
     });
     if (res == null || res['found'] != true) {
       return const GuideFlowJump(
-          question: null, outcome: GuideFlowJumpOutcome.unavailable);
+        question: null,
+        outcome: GuideFlowJumpOutcome.unavailable,
+      );
     }
     final rows = guideFlowRows(res);
     for (final r in rows) {
       if (r.questionType != qType) continue;
       seen++;
       if (seen == position) {
-        return GuideFlowJump(
-            question: r, outcome: GuideFlowJumpOutcome.found);
+        return GuideFlowJump(question: r, outcome: GuideFlowJumpOutcome.found);
       }
     }
     scan += rows.length;
@@ -124,7 +161,9 @@ Future<GuideFlowJump> guideFlowClientJump({
     if (rows.length < pageSize || (total != null && scan >= total)) break;
   }
   return const GuideFlowJump(
-      question: null, outcome: GuideFlowJumpOutcome.notFound);
+    question: null,
+    outcome: GuideFlowJumpOutcome.notFound,
+  );
 }
 
 /// D1 (Phase-5) page fallback: the new server echoes a type
@@ -146,13 +185,14 @@ Future<GuideFlowPage?> guideFlowTypeFallbackPage({
 }) async {
   if (total != 0 || lesson != null || typeSection.isEmpty) return null;
   return guideFlowClientPage(
-      fetch: fetch,
-      subject: subject,
-      schoolClass: schoolClass,
-      chapter: chapter,
-      type: type,
-      lesson: lesson,
-      scanOffset: scanOffset);
+    fetch: fetch,
+    subject: subject,
+    schoolClass: schoolClass,
+    chapter: chapter,
+    type: type,
+    lesson: lesson,
+    scanOffset: scanOffset,
+  );
 }
 
 /// D1 (Phase-5) jump fallback: same empty-type case as the
@@ -170,11 +210,12 @@ Future<GuideFlowJump?> guideFlowTypeFallbackJump({
 }) async {
   if (lesson != null || typeSection.isEmpty) return null;
   return guideFlowClientJump(
-      fetch: fetch,
-      subject: subject,
-      schoolClass: schoolClass,
-      chapter: chapter,
-      type: type,
-      lesson: lesson,
-      position: position);
+    fetch: fetch,
+    subject: subject,
+    schoolClass: schoolClass,
+    chapter: chapter,
+    type: type,
+    lesson: lesson,
+    position: position,
+  );
 }

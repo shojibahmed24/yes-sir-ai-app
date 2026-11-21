@@ -25,9 +25,7 @@ import '../../features/learn/widgets/guide_creative_parts.dart';
 /// is verified at grouping time, never by dropping rows here.
 bool isCreativePatternRow(GuideBankQuestion q) {
   final sid = q.stimulusId;
-  return sid != null &&
-      sid.isNotEmpty &&
-      isCreativeFamilyType(q.questionType);
+  return sid != null && sid.isNotEmpty && isCreativeFamilyType(q.questionType);
 }
 
 bool _lessonMatches(GuideBankQuestion r, String? lesson) =>
@@ -65,9 +63,24 @@ Future<GuideFlowPage> guideFlowCreativePatternPage({
     if (res == null || res['found'] != true) {
       // Mid-scan failure: return what matched, keep the scan
       // offset so "আরো দেখুন" retries the same page — never a
-      // false "end of list".
-      return GuideFlowPage(rows: matched, total: null, hasMore: true,
-          mode: GuideFlowMode.clientFiltered, nextScanOffset: scan);
+      // false "end of list". Before any row matched this is a
+      // failure, not an empty lesson: report unavailable.
+      if (matched.isEmpty) {
+        return GuideFlowPage(
+          rows: const [],
+          total: null,
+          hasMore: false,
+          mode: GuideFlowMode.unavailable,
+          nextScanOffset: scan,
+        );
+      }
+      return GuideFlowPage(
+        rows: matched,
+        total: null,
+        hasMore: true,
+        mode: GuideFlowMode.clientFiltered,
+        nextScanOffset: scan,
+      );
     }
     final rows = guideFlowRows(res);
     if (rows.isNotEmpty) sawAnyRow = true;
@@ -86,11 +99,21 @@ Future<GuideFlowPage> guideFlowCreativePatternPage({
   if (lesson != null && sawAnyRow && !sawLessonTag && matched.isEmpty) {
     // Rows carry no lesson tag at all: the server cannot filter
     // by lesson, so an empty page would lie. Honest pending.
-    return const GuideFlowPage(rows: [], total: null, hasMore: false,
-        mode: GuideFlowMode.filterPending, nextScanOffset: 0);
+    return const GuideFlowPage(
+      rows: [],
+      total: null,
+      hasMore: false,
+      mode: GuideFlowMode.filterPending,
+      nextScanOffset: 0,
+    );
   }
-  return GuideFlowPage(rows: matched, total: null, hasMore: !exhausted,
-      mode: GuideFlowMode.clientFiltered, nextScanOffset: scan);
+  return GuideFlowPage(
+    rows: matched,
+    total: null,
+    hasMore: !exhausted,
+    mode: GuideFlowMode.clientFiltered,
+    nextScanOffset: scan,
+  );
 }
 
 /// Positional jump through a creative-pattern scan: the Nth
@@ -121,7 +144,9 @@ Future<GuideFlowJump> guideFlowCreativePatternJump({
     });
     if (res == null || res['found'] != true) {
       return const GuideFlowJump(
-          question: null, outcome: GuideFlowJumpOutcome.unavailable);
+        question: null,
+        outcome: GuideFlowJumpOutcome.unavailable,
+      );
     }
     final rows = guideFlowRows(res);
     if (rows.isNotEmpty) sawAnyRow = true;
@@ -130,8 +155,7 @@ Future<GuideFlowJump> guideFlowCreativePatternJump({
       if (!isCreativePatternRow(r) || !_lessonMatches(r, lesson)) continue;
       seen++;
       if (seen == position) {
-        return GuideFlowJump(
-            question: r, outcome: GuideFlowJumpOutcome.found);
+        return GuideFlowJump(question: r, outcome: GuideFlowJumpOutcome.found);
       }
     }
     scan += rows.length;
@@ -140,8 +164,12 @@ Future<GuideFlowJump> guideFlowCreativePatternJump({
   }
   if (lesson != null && sawAnyRow && !sawLessonTag) {
     return const GuideFlowJump(
-        question: null, outcome: GuideFlowJumpOutcome.filterPending);
+      question: null,
+      outcome: GuideFlowJumpOutcome.filterPending,
+    );
   }
   return const GuideFlowJump(
-      question: null, outcome: GuideFlowJumpOutcome.notFound);
+    question: null,
+    outcome: GuideFlowJumpOutcome.notFound,
+  );
 }

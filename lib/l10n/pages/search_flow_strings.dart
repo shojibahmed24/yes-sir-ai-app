@@ -107,6 +107,7 @@ const Map<String, String> searchFlowStringsBn = {
   'filterPendingBody':
       'এই ধরন বা লেসনের সার্ভার-ছাঁকনি নতুন সার্ভার সংস্করণে আসবে। ডেপ্লয়ের পর এখানেই দেখা যাবে।',
   'backToSearch': 'খোঁজায় ফিরুন',
+  'retry': 'আবার চেষ্টা করুন',
   'groupParts': '{n}টি অংশ',
   'groupNote': 'সৃজনশীল প্রশ্ন: অংশগুলো একসাথে দেখানো হয়েছে',
   'showingOf': '{shown}টি দেখাচ্ছে',
@@ -222,6 +223,7 @@ const Map<String, String> searchFlowStringsEn = {
   'filterPendingBody':
       'Server-side filtering for this type or lesson arrives with the new server version. It will appear here after deploy.',
   'backToSearch': 'Back to search',
+  'retry': 'Try again',
   'groupParts': '{n} parts',
   'groupNote': 'Creative question: parts shown together',
   'showingOf': 'Showing {shown}',

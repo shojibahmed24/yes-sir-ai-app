@@ -314,6 +314,12 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
                   s['unavailableBody']!,
                   s,
                   back,
+                  // A failed load is retryable in place: the same
+                  // filters, one tap, no re-entering the screen.
+                  onRetry: () => setState(() {
+                    _loading = true;
+                    _load();
+                  }),
                 )
               : _mode == GuideFlowMode.filterPending
               ? searchFlowMessage(
@@ -322,6 +328,10 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
                   s['filterPendingBody']!,
                   s,
                   back,
+                  onRetry: () => setState(() {
+                    _loading = true;
+                    _load();
+                  }),
                 )
               : _guide
               ? (widget.setId != null ? _allSetRows : _guideRows).isEmpty
