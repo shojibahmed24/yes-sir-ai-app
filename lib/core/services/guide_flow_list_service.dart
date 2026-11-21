@@ -17,6 +17,8 @@
 // - Null / non-200 / bad body => unavailable (never demo rows).
 // Quiz sourcing is untouched: guide_quiz_service reads
 // guide_bank_service, never this file.
+import 'dart:async';
+
 import 'app_config.dart';
 import 'edge_post.dart';
 import 'guide_flow_client_scan.dart';
@@ -25,6 +27,7 @@ import 'guide_flow_inflight.dart';
 import 'guide_flow_models.dart';
 import 'guide_flow_prefetch.dart';
 import 'guide_flow_section_scan.dart';
+import 'guide_list_disk_cache.dart';
 import '../../features/learn/search_flow_types.dart';
 
 export 'guide_flow_models.dart';
@@ -116,6 +119,49 @@ class GuideFlowListService {
 
   final Map<String, (DateTime, GuideFlowPage)> _firstPage = {};
 
+  /// Device-cached first page, rebuilt from the raw server body.
+  Future<GuideFlowPage?> _cachedPage(String identity) async {
+    try {
+      final hit = await guideListDiskCache.read(identity);
+      if (hit == null) return null;
+      final res = hit.body;
+      if (res['found'] != true) return null;
+      final rows = guideFlowRows(res);
+      if (rows.isEmpty) return null;
+      final total = (res['total'] as num?)?.toInt();
+      return GuideFlowPage(
+        rows: rows,
+        total: total,
+        hasMore: total != null ? rows.length < total : rows.length >= pageSize,
+        mode: GuideFlowMode.serverFiltered,
+        nextScanOffset: 0,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Refresh behind the visible list so the next open is fresh
+  /// without the student ever waiting (stale-while-revalidate).
+  void _refreshInBackground({
+    required String identity,
+    required Map<String, dynamic> body,
+    required int offset,
+  }) {
+    final key = 'refresh:$identity@$offset';
+    if (_inFlight.existing(key) != null) return;
+    unawaited(() async {
+      try {
+        final res = await _list(body);
+        if (res == null || res['found'] != true) return;
+        if (guideFlowRows(res).isEmpty) return;
+        await guideListDiskCache.save(identity, res);
+      } catch (_) {
+        // A background refresh never surfaces an error.
+      }
+    }());
+  }
+
   Future<GuideFlowPage> _fetchPageInner({
     required String identity,
     required String subject,
@@ -183,8 +229,22 @@ class GuideFlowListService {
       'limit': pageSize,
       'slim': type != SearchFlowType.creative,
     };
+    // Device cache (B6): a returning student paints the previous
+    // first page instantly; the network copy replaces it in the
+    // background. Injected/test instances skip this entirely.
+    if (offset == 0 && !_customPost) {
+      final cached = await _cachedPage(identity);
+      if (cached != null) {
+        _refreshInBackground(identity: identity, body: body, offset: offset);
+        return cached;
+      }
+    }
     final res = await _list(body);
     if (res == null) {
+      // Offline first page: answer from the device cache so returning
+      // to a list never shows skeletons (B6).
+      final cached = offset == 0 ? await _cachedPage(identity) : null;
+      if (cached != null) return cached;
       return const GuideFlowPage(
         rows: [],
         total: null,
@@ -244,6 +304,12 @@ class GuideFlowListService {
       scanOffset: scanOffset,
     );
     if (fallback != null) return fallback;
+    // Cache the genuine server-filtered first page for the device
+    // cache (B6). Never a fallback/scan page: those have no stable
+    // server body to rebuild from.
+    if (!_customPost && offset == 0 && rows.isNotEmpty) {
+      unawaited(guideListDiskCache.save(identity, res));
+    }
     if (hasMore) {
       prefetchGuideFlowPage(
         fetch: (b, {endpoint}) => _list(b),

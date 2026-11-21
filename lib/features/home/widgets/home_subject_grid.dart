@@ -165,6 +165,12 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
     final cls = widget.schoolClass;
     if (cls == null) return;
     final svc = widget.service ?? booksService;
+    // Synchronous last-good list (B13): returning to Home paints the
+    // grid on the first frame instead of "loading subjects".
+    final sync = svc.lastGoodSync(cls, widget.bn);
+    if (sync != null && sync.isNotEmpty && _subjects == null) {
+      _subjects = sync;
+    }
     // Cache-once: a saved list shows instantly and no server
     // fetch runs at all on this mount.
     final cached = await svc.loadPersistedSubjects(cls, widget.bn);

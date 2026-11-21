@@ -117,7 +117,22 @@ class BooksService {
   Future<List<SubjectInfo>?> loadPersistedSubjects(
     int schoolClass,
     bool bangla,
-  ) => loadPersistedSubjectsList(subjectsLastGoodKey(schoolClass, bangla));
+  ) async {
+    final out = await loadPersistedSubjectsList(
+      subjectsLastGoodKey(schoolClass, bangla),
+    );
+    if (out != null && out.isNotEmpty) {
+      _lastGoodSync['$schoolClass:$bangla'] = out;
+    }
+    return out;
+  }
+
+  /// Synchronous last-good list (B13): a returning Home paints the
+  /// subject grid immediately, with no "loading subjects" frame.
+  List<SubjectInfo>? lastGoodSync(int schoolClass, bool bangla) =>
+      _lastGoodSync['$schoolClass:$bangla'];
+
+  final Map<String, List<SubjectInfo>> _lastGoodSync = {};
 
   Future<SubjectsFetchResult> _fetchSubjects(
     int schoolClass,
@@ -176,6 +191,7 @@ class BooksService {
       final enriched = await withBulkGuideFlags(out, schoolClass);
       if (enriched.complete) {
         _subjectsCache.set(key, enriched.subjects);
+        _lastGoodSync[key] = enriched.subjects;
         await persistSubjectsList(key, enriched.subjects);
       }
       return SubjectsFetchResult(
