@@ -101,6 +101,21 @@ String subjectNameFor(String id, bool bn) {
     'pali': ('পালি', 'Pali'),
     'music': ('সংগীত', 'Music'),
     'religion': ('ধর্ম ও নৈতিক শিক্ষা', 'Religion'),
+    'english-2nd': ('ইংরেজি ২য় পত্র', 'English 2nd Paper'),
+    'physics': ('পদার্থবিজ্ঞান', 'Physics'),
+    'chemistry': ('রসায়ন', 'Chemistry'),
+    'biology': ('জীববিজ্ঞান', 'Biology'),
+    'higher-math': ('উচ্চতর গণিত', 'Higher Mathematics'),
+    'accounting': ('হিসাববিজ্ঞান', 'Accounting'),
+    'economics': ('অর্থনীতি', 'Economics'),
+    'civics': ('পৌরনীতি ও নাগরিকতা', 'Civics and Citizenship'),
+    'business-entrepreneurship': (
+      'ব্যবসায় উদ্যোগ',
+      'Business Entrepreneurship',
+    ),
+    'home-science': ('গার্হস্থ্য বিজ্ঞান', 'Home Science'),
+    'physical-education': ('শারীরিক শিক্ষা', 'Physical Education'),
+    'work-education': ('কর্ম শিক্ষা', 'Work Education'),
   };
   final n = names[id];
   if (n != null) return bn ? n.$1 : n.$2;

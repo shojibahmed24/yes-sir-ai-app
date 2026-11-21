@@ -131,7 +131,9 @@ class _GlobalPickerState extends State<GlobalPicker> {
           )
         else if (visible!.isEmpty)
           SearchFlowEmptyCard(
-            label: widget.s['pickerLoading']!,
+            // The field label names the picker; "Loading." here read
+            // as a contradiction next to "No items found".
+            label: widget.s['chapterLabel']!,
             message: widget.s['pickerEmpty']!,
           )
         else

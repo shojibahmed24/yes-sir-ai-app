@@ -30,6 +30,22 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _controller = TextEditingController();
   final _messages = <ChatMsg>[];
+
+  /// Auto-scroll: a reply (or the thinking bubble) used to land
+  /// off-screen below the fold; every send and reply jumps to the end.
+  final _scroll = ScrollController();
+
+  void _scrollToEnd() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scroll.hasClients) return;
+      _scroll.animateTo(
+        _scroll.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
   final _saved = <String>{};
   bool _thinking = false;
   int _replyCount = 0;
@@ -57,6 +73,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _scroll.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -71,6 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.add(ChatMsg(text, true));
       _thinking = true;
     });
+    _scrollToEnd();
     // Dispatch: guide selections resolve via Mode G (never the
     // textbook index); textbook selections keep the old dispatch.
     final schoolClass = resolveChatSchoolClass(
@@ -95,13 +113,20 @@ class _ChatScreenState extends State<ChatScreen> {
       // budget; null (marks-less, or structured yielded nothing)
       // keeps the plain path exactly as before.
       final structuredReply = await structuredChatReply(
-        grounding: grounding, bangla: bn, userQuestion: text);
+        grounding: grounding,
+        bangla: bn,
+        userQuestion: text,
+      );
       if (structuredReply != null) {
         reply = structuredReply;
       } else {
         final res = await explanationService.explain(
-          grounding: grounding, style: 'simple', bangla: bn,
-          userQuestion: text, marksOverride: parseUserMarks(text));
+          grounding: grounding,
+          style: 'simple',
+          bangla: bn,
+          userQuestion: text,
+          marksOverride: parseUserMarks(text),
+        );
         reply = chatReplyFromPlainResult(res, s);
       }
       saveId = 'chat:${_sel.key}:$_replyCount';
@@ -112,6 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _replyCount++;
       _messages.add(ChatMsg(reply, false, saveId));
     });
+    _scrollToEnd();
   }
 
   Future<void> _toggleSave(String id, bool bn, Map<String, String> s) async {
@@ -138,8 +164,16 @@ class _ChatScreenState extends State<ChatScreen> {
         final bn = locale.languageCode == 'bn';
         final s = bn ? chatStringsBn : chatStringsEn;
         final ls = bn ? lessonStringsBn : lessonStringsEn;
-        final contextLine = chatQuestionLine(_sel, _subjectName(_sel.subject, bn), bn);
-        final greeting = buildChatGreeting(name: _displayName, s: s, questionLine: contextLine);
+        final contextLine = chatQuestionLine(
+          _sel,
+          _subjectName(_sel.subject, bn),
+          bn,
+        );
+        final greeting = buildChatGreeting(
+          name: _displayName,
+          s: s,
+          questionLine: contextLine,
+        );
         final all = <ChatMsg>[ChatMsg(greeting, false), ..._messages];
         return ThemedScaffold(
           calm: true,
@@ -157,8 +191,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(contextLine,
-                        style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      contextLine,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                     // Guide chats show the exact question above
                     // the messages (2026-11-03 chat fix).
                     if (_sel.guideQuestionId != null)
@@ -167,7 +203,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       onPressed: () => context.go(_sel.returnTo),
                       child: Text(s['viewQuestion']!),
                     ),
-                    Row(children: [TextButton(onPressed: _smaller, child: Text(ls['fontSmaller']!)), TextButton(onPressed: _larger, child: Text(ls['fontLarger']!))]),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: _smaller,
+                          child: Text(ls['fontSmaller']!),
+                        ),
+                        TextButton(
+                          onPressed: _larger,
+                          child: Text(ls['fontLarger']!),
+                        ),
+                      ],
+                    ),
                     // Tip string is area-lesson-only, not for others.
                     if (_sel.key == 'math|3|45|5')
                       Text(
@@ -179,6 +226,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               Expanded(
                 child: ListView.builder(
+                  controller: _scroll,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: all.length + (_thinking ? 1 : 0),
                   itemBuilder: (c, i) {

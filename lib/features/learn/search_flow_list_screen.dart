@@ -200,7 +200,24 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
     }
   }
 
+  /// In-flight guard: two quick "load more" taps used to append the
+  /// same page twice. Failures are swallowed to "no new rows" instead
+  /// of an unhandled async error.
+  bool _loadingMore = false;
+
   Future<void> _loadMoreGuide() async {
+    if (_loadingMore) return;
+    _loadingMore = true;
+    try {
+      await _loadMoreGuideInner();
+    } catch (_) {
+      // Keep the rows already on screen; the button can be tapped again.
+    } finally {
+      _loadingMore = false;
+    }
+  }
+
+  Future<void> _loadMoreGuideInner() async {
     if (widget.setId != null) {
       if (mounted) setState(() => _visible += 20);
       return;

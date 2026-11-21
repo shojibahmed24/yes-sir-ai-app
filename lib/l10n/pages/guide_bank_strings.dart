@@ -71,8 +71,8 @@ const Map<String, String> guideBankStringsBn = {
       'গাইডে এই প্রশ্নের লেখা সমাধান পাওয়া যায়নি — নিচের উত্তরটি AI লিখেছে, এটি গাইডের লেখা নয়',
   'verbatimErrorNote':
       'গাইডে ছাপা উত্তর ভুল প্রমাণিত, সংশোধন এখনো তৈরি হয়নি — নিচে এআই ব্যাখ্যা দেখুন',
-  'explainDetailed': 'বিস্তারিত বলুন',
-  'explainSteps': 'ধাপে ধাপে বুঝিয়ে বলুন',
+  'explainDetailed': 'সারাংশসহ দেখাও',
+  'explainSteps': 'শুধু ধাপ দেখাও',
   // Step 6 (creative grouped view + ask-AI restore): stimulus
   // header title + the button that opens grounded chat.
   'stimulusTitle': 'উদ্দীপক',
@@ -153,8 +153,8 @@ const Map<String, String> guideBankStringsEn = {
       'No written guide solution was found for this question in the guide — the answer below was written by AI and is not the guide\'s text',
   'verbatimErrorNote':
       'The printed guide answer was proven wrong and no correction is ready yet — see the AI explanation below',
-  'explainDetailed': 'Explain in detail',
-  'explainSteps': 'Explain step by step',
+  'explainDetailed': 'Show with summary',
+  'explainSteps': 'Show steps only',
   'stimulusTitle': 'Stimulus',
   'passageSource': 'Passage source',
   'askAi': 'Ask AI',
