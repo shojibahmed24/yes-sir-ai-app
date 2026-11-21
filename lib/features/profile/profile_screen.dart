@@ -114,6 +114,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (mounted) context.go('/login');
   }
 
+  /// Short public id: '@name-ab12' (name slug + last 4 of the uid).
+  /// The raw UUID was long and meaningless to a student.
+  String _shortId(String name, String uid) {
+    final slug = name
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+    final tail = uid.replaceAll('-', '');
+    final suffix = tail.length >= 4 ? tail.substring(tail.length - 4) : tail;
+    final base = slug.isEmpty ? 'student' : slug;
+    return suffix.isEmpty ? '@$base' : '@$base-$suffix';
+  }
+
   Widget _header(BuildContext context, String text) => Padding(
     padding: const EdgeInsets.only(top: 8, bottom: 6),
     child: Text(
@@ -168,7 +181,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             name: name,
             displayName: displayName,
             classInfo: classInfo,
-            idLine: rawId.isEmpty ? '' : '${s['studentIdPrefix']!} $rawId',
+            idLine: rawId.isEmpty
+                ? ''
+                : '${s['studentIdPrefix']!} ${_shortId(displayName, rawId)}',
             localPath: ProfileFields.localPicture(_profile),
             remoteUrl: ProfileFields.remotePicture(_profile),
           ),
