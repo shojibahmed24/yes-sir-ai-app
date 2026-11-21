@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/contact_info.dart';
+import '../../theme/app_theme.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/help_about_strings.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
@@ -77,8 +78,8 @@ class HelpFaqScreen extends StatelessWidget {
                     ),
                     child: Text(
                       supportEmail,
-                      style: const TextStyle(
-                        color: Color(0xFF2A4BD7),
+                      style: TextStyle(
+                        color: AppTheme.primaryDark,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

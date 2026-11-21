@@ -22,6 +22,9 @@ class AppTheme {
   static const secondary = Color(0xFF7C3AED);
   static const amber = Color(0xFFF5A524);
   static const success = Color(0xFF2E9E6B);
+  static const successDark = Color(0xFF15803D);
+  static const goldSoft = Color(0xFFFFF7E6);
+  static const goldSoftDark = Color(0xFF3D2E12);
   static const error = Color(0xFFDC2626);
   // Dark error text for LIGHT paper surfaces only: #B3261E on
   // #FBF6EC is ~5.9:1 (WCAG AA). Plain error #E5534B is 3.44:1.
@@ -71,14 +74,18 @@ class AppTheme {
   // Gradients use deep stops so white text stays WCAG AA on
   // them (light list) and deep dark stops (dark list). They are
   // for headers/buttons/cards only, never behind large text.
-  static const heroGradient =
-      LinearGradient(colors: [Color(0xFF4338CA), Color(0xFF6D28D9)]);
-  static const heroGradientDark =
-      LinearGradient(colors: [Color(0xFF312E81), Color(0xFF4C1D95)]);
-  static const premiumGradient =
-      LinearGradient(colors: [Color(0xFF92400E), Color(0xFF5B4BC4)]);
-  static const premiumGradientDark =
-      LinearGradient(colors: [Color(0xFF78350F), Color(0xFF4C1D95)]);
+  static const heroGradient = LinearGradient(
+    colors: [Color(0xFF4338CA), Color(0xFF6D28D9)],
+  );
+  static const heroGradientDark = LinearGradient(
+    colors: [Color(0xFF312E81), Color(0xFF4C1D95)],
+  );
+  static const premiumGradient = LinearGradient(
+    colors: [Color(0xFF92400E), Color(0xFF5B4BC4)],
+  );
+  static const premiumGradientDark = LinearGradient(
+    colors: [Color(0xFF78350F), Color(0xFF4C1D95)],
+  );
   static const statGradients = [
     LinearGradient(colors: [Color(0xFF4338CA), Color(0xFF6D28D9)]),
     LinearGradient(colors: [Color(0xFF1E7A52), Color(0xFF0E7A7A)]),
@@ -95,20 +102,18 @@ class AppTheme {
     Color? accent,
     required bool dark,
     double radius = 20,
-  }) =>
-      BoxDecoration(
-        color: dark ? DarkPalette.surface : card,
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-            color: (accent ?? primary).withValues(alpha: 0.30)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: dark ? 0.30 : 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      );
+  }) => BoxDecoration(
+    color: dark ? DarkPalette.surface : card,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(color: (accent ?? primary).withValues(alpha: 0.30)),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: dark ? 0.30 : 0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  );
 
   static ThemeData light() => buildAppTheme(dark: false);
 

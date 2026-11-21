@@ -27,7 +27,7 @@ class PremiumBenefitsCard extends StatelessWidget {
     // Gold-tinted wash with a gold border; ink text on it stays far
     // above WCAG AA (same constants the paywall used before).
     return Card(
-      color: dark ? const Color(0xFF3D2E12) : const Color(0xFFFFF7E6),
+      color: dark ? AppTheme.goldSoftDark : AppTheme.goldSoft,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(Rad.xl),
         side: BorderSide(color: AppTheme.amber.withValues(alpha: 0.40)),

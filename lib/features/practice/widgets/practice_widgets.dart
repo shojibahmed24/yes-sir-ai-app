@@ -5,12 +5,20 @@ import 'package:yes_sir_ai/theme/app_theme.dart';
 import 'package:yes_sir_ai/theme/app_tokens.dart';
 
 // R6: darker green for the letter circle (white on success ~3.4:1; on #1E7A4C ~5.3:1).
-const _successDark = Color(0xFF1E7A4C);
+const _successDark = AppTheme.successDark;
 
 /// Shared small cards for practice / quiz / model-test screens.
 /// Warm Paper Scholar: cream card, rounded 24, soft shadow.
 class PracticeCard extends StatelessWidget {
-  const PracticeCard({super.key, required this.title, this.subtitle, this.icon, this.trailing, this.onTap, this.maxTitleLines});
+  const PracticeCard({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.icon,
+    this.trailing,
+    this.onTap,
+    this.maxTitleLines,
+  });
   final String title;
   final int? maxTitleLines;
   final String? subtitle;
@@ -39,23 +47,57 @@ class PracticeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(children: [
-            if (icon != null) CircleAvatar(backgroundColor: AppTheme.primary, child: Icon(icon, color: Colors.white)),
-            if (icon != null) const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(title, maxLines: maxTitleLines ?? 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.headlineMedium),
-              if (subtitle != null) Text(subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
-            ])),
-            if (trailing != null) const SizedBox(width: 12),
-            if (trailing != null) ConstrainedBox(constraints: const BoxConstraints(maxWidth: 150), child: trailing!),
-          ]),
+          child: Row(
+            children: [
+              if (icon != null)
+                CircleAvatar(
+                  backgroundColor: AppTheme.primary,
+                  child: Icon(icon, color: Colors.white),
+                ),
+              if (icon != null) const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: maxTitleLines ?? 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              ),
+              if (trailing != null) const SizedBox(width: 12),
+              if (trailing != null)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 150),
+                  child: trailing!,
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
 class OptionTile extends StatefulWidget {
-  const OptionTile({super.key, required this.label, required this.text, required this.selected, this.correct, this.onTap});
+  const OptionTile({
+    super.key,
+    required this.label,
+    required this.text,
+    required this.selected,
+    this.correct,
+    this.onTap,
+  });
   final String label;
   final String text;
   final bool selected;
@@ -64,6 +106,7 @@ class OptionTile extends StatefulWidget {
   @override
   State<OptionTile> createState() => _OptionTileState();
 }
+
 class _OptionTileState extends State<OptionTile>
     with SingleTickerProviderStateMixin {
   late final AnimationController _feedback;
@@ -76,6 +119,7 @@ class _OptionTileState extends State<OptionTile>
       duration: const Duration(milliseconds: 300),
     );
   }
+
   @override
   void didUpdateWidget(OptionTile oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -83,11 +127,9 @@ class _OptionTileState extends State<OptionTile>
     // correct = small pop, wrong + selected = small red shake.
     // Reduced Motion: no feedback animation at all.
     final revealed = oldWidget.correct == null && widget.correct != null;
-    final feedbackTile = widget.correct == true ||
-        (widget.correct == false && widget.selected);
-    if (revealed &&
-        feedbackTile &&
-        !MediaQuery.of(context).disableAnimations) {
+    final feedbackTile =
+        widget.correct == true || (widget.correct == false && widget.selected);
+    if (revealed && feedbackTile && !MediaQuery.of(context).disableAnimations) {
       _feedback.forward(from: 0);
     }
   }
@@ -128,12 +170,14 @@ class _OptionTileState extends State<OptionTile>
     final letter = bg != null
         ? Colors.white
         : (Theme.of(context).brightness == Brightness.dark
-            ? scheme.primary
-            : AppTheme.primaryDark);
+              ? scheme.primary
+              : AppTheme.primaryDark);
     final card = Card(
       color: bg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Rad.md),
-          side: border ?? BorderSide(color: scheme.outlineVariant)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Rad.md),
+        side: border ?? BorderSide(color: scheme.outlineVariant),
+      ),
       child: InkWell(
         onTap: widget.onTap,
         onTapDown: (_) {
@@ -146,14 +190,31 @@ class _OptionTileState extends State<OptionTile>
         borderRadius: BorderRadius.circular(Rad.md),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(children: [
-            CircleAvatar(radius: 16, backgroundColor: avatarColor, child: Text(widget.label, style: TextStyle(color: letter, fontWeight: FontWeight.w600))),
-            const SizedBox(width: 12),
-            Expanded(child: Text(widget.text, style: Theme.of(context).textTheme.bodyMedium)),
-            if (isSelectedPre) const Icon(Icons.radio_button_checked, color: AppTheme.primary),
-            if (widget.correct == true) const Icon(Icons.check_circle, color: AppTheme.success),
-            if (isWrongSelected) const Icon(Icons.cancel, color: AppTheme.error),
-          ]),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: avatarColor,
+                child: Text(
+                  widget.label,
+                  style: TextStyle(color: letter, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  widget.text,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+              if (isSelectedPre)
+                const Icon(Icons.radio_button_checked, color: AppTheme.primary),
+              if (widget.correct == true)
+                const Icon(Icons.check_circle, color: AppTheme.success),
+              if (isWrongSelected)
+                const Icon(Icons.cancel, color: AppTheme.error),
+            ],
+          ),
         ),
       ),
     );
@@ -183,7 +244,12 @@ class _OptionTileState extends State<OptionTile>
 }
 
 class ScoreHeader extends StatelessWidget {
-  const ScoreHeader({super.key, required this.score, required this.total, required this.message});
+  const ScoreHeader({
+    super.key,
+    required this.score,
+    required this.total,
+    required this.message,
+  });
   final String score;
   final String total;
   final String message;
@@ -195,12 +261,25 @@ class ScoreHeader extends StatelessWidget {
       color: AppTheme.primaryDark,
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(children: [
-          Text(score, style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w700, color: Colors.white)),
-          Text(total, style: const TextStyle(color: Colors.white)),
-          const SizedBox(height: 8),
-          Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 16)),
-        ]),
+        child: Column(
+          children: [
+            Text(
+              score,
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            Text(total, style: const TextStyle(color: Colors.white)),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -213,7 +292,12 @@ class ProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: LinearProgressIndicator(value: value, minHeight: 8, backgroundColor: AppTheme.inkMuted.withValues(alpha: 0.3), color: AppTheme.amber),
+      child: LinearProgressIndicator(
+        value: value,
+        minHeight: 8,
+        backgroundColor: AppTheme.inkMuted.withValues(alpha: 0.3),
+        color: AppTheme.amber,
+      ),
     );
   }
 }
@@ -239,7 +323,15 @@ class QuizQuestionCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(bangla ? item.questionBn : item.questionEn, style: Theme.of(context).textTheme.bodyLarge))),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              bangla ? item.questionBn : item.questionEn,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+        ),
         if (multiKey) ...[
           const SizedBox(height: 8),
           Text(hint, style: Theme.of(context).textTheme.bodySmall),
