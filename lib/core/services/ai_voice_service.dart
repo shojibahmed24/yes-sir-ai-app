@@ -8,6 +8,7 @@
 // counting are real. VoiceState.ready is currently unreachable;
 // it activates only when the ephemeral-token endpoint + live
 // transport land (see BACKEND_DETAILS_LIST.md).
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/backend_models.dart';
 import 'app_config.dart';
 import 'auth_service.dart';
@@ -66,6 +67,12 @@ class AiVoiceService {
   Future<void> endCall(int minutesUsed) async {
     if (minutesUsed > 0) {
       await LocalStore.addVoiceMinutes(minutesUsed);
+      // Local session log (S5.6): last sessions survive restarts and
+      // do not depend on the server insert succeeding.
+      final prefs = await SharedPreferences.getInstance();
+      final log = prefs.getStringList('ys_voice_sessions') ?? [];
+      log.insert(0, '${DateTime.now().toIso8601String()}|$minutesUsed');
+      await prefs.setStringList('ys_voice_sessions', log.take(10).toList());
     }
     final client = supabaseOrNull;
     final userId = authService.currentUserId;

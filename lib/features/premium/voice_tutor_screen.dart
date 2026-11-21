@@ -13,6 +13,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/ai_voice_service.dart';
 import '../../core/services/app_config.dart';
 import '../../core/services/billing_service.dart';
@@ -41,6 +42,7 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
   bool _inCall = false;
   bool _isDemo = true;
   int _remaining = 0;
+  List<String> _sessions = const [];
   int _elapsedSec = 0;
   int _sessionCapMin = 0;
   Timer? _timer;
@@ -55,11 +57,14 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
     final premium = await billingService.isPremium();
     final demoTest = await billingService.isDemoVoiceTestEnabled();
     final budget = await aiVoiceService.budget();
+    final prefs = await SharedPreferences.getInstance();
+    final sessions = prefs.getStringList('ys_voice_sessions') ?? const [];
     if (!mounted) return;
     setState(() {
       _isPremium = premium || demoTest;
       _isDemoTestGate = demoTest && !premium;
       _remaining = budget.remaining;
+      _sessions = sessions;
       _loading = false;
     });
   }
@@ -212,6 +217,43 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
                   unit: s['minutesUnit']!,
                 ),
                 const SizedBox(height: Sp.xxl),
+                if (_sessions.isNotEmpty) ...[
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(Sp.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            s['sessionsTitle']!,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 6),
+                          for (final entry in _sessions.take(3))
+                            Builder(
+                              builder: (context) {
+                                final parts = entry.split('|');
+                                final date = parts.isNotEmpty
+                                    ? parts.first.split('T').first
+                                    : entry;
+                                final mins = parts.length > 1 ? parts[1] : '0';
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Text(
+                                    '$date · $mins ${s['minutesUnit']!}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: Sp.md),
+                ],
                 if (!exhausted)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
