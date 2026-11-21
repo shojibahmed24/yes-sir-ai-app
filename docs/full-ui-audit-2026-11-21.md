@@ -27,6 +27,41 @@
 9. **মডেল টেস্ট = ৩টি হার্ডকোড ডেমো টেস্ট** (C10), Quiz retake = ডেমো ব্যাংক (C11)
 10. **Home “weak chapters” আসলে শেষ খোলা অধ্যায়** (C12)
 
+### অবস্থা আপডেট — ২০২৬-১১-২২ রাতের ইমপ্লিমেন্টেশন
+
+| আইটেম | অবস্থা | নোট |
+|---|---|---|
+| C1 guide-answer failure | ✅ | error + retry; ভুল “no key” বন্ধ |
+| C2 class picker 1–10 | ✅ | `class_choices.dart`, ৩ জায়গায় |
+| C3 chapter opened | ✅ | class-stamped |
+| C5 price honesty | ✅ | “লঞ্চে ফ্রি”, $৫ বাদ |
+| C6 notification count | ✅ (আংশিক) | ভুল কাউন্ট/ডেড বাটন বাদ; pipeline এখনো বাকি |
+| C9 book library class | ✅ | প্রোফাইল ক্লাস + আসল book id |
+| C11 quiz retake | ✅ | একই প্রশ্ন সেট |
+| C12 weak-chapters lie | ✅ | লেবেল “শেষ যেখানে পড়েছ” (আসল weak data পরে) |
+| C14 chapter tap | ✅ | search-flow + chapter param |
+| C15 read again | ✅ | লাইব্রেরি (ভুল পেজ নয়) |
+| H1 detailed/steps | ✅ | লেবেল বাস্তব: সারাংশসহ / শুধু ধাপ |
+| H2/H3/H4 back context | ✅ | returnTo/class/source honored |
+| H6 chat autoscroll | ✅ (আংশিক) | রিট্রাই/কপি বাকি |
+| H8 subject names | ✅ | ৯–১০-এর সব বিষয় যোগ |
+| H9/H10 book lookup | ✅ | ডেড ট্যাপ/ইনফিনিট লোডিং বন্ধ |
+| H11/H12 | ✅ | রিফ্রেশ ক্লাস + বটম-নেভ ট্যাব |
+| H14 XP lie | ✅ | XP না থাকলে লেভেল লুকায় |
+| H15 CTA label | ✅ | “কুইজ শুরু করো” |
+| H16 subject detail | ✅ | আসল নাম + সাবজেক্টসহ practice |
+| H17 advice | ✅ | আসল কাউন্ট |
+| H22/H23 saved | ✅ | লেবেল/ব্যাক ঠিক |
+| H25 stale contact | ✅ | লগইন থেকে এলে ক্লিয়ার |
+| H26/H27 profile claims | ✅ | ভুয়া ক্লাস/প্রিমিয়াম বাদ |
+| H29/H30 OTP | ✅ | লাইভ কুলডাউন; WhatsApp কপি বাদ |
+| H31 step 9 copy | ✅ | “পাঠানো হয়েছে” মিথ্যা বাদ |
+| H32 password rules | ✅ | লাইভ, ৩ নিয়ম প্রয়োগযোগ্য |
+| H33 busy states | ✅ | লগইন/OTP স্পিনার |
+| H35 settings saved | ✅ | লোকাল-only হলে আলাদা মেসেজ |
+| H36 textScaler | ✅ | সিস্টেম ফন্ট মানে |
+| C4/C7/C8/C10 + notifications pipeline + voice | ⏸ | সিদ্ধান্ত/ব্যাকএন্ড/ডিভাইস লাগে — §৬ দেখুন |
+
 ---
 
 ## ১. Critical — ফিচার ভুল/ভুয়া (P0)

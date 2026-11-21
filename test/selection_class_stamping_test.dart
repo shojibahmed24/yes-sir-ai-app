@@ -58,11 +58,14 @@ void main() {
     expect(src, contains('never a silent 6'));
   });
 
-  test('chapter card stamps the saved profile class', () {
+  test('chapter card opens the search flow with the saved class', () {
     final src = _lib('features/learn/widgets/chapter_card.dart');
     expect(src, contains('profileService.loadSchoolClass()'));
-    expect(src, contains('schoolClass: schoolClass'));
-    expect(src, contains('never a silent 6'));
+    // The card no longer stamps a demo LessonSelection; it carries
+    // the class + chapter into the real search flow instead.
+    expect(src, contains("'&class=\$schoolClass'"));
+    expect(src, contains('&chapter=\$chapterNumber'));
+    expect(src, isNot(contains('page: 45')));
   });
 
   test('search recents stamp the saved profile class', () {
