@@ -229,6 +229,88 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
     }
   }
 
+  /// Question palette (Q3): every question at a glance — answered,
+  /// unanswered and current — and a direct jump without paging.
+  void _openPalette(BuildContext context, Map<String, String> s) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) {
+        final answered = _answers.length;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s['paletteTitle']!,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${s['answered']!.replaceFirst('{n}', '$answered')} · '
+                  '${s['unanswered']!.replaceFirst('{n}', '${_items.length - answered}')}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: GridView.count(
+                    crossAxisCount: 6,
+                    shrinkWrap: true,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    children: [
+                      for (var i = 0; i < _items.length; i++)
+                        InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () {
+                            Navigator.pop(sheet);
+                            setState(() => _index = i);
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: i == _index
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer
+                                  : _answers.containsKey(i)
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                              border: Border.all(
+                                color: i == _index
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
+                                width: i == _index ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '${i + 1}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: _answers.containsKey(i) && i != _index
+                                    ? Colors.white
+                                    : null,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Locale>(
@@ -247,6 +329,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
               onPressed: () => _confirmLeave(context, s),
             ),
             title: Text(s['title']!),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.grid_view_rounded),
+                tooltip: s['paletteTitle']!,
+                onPressed: () => _openPalette(context, s),
+              ),
+            ],
           ),
           body: ListView(
             padding: const EdgeInsets.all(16),
