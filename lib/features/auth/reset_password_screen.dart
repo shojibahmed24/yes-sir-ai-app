@@ -34,6 +34,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   bool _done = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Rule ticks follow the typed password live.
+    _new.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
   void dispose() {
     _new.dispose();
     _confirm.dispose();
@@ -45,8 +54,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return ValueListenableBuilder<Locale>(
       valueListenable: languageNotifier,
       builder: (context, locale, _) {
-        final s =
-            isBangla ? resetPasswordStringsBn : resetPasswordStringsEn;
+        final s = isBangla ? resetPasswordStringsBn : resetPasswordStringsEn;
         return AuthScaffold(
           onBack: () {
             // Leaving the reset screen ends the recovery gate, so a
@@ -62,22 +70,28 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 const DemoBanner(),
                 const SizedBox(height: 8),
                 FadeSlide(
-                  child: Text(s['step']!,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.primaryDark,
-                          )),
+                  child: Text(
+                    s['step']!,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppTheme.primaryDark,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FadeSlide(
                   delayMs: 80,
-                  child: Text(s['title']!,
-                      style: Theme.of(context).textTheme.displayLarge),
+                  child: Text(
+                    s['title']!,
+                    style: Theme.of(context).textTheme.displayLarge,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FadeSlide(
                   delayMs: 160,
-                  child: Text(s['subtitle']!,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  child: Text(
+                    s['subtitle']!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 if (!_done) ...[
@@ -99,9 +113,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _rule(context, s['rule1']!),
-                  _rule(context, s['rule2']!),
-                  _rule(context, s['rule3']!),
+                  _rule(context, s['rule1']!, _new.text.length >= 8),
+                  _rule(
+                    context,
+                    s['rule2']!,
+                    RegExp(r'[0-9]').hasMatch(_new.text) &&
+                        RegExp(r'[^A-Za-z0-9]').hasMatch(_new.text),
+                  ),
+                  _rule(
+                    context,
+                    s['rule3']!,
+                    RegExp(r'[a-z]').hasMatch(_new.text) &&
+                        RegExp(r'[A-Z]').hasMatch(_new.text),
+                  ),
                   const SizedBox(height: 24),
                   AuthPrimaryButton(
                     label: s['change']!,
@@ -113,15 +137,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         return;
                       }
                       if (_new.text != _confirm.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(s['mismatch']!)),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(s['mismatch']!)));
                         return;
                       }
                       if (_new.text.length < 8) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(s['tooShort']!)),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(s['tooShort']!)));
                         return;
                       }
                       // Real mode without any session (opened directly,
@@ -135,15 +159,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         if (context.mounted) context.go('/login');
                         return;
                       }
-                      final res =
-                          await authService.updatePassword(_new.text);
+                      final res = await authService.updatePassword(_new.text);
                       if (!context.mounted) return;
                       if (res.ok) {
                         setState(() => _done = true);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(
-                            res.error ?? s['updateFailed']!)),
+                          SnackBar(
+                            content: Text(res.error ?? s['updateFailed']!),
+                          ),
                         );
                       }
                     },
@@ -151,14 +175,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   const SizedBox(height: 16),
                   Text(s['tip']!, style: Theme.of(context).textTheme.bodySmall),
                 ] else ...[
-                  const Icon(Icons.check_circle,
-                      size: 64, color: AppTheme.success),
+                  const Icon(
+                    Icons.check_circle,
+                    size: 64,
+                    color: AppTheme.success,
+                  ),
                   const SizedBox(height: 16),
-                  Text(s['done']!,
-                      style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                    s['done']!,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 8),
-                  Text(s['doneDetail']!,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    s['doneDetail']!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   const SizedBox(height: 24),
                   AuthPrimaryButton(
                     label: s['goLogin']!,
@@ -178,12 +209,20 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
-  Widget _rule(BuildContext context, String text) {
+  /// Live rule rows: a tick only when the typed password satisfies
+  /// that rule (the old rows were green before any input).
+  Widget _rule(BuildContext context, String text, bool ok) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          const Icon(Icons.check_circle, size: 18, color: AppTheme.success),
+          Icon(
+            ok ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 18,
+            color: ok
+                ? AppTheme.success
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: 8),
           Expanded(child: Text(text)),
         ],

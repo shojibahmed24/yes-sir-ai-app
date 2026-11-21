@@ -102,7 +102,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
+          // Return to the screen that opened this one (Profile or
+          // Home), never a hardcoded /home.
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
         ),
         title: Text(s['title']!),
       ),
@@ -120,28 +123,31 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   s['centre']!,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
+                // Mark-all / clear act on real items only: with an
+                // empty list they were dead controls.
+                if (items.isNotEmpty)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _read = items.map((i) => i.id).toSet();
+                            });
+                            _persist();
+                          },
+                          child: Text(s['markAll']!),
+                        ),
+                      ),
+                      TextButton(
                         onPressed: () {
-                          setState(() {
-                            _read = items.map((i) => i.id).toSet();
-                          });
+                          setState(() => _cleared = true);
                           _persist();
                         },
-                        child: Text(s['markAll']!),
+                        child: Text(s['clear']!),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() => _cleared = true);
-                        _persist();
-                      },
-                      child: Text(s['clear']!),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
                 if (items.isEmpty) ...[
                   const SizedBox(height: 32),
                   Text(

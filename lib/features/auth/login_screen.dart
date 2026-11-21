@@ -12,6 +12,7 @@ import 'widgets/auth_buttons.dart';
 import 'widgets/auth_fields.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/fade_slide.dart';
+
 // Phase 6: real logo, matching splash (no drawn RobotAvatar).
 
 class LoginScreen extends StatefulWidget {
@@ -54,15 +55,15 @@ class _LoginScreenState extends State<LoginScreen> {
     final contact = _contact.text.trim();
     // Empty contact/password used to sail through DEMO to /home.
     if (contact.isEmpty || _password.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s['emptyError']!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s['emptyError']!)));
       return;
     }
     if (!authService.isDemo && !contact.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s['phoneLoginError']!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s['phoneLoginError']!)));
       return;
     }
     setState(() => _busy = true);
@@ -94,9 +95,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       // Mapped Bangla/English message only — never raw SDK text.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s[signInErrorStringKey(res)]!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s[signInErrorStringKey(res)]!)));
     }
   }
 
@@ -127,9 +128,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s[signInErrorStringKey(res)]!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s[signInErrorStringKey(res)]!)));
     }
   }
 
@@ -165,16 +166,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 FadeSlide(
                   delayMs: 80,
-                  child: Text(s['title']!,
-                      style: Theme.of(context).textTheme.displayLarge,
-                      textAlign: TextAlign.center),
+                  child: Text(
+                    s['title']!,
+                    style: Theme.of(context).textTheme.displayLarge,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FadeSlide(
                   delayMs: 160,
-                  child: Text(s['subtitle']!,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      textAlign: TextAlign.center),
+                  child: Text(
+                    s['subtitle']!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 FadeSlide(
@@ -211,11 +216,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 AuthPrimaryButton(
                   label: s['login']!,
+                  busy: _busy,
+                  busyLabel: s['loggingIn'] ?? s['login']!,
                   onPressed: _signIn,
                 ),
                 if (authService.googleSignInAvailable) ...[
-                  Text(s['or']!,
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(s['or']!, style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 12),
                   AuthGoogleButton(
                     label: s['google']!,
@@ -232,9 +238,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => context.go('/register/welcome'),
                 ),
                 const SizedBox(height: 8),
-                Text(s['safe']!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center),
+                Text(
+                  s['safe']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
                 AuthTextLink(
                   label: s['help']!,
                   onPressed: () => context.go('/help'),

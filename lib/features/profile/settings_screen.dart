@@ -84,6 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final scale = SettingsAppearanceSection.scaleFor(font);
     setState(() => _font = font);
     fontScaleNotifier.value = scale;
+    fontScaleChosen.value = true;
     persistFontScale(scale);
   }
 
@@ -120,9 +121,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // cloud upsert failed, and the local copy still holds the edit.
     // The header refreshes itself from the profile notifier on Save.
     if (!ok) debugPrint('Settings: Supabase upsert failed, local kept');
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(s['saved']!)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? s['saved']! : s['savedLocalOnly']!)),
+    );
   }
 
   @override

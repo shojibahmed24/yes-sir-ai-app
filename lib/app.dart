@@ -19,26 +19,36 @@ class YesSirApp extends StatelessWidget {
             return ValueListenableBuilder<double>(
               valueListenable: fontScaleNotifier,
               builder: (context, fontScale, _) {
-                return MaterialApp.router(
-                  title: 'Yes Sir AI',
-                  debugShowCheckedModeBanner: false,
-                  theme: AppTheme.light(),
-                  darkTheme: AppTheme.dark(),
-                  themeMode: mode,
-                  // REVIEW FIX: Settings font size now applies app-wide.
-                  builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                        textScaler: TextScaler.linear(fontScale)),
-                    child: child!,
-                  ),
-                  locale: locale,
-                  supportedLocales: const [Locale('bn'), Locale('en')],
-                  localizationsDelegates: const [
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                  routerConfig: appRouter,
+                return ValueListenableBuilder<bool>(
+                  valueListenable: fontScaleChosen,
+                  builder: (context, scaleChosen, _) {
+                    return MaterialApp.router(
+                      title: 'Yes Sir AI',
+                      debugShowCheckedModeBanner: false,
+                      theme: AppTheme.light(),
+                      darkTheme: AppTheme.dark(),
+                      themeMode: mode,
+                      // Settings font size applies app-wide ONLY once the
+                      // student picks one; otherwise the device's own
+                      // Android font size is respected (a11y).
+                      builder: (context, child) => scaleChosen
+                          ? MediaQuery(
+                              data: MediaQuery.of(context).copyWith(
+                                textScaler: TextScaler.linear(fontScale),
+                              ),
+                              child: child!,
+                            )
+                          : child!,
+                      locale: locale,
+                      supportedLocales: const [Locale('bn'), Locale('en')],
+                      localizationsDelegates: const [
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      routerConfig: appRouter,
+                    );
+                  },
                 );
               },
             );

@@ -101,6 +101,14 @@ class AuthService {
     return prefs.getString(_resetContactKey);
   }
 
+  /// The saved reset contact is one flow's state, not a profile: it is
+  /// cleared when a different auth flow starts, so a stale email can
+  /// never block the phone field or fake "code sent to…".
+  Future<void> clearResetContact() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_resetContactKey);
+  }
+
   Future<AuthResult> signInEmail(String email, String password) async {
     final client = supabaseOrNull;
     if (client == null) {

@@ -13,6 +13,7 @@ const Map<String, String> loginStringsBn = {
   'or': 'অথবা',
   'otp': 'ওটিপি কোড',
   'google': 'গুগল দিয়ে',
+  'loggingIn': 'সাইন-ইন হচ্ছে…',
   'newAccount': 'নতুন অ্যাকাউন্ট খোলো',
   'safe': 'শিক্ষার্থী ও অভিভাবকদের জন্য ১০০% নিরাপদ ও সুরক্ষিত',
   'help': 'লগইন করতে সমস্যা হচ্ছে? সহায়তা নাও',
@@ -29,10 +30,8 @@ const Map<String, String> loginStringsBn = {
   'confirmationResent': 'কনফার্মেশন ইমেইল আবার পাঠানো হয়েছে। ইনবক্স চেক করো।',
   'invalidCredentials':
       'ইমেইল বা পাসওয়ার্ড ভুল হয়েছে। আবার চেষ্টা করো, অথবা পাসওয়ার্ড ভুলে গেলে রিসেট করো।',
-  'networkError':
-      'ইন্টারনেট সংযোগ নেই। সংযোগ চেক করে আবার চেষ্টা করো।',
-  'googleUnavailable':
-      'গুগল দিয়ে লগইন এখনো চালু হয়নি। ইমেইল দিয়ে লগইন করো।',
+  'networkError': 'ইন্টারনেট সংযোগ নেই। সংযোগ চেক করে আবার চেষ্টা করো।',
+  'googleUnavailable': 'গুগল দিয়ে লগইন এখনো চালু হয়নি। ইমেইল দিয়ে লগইন করো।',
   'googleWaiting':
       'গুগল সাইন-ইন চলছে — ব্রাউজারে গুগল অ্যাকাউন্ট বেছে নিলে স্বয়ংক্রিয়ভাবে হোমে যাবে।',
 };
@@ -49,6 +48,7 @@ const Map<String, String> loginStringsEn = {
   'or': 'Or',
   'otp': 'OTP code',
   'google': 'Continue with Google',
+  'loggingIn': 'Signing in…',
   'newAccount': 'Create a new account',
   'safe': '100% safe and secure for students and parents',
   'help': 'Having trouble logging in? Get help',

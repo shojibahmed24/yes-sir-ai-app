@@ -11,6 +11,8 @@
 // (see BACKEND_DETAILS_LIST.md); without one, Supabase returns an
 // error which is shown honestly, never faked. In DEMO mode any
 // 6 digits complete locally and the DEMO banner says so.
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/auth_phone_service.dart';
@@ -38,9 +40,36 @@ class _OtpScreenState extends State<OtpScreen> {
   final _phoneController = TextEditingController();
   bool _busy = false;
 
+  /// Real resend cooldown: the old label promised 30 seconds but the
+  /// button had no timer, so taps were unlimited.
+  int _cooldown = 30;
+  Timer? _tick;
+
+  void _startCooldown() {
+    _tick?.cancel();
+    _cooldown = 30;
+    _tick = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() {
+        _cooldown = _cooldown > 0 ? _cooldown - 1 : 0;
+        if (_cooldown == 0) t.cancel();
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _startCooldown();
+    // Coming from LOGIN, never reuse a stale forgot-password contact:
+    // it hid the phone field and claimed a code was sent to it.
+    if (widget.returnTo == '/login') {
+      authService.clearResetContact();
+      return;
+    }
     authService.readResetContact().then((c) {
       if (mounted) setState(() => _contact = c);
     });
@@ -48,6 +77,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   void dispose() {
+    _tick?.cancel();
     _phoneController.dispose();
     super.dispose();
   }
@@ -59,15 +89,15 @@ class _OtpScreenState extends State<OtpScreen> {
     final typed = _phoneController.text.trim();
     final phone = _contact ?? (typed.isEmpty ? null : typed);
     if (phone == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s['phoneRequired']!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s['phoneRequired']!)));
       return null;
     }
     if (!isValidE164Phone(phone)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s['phoneFormatError']!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s['phoneFormatError']!)));
       return null;
     }
     return phone;
@@ -75,10 +105,17 @@ class _OtpScreenState extends State<OtpScreen> {
 
   Future<void> _resend() async {
     final s = isBangla ? otpStringsBn : otpStringsEn;
-    if (authService.isDemo) {
+    if (_cooldown > 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s['demoResend']!)),
+        SnackBar(content: Text(s['resendIn']!.replaceAll('{s}', '$_cooldown'))),
       );
+      return;
+    }
+    if (authService.isDemo) {
+      _startCooldown();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s['demoResend']!)));
       return;
     }
     if (_busy) return;
@@ -88,10 +125,12 @@ class _OtpScreenState extends State<OtpScreen> {
     final res = await authPhoneService.sendPhoneOtp(phone);
     if (!mounted) return;
     setState(() => _busy = false);
+    if (res.ok) _startCooldown();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text(res.ok ? s['codeSent']! : (res.error ?? s['verifyFailed']!)),
+        content: Text(
+          res.ok ? s['codeSent']! : (res.error ?? s['verifyFailed']!),
+        ),
       ),
     );
   }
@@ -99,17 +138,15 @@ class _OtpScreenState extends State<OtpScreen> {
   Future<void> _verify() async {
     final s = isBangla ? otpStringsBn : otpStringsEn;
     if (_code.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s['incomplete']!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s['incomplete']!)));
       return;
     }
     if (authService.isDemo) {
       // Login OTP verifies a sign-in, so it lands on /home; only
       // the forgot-password OTP continues to password reset.
-      context.go(
-        widget.returnTo == '/login' ? '/home' : '/reset-password',
-      );
+      context.go(widget.returnTo == '/login' ? '/home' : '/reset-password');
       return;
     }
     if (_busy) return;
@@ -124,15 +161,13 @@ class _OtpScreenState extends State<OtpScreen> {
       // copy keeps splash routing consistent with email sign-in.
       if (res.userId != null) await authService.saveSession(res.userId!);
       if (mounted) {
-        context.go(
-          widget.returnTo == '/login' ? '/home' : '/reset-password',
-        );
+        context.go(widget.returnTo == '/login' ? '/home' : '/reset-password');
       }
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(res.error ?? s['verifyFailed']!)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(res.error ?? s['verifyFailed']!)));
   }
 
   @override
@@ -151,27 +186,35 @@ class _OtpScreenState extends State<OtpScreen> {
                 const DemoBanner(),
                 const SizedBox(height: 8),
                 FadeSlide(
-                  child: Text(s['step']!,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.primaryDark,
-                          )),
+                  child: Text(
+                    s['step']!,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppTheme.primaryDark,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FadeSlide(
                   delayMs: 80,
-                  child: Text(s['title']!,
-                      style: Theme.of(context).textTheme.displayLarge),
+                  child: Text(
+                    s['title']!,
+                    style: Theme.of(context).textTheme.displayLarge,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FadeSlide(
                   delayMs: 160,
-                  child: Text(s['subtitle']!,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  child: Text(
+                    s['subtitle']!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
                 if (_contact != null) ...[
                   const SizedBox(height: 8),
-                  Text('${s['sentTo']!} $_contact',
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    '${s['sentTo']!} $_contact',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
                 if (_contact == null) ...[
                   const SizedBox(height: 8),
@@ -189,9 +232,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 const SizedBox(height: 24),
                 FadeSlide(
                   delayMs: 240,
-                  child: OtpBoxes(
-                    onChanged: (v) => setState(() => _code = v),
-                  ),
+                  child: OtpBoxes(onChanged: (v) => setState(() => _code = v)),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -203,14 +244,25 @@ class _OtpScreenState extends State<OtpScreen> {
                         onPressed: () => context.go(widget.returnTo),
                       ),
                     ),
-                    AuthTextLink(label: s['resend']!, onPressed: _resend),
+                    AuthTextLink(
+                      label: _cooldown > 0
+                          ? s['resendIn']!.replaceAll('{s}', '$_cooldown')
+                          : s['resend']!,
+                      onPressed: _resend,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                AuthPrimaryButton(label: s['verify']!, onPressed: _verify),
+                AuthPrimaryButton(
+                  label: s['verify']!,
+                  busy: _busy,
+                  onPressed: _verify,
+                ),
                 const SizedBox(height: 16),
-                Text(s['noCode']!,
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  s['noCode']!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 const SizedBox(height: 8),
                 Text(s['safe']!, style: Theme.of(context).textTheme.bodySmall),
               ],

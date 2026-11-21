@@ -30,6 +30,8 @@ const Map<String, String> settingsStringsBn = {
   'classSub': 'শুধু এখান থেকেই ক্লাস বদলানো যাবে',
   'classLabel': 'ক্লাস',
   'saved': 'সেটিংস সংরক্ষিত হয়েছে',
+  'savedLocalOnly':
+      'এই ডিভাইসে সংরক্ষিত হয়েছে — সার্ভারে যায়নি, ইন্টারনেট থাকলে আবার সেভ করো',
   'editName': 'নাম',
   'editSchool': 'স্কুলের নাম',
   'editGoal': 'দিনে পড়ার লক্ষ্য (মিনিট)',
@@ -100,6 +102,8 @@ const Map<String, String> settingsStringsEn = {
   'classSub': 'Class can only be changed from here',
   'classLabel': 'Class',
   'saved': 'Settings saved',
+  'savedLocalOnly':
+      'Saved on this device — could not reach the server; save again when online',
   'editName': 'Name',
   'editSchool': 'School name',
   'editGoal': 'Daily study goal (minutes)',

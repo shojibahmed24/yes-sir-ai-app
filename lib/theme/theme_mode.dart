@@ -6,13 +6,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Theme + font scale are persisted (ys_theme, ys_font_scale) and
 // restored at splash, so Settings choices are LIVE and survive restart.
 // Sepia fallback is stated in the Settings UI text, not hidden.
-final ValueNotifier<ThemeMode> themeModeNotifier =
-    ValueNotifier<ThemeMode>(ThemeMode.light);
+final ValueNotifier<ThemeMode> themeModeNotifier = ValueNotifier<ThemeMode>(
+  ThemeMode.light,
+);
 
 // REVIEW FIX: font size chosen in Settings, applied app-wide in app.dart
 // via MediaQuery textScaler. 1.0 = normal, 0.85 = small, 1.25 = large.
-final ValueNotifier<double> fontScaleNotifier =
-    ValueNotifier<double>(1.0);
+// fontScaleChosen = the student actually picked a size. Until then the
+// app must respect the DEVICE font size (Android accessibility), never
+// force 1.0 over it.
+final ValueNotifier<double> fontScaleNotifier = ValueNotifier<double>(1.0);
+final ValueNotifier<bool> fontScaleChosen = ValueNotifier<bool>(false);
 
 void persistTheme(String name) {
   SharedPreferences.getInstance().then(
@@ -35,5 +39,8 @@ Future<void> restoreAppearance() async {
     themeModeNotifier.value = ThemeMode.light;
   }
   final scale = prefs.getDouble('ys_font_scale');
-  if (scale != null && scale > 0) fontScaleNotifier.value = scale;
+  if (scale != null && scale > 0) {
+    fontScaleNotifier.value = scale;
+    fontScaleChosen.value = true;
+  }
 }

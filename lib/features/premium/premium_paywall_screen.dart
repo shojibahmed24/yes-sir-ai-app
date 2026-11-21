@@ -141,7 +141,7 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            "${s['remainingLabel']!}: $_remaining ${s['minutesUnit']!} ${s['perMonth']!}",
+                            "${s['remainingLabel']!}: $_remaining ${s['minutesUnit']!} ${s['perPeriod']!}",
                             style: const TextStyle(color: Colors.white),
                             textAlign: TextAlign.center,
                           ),
