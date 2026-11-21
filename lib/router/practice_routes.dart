@@ -6,6 +6,8 @@ import '../features/practice/quiz_results_screen.dart';
 import '../features/practice/model_test_list_screen.dart';
 import '../features/practice/model_test_exam_screen.dart';
 import '../features/practice/model_test_results_screen.dart';
+import '../features/practice/test_review_screen.dart';
+import '../features/practice/widgets/review_filter_cards.dart';
 import '../features/books/book_library_screen.dart';
 import '../features/books/book_page_viewer_screen.dart';
 import '../features/progress/progress_screen.dart';
@@ -46,6 +48,20 @@ final List<GoRoute> practiceRoutes = [
       parent: '/model-tests',
       child: const ModelTestResultsScreen(),
     ),
+  ),
+  GoRoute(
+    path: '/test-review',
+    builder: (c, s) {
+      final raw = s.uri.queryParameters['filter'] ?? 'wrong';
+      final filter = ReviewFilter.values.firstWhere(
+        (f) => f.name == raw,
+        orElse: () => ReviewFilter.wrong,
+      );
+      return BackScope(
+        parent: '/model-test-results',
+        child: TestReviewScreen(filter: filter),
+      );
+    },
   ),
   GoRoute(
     path: '/books',
