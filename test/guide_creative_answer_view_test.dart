@@ -26,27 +26,27 @@ void main() {
   group('orderedCreativeParts', () {
     test('orders ক→খ→গ→ঘ from shuffled input', () {
       final parts = orderedCreativeParts([
-        fakePart('g', 'গ) নকল গ অংশ', 4),
-        fakePart('k', 'ক) নকল ক অংশ', 2),
-        fakePart('kh', 'খ) নকল খ অংশ', 4),
+        fakePart('q-ga', 'গ) নকল গ অংশ', 4),
+        fakePart('q-ka', 'ক) নকল ক অংশ', 2),
+        fakePart('q-kha', 'খ) নকল খ অংশ', 4),
       ]);
-      expect(parts.map((p) => p.id).toList(), ['k', 'kh', 'g']);
+      expect(parts.map((p) => p.id).toList(), ['q-ka', 'q-kha', 'q-ga']);
     });
 
     test('tolerates a missing part without inventing one', () {
       final parts = orderedCreativeParts([
-        fakePart('g', 'গ) নকল গ অংশ', 4),
-        fakePart('k', 'ক) নকল ক অংশ', 2),
+        fakePart('q-ga', 'গ) নকল গ অংশ', 4),
+        fakePart('q-ka', 'ক) নকল ক অংশ', 2),
       ]);
-      expect(parts.map((p) => p.id).toList(), ['k', 'g']);
+      expect(parts.map((p) => p.id).toList(), ['q-ka', 'q-ga']);
     });
 
     test('unlettered rows keep input order after lettered ones', () {
       final parts = orderedCreativeParts([
         fakePart('u', 'নকল অংশ (অক্ষর ছাড়া)', 2),
-        fakePart('k', 'ক) নকল ক অংশ', 2),
+        fakePart('q-ka', 'ক) নকল ক অংশ', 2),
       ]);
-      expect(parts.map((p) => p.id).toList(), ['k', 'u']);
+      expect(parts.map((p) => p.id).toList(), ['q-ka', 'u']);
       expect(creativePartLabel(1), 'খ');
     });
 
@@ -63,30 +63,29 @@ void main() {
 
   group('GuideCreativeAnswerView', () {
     final answers = {
-      'k': 'ক-এর নকল গাইড উত্তর',
-      'kh': 'খ-এর নকল গাইড উত্তর',
-      'g': 'গ-এর নকল গাইড উত্তর',
+      'q-ka': 'ক-এর নকল গাইড উত্তর',
+      'q-kha': 'খ-এর নকল গাইড উত্তর',
+      'q-ga': 'গ-এর নকল গাইড উত্তর',
     };
     Future<CreativePartLoad> fakeLoader(
       GuideBankQuestion p,
       bool bn,
       CreativePartStage1 onStage1,
-    ) async =>
-        CreativePartLoad(
-          verbatimKind: 'guide',
-          verbatimText: answers[p.id]!,
-          correctionNote: '',
-          guideError: false,
-        );
+    ) async => CreativePartLoad(
+      verbatimKind: 'guide',
+      verbatimText: answers[p.id]!,
+      correctionNote: '',
+      guideError: false,
+    );
 
     Widget buildView({void Function(GuideBankQuestion)? onAskAi}) {
       return MaterialApp(
         home: Scaffold(
           body: GuideCreativeAnswerView(
             parts: [
-              fakePart('g', 'গ) নকল গ অংশ', 4),
-              fakePart('k', 'ক) নকল ক অংশ', 2),
-              fakePart('kh', 'খ) নকল খ অংশ', 4),
+              fakePart('q-ga', 'গ) নকল গ অংশ', 4),
+              fakePart('q-ka', 'ক) নকল ক অংশ', 2),
+              fakePart('q-kha', 'খ) নকল খ অংশ', 4),
             ],
             stimulusText: 'নকল উদ্দীপক লেখা',
             subjectId: 'math',
@@ -107,8 +106,14 @@ void main() {
       await tester.pump();
       expect(find.text('নকল উদ্দীপক লেখা', findRichText: true), findsOneWidget);
       expect(find.text('ক) নকল ক অংশ', findRichText: true), findsOneWidget);
-      expect(find.text('ক-এর নকল গাইড উত্তর', findRichText: true), findsOneWidget);
-      expect(find.text('খ-এর নকল গাইড উত্তর', findRichText: true), findsNothing);
+      expect(
+        find.text('ক-এর নকল গাইড উত্তর', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.text('খ-এর নকল গাইড উত্তর', findRichText: true),
+        findsNothing,
+      );
     });
 
     testWidgets('part chips show each part\'s marks', (tester) async {
@@ -119,88 +124,89 @@ void main() {
       expect(find.text('গ · ৪'), findsOneWidget);
     });
 
-    testWidgets('switching to খ shows খ answer, stimulus stays',
-        (tester) async {
+    testWidgets('switching to খ shows খ answer, stimulus stays', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildView());
       await tester.pump();
       await tester.tap(find.text('খ · ৪'));
       await tester.pump();
       expect(find.text('নকল উদ্দীপক লেখা', findRichText: true), findsOneWidget);
       expect(find.text('খ) নকল খ অংশ', findRichText: true), findsOneWidget);
-      expect(find.text('খ-এর নকল গাইড উত্তর', findRichText: true), findsOneWidget);
-      expect(find.text('ক-এর নকল গাইড উত্তর', findRichText: true), findsNothing);
+      expect(
+        find.text('খ-এর নকল গাইড উত্তর', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.text('ক-এর নকল গাইড উত্তর', findRichText: true),
+        findsNothing,
+      );
     });
 
-    testWidgets('per-part explanation buttons + ask-AI exist',
-        (tester) async {
+    testWidgets('per-part explanation buttons + ask-AI exist', (tester) async {
       GuideBankQuestion? asked;
       await tester.pumpWidget(buildView(onAskAi: (p) => asked = p));
       await tester.pump();
-      expect(find.text(guideBankStringsBn['explainDetailed']!),
-          findsOneWidget);
-      expect(
-          find.text(guideBankStringsBn['explainSteps']!), findsOneWidget);
+      expect(find.text(guideBankStringsBn['explainDetailed']!), findsOneWidget);
+      expect(find.text(guideBankStringsBn['explainSteps']!), findsOneWidget);
       expect(find.text(guideBankStringsBn['askAi']!), findsOneWidget);
       await tester.tap(find.text('গ · ৪'));
       await tester.pump();
-      expect(find.text(guideBankStringsBn['explainDetailed']!),
-          findsOneWidget);
+      expect(find.text(guideBankStringsBn['explainDetailed']!), findsOneWidget);
       expect(find.text(guideBankStringsBn['askAi']!), findsOneWidget);
       await tester.tap(find.text(guideBankStringsBn['askAi']!));
-      expect(asked?.id, 'g');
+      expect(asked?.id, 'q-ga');
     });
   });
 
   group('GuideAnswerBody ask-AI (single mode)', () {
     Widget buildBody({void Function()? onAskAi}) => MaterialApp(
-          home: Scaffold(
-            body: GuideAnswerBody(
-              q: const GuideBankQuestion(
-                id: 't1',
-                questionText: 'নকল একক প্রশ্ন?',
-                questionType: 'problem',
-              ),
-              attempt: null,
-              keyText: null,
-              chips: const ['guide'],
-              fontSize: 16,
-              onFontSmaller: () {},
-              onFontLarger: () {},
-              verbatimKind: 'none',
-              verbatimText: '',
-              correctionNote: '',
-              guideError: false,
-              showExplanation: true,
-              stepsOnly: false,
-              onExplainDetailed: () {},
-              onExplainSteps: () {},
-              explanation: ExplanationSectionInput(
-      requested: true,
-      pending: false,
-      unavailable: false,
-      onRequest: () {},
-      onRetry: () {},
-    ),
-              onAskAi: onAskAi,
-              subjectId: 'math',
-              chapterNumber: 1,
-              bn: true,
-              s: guideBankStringsBn,
-              ls: lessonStringsBn,
-            ),
+      home: Scaffold(
+        body: GuideAnswerBody(
+          q: const GuideBankQuestion(
+            id: 't1',
+            questionText: 'নকল একক প্রশ্ন?',
+            questionType: 'problem',
           ),
-        );
+          attempt: null,
+          keyText: null,
+          chips: const ['guide'],
+          fontSize: 16,
+          onFontSmaller: () {},
+          onFontLarger: () {},
+          verbatimKind: 'none',
+          verbatimText: '',
+          correctionNote: '',
+          guideError: false,
+          showExplanation: true,
+          stepsOnly: false,
+          onExplainDetailed: () {},
+          onExplainSteps: () {},
+          explanation: ExplanationSectionInput(
+            requested: true,
+            pending: false,
+            unavailable: false,
+            onRequest: () {},
+            onRetry: () {},
+          ),
+          onAskAi: onAskAi,
+          subjectId: 'math',
+          chapterNumber: 1,
+          bn: true,
+          s: guideBankStringsBn,
+          ls: lessonStringsBn,
+        ),
+      ),
+    );
 
-    testWidgets('ask-AI button present when callback given',
-        (tester) async {
+    testWidgets('ask-AI button present when callback given', (tester) async {
       var tapped = false;
       await tester.pumpWidget(buildBody(onAskAi: () => tapped = true));
       await tester.tap(find.text(guideBankStringsBn['askAi']!));
       expect(tapped, isTrue);
     });
 
-    testWidgets('no ask-AI button when callback is null',
-        (tester) async {
+    testWidgets('no ask-AI button when callback is null', (tester) async {
       await tester.pumpWidget(buildBody());
       expect(find.text(guideBankStringsBn['askAi']!), findsNothing);
     });

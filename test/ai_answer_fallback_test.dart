@@ -7,10 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yes_sir_ai/features/learn/widgets/verbatim_answer_card.dart';
 import 'package:yes_sir_ai/l10n/pages/guide_bank_strings.dart';
 
-Widget _card({
-  required String kind,
-  required bool guideError,
-}) {
+Widget _card({required String kind, required bool guideError}) {
   return MaterialApp(
     home: Scaffold(
       body: VerbatimAnswerCard(
@@ -29,27 +26,28 @@ Widget _card({
 }
 
 void main() {
-  testWidgets('none without error shows AI answer card, never guide label',
-      (tester) async {
+  testWidgets('none without error shows AI answer card, never guide label', (
+    tester,
+  ) async {
     await tester.pumpWidget(_card(kind: 'none', guideError: false));
-    expect(find.text('AI ব্যাখ্যা (গাইডে ছাপা নেই)'), findsOneWidget);
+    expect(find.text('AI ব্যাখ্যা (গাইডে লিখিত সমাধান নেই)'), findsOneWidget);
     expect(find.textContaining('AI লিখেছে'), findsOneWidget);
-    expect(find.textContaining('গাইডের লেখা নয়'), findsOneWidget);
+    expect(find.textContaining('গাইডের লিখিত সমাধান নয়'), findsOneWidget);
     expect(find.text('গাইডের উত্তর'), findsNothing);
   });
 
-  testWidgets('none with guide error shows AI card plus error note',
-      (tester) async {
+  testWidgets('none with guide error shows AI card plus error note', (
+    tester,
+  ) async {
     await tester.pumpWidget(_card(kind: 'none', guideError: true));
-    expect(find.text('AI ব্যাখ্যা (গাইডে ছাপা নেই)'), findsOneWidget);
+    expect(find.text('AI ব্যাখ্যা (গাইডে লিখিত সমাধান নেই)'), findsOneWidget);
     expect(find.textContaining('ভুল প্রমাণিত'), findsOneWidget);
     expect(find.text('গাইডের উত্তর'), findsNothing);
   });
 
-  testWidgets('guide kind keeps guide label, never AI label',
-      (tester) async {
+  testWidgets('guide kind keeps guide label, never AI label', (tester) async {
     await tester.pumpWidget(_card(kind: 'guide', guideError: false));
     expect(find.text('গাইডের উত্তর'), findsOneWidget);
-    expect(find.text('AI ব্যাখ্যা (গাইডে ছাপা নেই)'), findsNothing);
+    expect(find.text('AI ব্যাখ্যা (গাইডে লিখিত সমাধান নেই)'), findsNothing);
   });
 }

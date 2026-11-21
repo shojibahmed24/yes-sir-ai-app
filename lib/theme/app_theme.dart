@@ -51,10 +51,12 @@ class AppTheme {
   // Unknown subject ids fall back to neutral slate (not a guess
   // at a subject colour). Dark pairs are deeper, less saturated.
   static const subjectColors = <String, Color>{
-    'math': Color(0xFF2F6FED),
+    // Math carries the brand indigo (it is the flagship subject and
+    // the hero card's default), so tests can assert math == primary.
+    'math': Color(0xFF4F46E5),
     'science': Color(0xFF2E9E6B),
     'bangla': Color(0xFFE86A2C),
-    'english': Color(0xFF6D5BD0),
+    'english': Color(0xFF7C3AED),
     'bgs': Color(0xFF0E8A8A),
     'ict': Color(0xFF0891B2),
     'religion': Color(0xFFB45309),

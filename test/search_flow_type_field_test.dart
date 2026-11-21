@@ -15,8 +15,7 @@ const _s = {
   'typeTextbookExercise': 'পাঠ্যবইয়ের অনুশীলনী',
 };
 
-Widget _host(GuideFlowCountService svc,
-        {required bool guide, int? chapter}) =>
+Widget _host(GuideFlowCountService svc, {required bool guide, int? chapter}) =>
     MaterialApp(
       home: Scaffold(
         body: SearchFlowTypeField(
@@ -35,63 +34,79 @@ Widget _host(GuideFlowCountService svc,
     );
 
 GuideFlowCountService _svc(Map<String, int?> bySection) =>
-    GuideFlowCountService(post: (b, {endpoint}) async {
-      final n = bySection[b['section']];
-      if (n == null) return null;
-      return {
-        'found': true,
-        'total': n,
-        'lesson': b['lesson'],
-        'section': b['section'],
-      };
-    });
+    GuideFlowCountService(
+      post: (b, {endpoint}) async {
+        final n = bySection[b['section']];
+        if (n == null) return null;
+        return {
+          'found': true,
+          'total': n,
+          'lesson': b['lesson'],
+          'section': b['section'],
+        };
+      },
+    );
 
 void main() {
-  testWidgets('guide + chapter: selected type shows its exact count',
-      (tester) async {
-    await tester.pumpWidget(_host(
-        _svc({'creative': 50, 'mcq_bank': 12}),
-        guide: true, chapter: 3));
+  // Counts retry once after 300 ms when the server gives no number, so a
+  // plain pumpAndSettle can return before the counts land (fake clock).
+  Future<void> settleCounts(WidgetTester tester) async {
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('guide + chapter: selected type shows its exact count', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(_svc({'creative': 50, 'mcq_bank': 12}), guide: true, chapter: 3),
+    );
+    await settleCounts(tester);
     expect(find.textContaining('সৃজনশীল · ৫০'), findsOneWidget);
   });
 
   testWidgets('no chapter: plain label, no service call', (tester) async {
     var calls = 0;
-    final svc = GuideFlowCountService(post: (b, {endpoint}) async {
-      calls++;
-      return null;
-    });
+    final svc = GuideFlowCountService(
+      post: (b, {endpoint}) async {
+        calls++;
+        return null;
+      },
+    );
     await tester.pumpWidget(_host(svc, guide: true, chapter: null));
     await tester.pumpAndSettle();
     expect(find.text('সৃজনশীল'), findsOneWidget);
     expect(calls, 0);
   });
 
-  testWidgets('textbook source: plain label, no service call',
-      (tester) async {
+  testWidgets('textbook source: plain label, no service call', (tester) async {
     var calls = 0;
-    final svc = GuideFlowCountService(post: (b, {endpoint}) async {
-      calls++;
-      return null;
-    });
+    final svc = GuideFlowCountService(
+      post: (b, {endpoint}) async {
+        calls++;
+        return null;
+      },
+    );
     await tester.pumpWidget(_host(svc, guide: false, chapter: 3));
     await tester.pumpAndSettle();
     expect(find.text('সৃজনশীল'), findsOneWidget);
     expect(calls, 0);
   });
 
-  testWidgets('unknown count (old server) keeps the plain label',
-      (tester) async {
+  testWidgets('unknown count (old server) keeps the plain label', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(_svc({}), guide: true, chapter: 3));
-    await tester.pumpAndSettle();
+    await settleCounts(tester);
     expect(find.text('সৃজনশীল'), findsOneWidget);
   });
 
   testWidgets('zero is shown as ০, not hidden', (tester) async {
     await tester.pumpWidget(
-        _host(_svc({'creative': 0}), guide: true, chapter: 3));
-    await tester.pumpAndSettle();
+      _host(_svc({'creative': 0}), guide: true, chapter: 3),
+    );
+    await settleCounts(tester);
     expect(find.textContaining('সৃজনশীল · ০'), findsOneWidget);
   });
 }

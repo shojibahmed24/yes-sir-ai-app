@@ -20,17 +20,17 @@ void main() {
     expect(homeContinueRoute(null), '/search-flow');
   });
 
-  test('math last lesson -> search flow with subject + class', () {
+  test('math last lesson -> search flow with subject + chapter + class', () {
     expect(
       homeContinueRoute(_last('math', 3, cls: 9)),
-      '/search-flow?subject=math&class=9',
+      '/search-flow?subject=math&chapter=3&class=9',
     );
   });
 
-  test('math last lesson without class -> subject only', () {
+  test('math last lesson without class -> subject + chapter', () {
     expect(
       homeContinueRoute(_last('math', 3)),
-      '/search-flow?subject=math',
+      '/search-flow?subject=math&chapter=3',
     );
   });
 
@@ -48,7 +48,7 @@ void main() {
   test('other subject -> search flow with that subject', () {
     expect(
       homeContinueRoute(_last('physics', 2, cls: 10)),
-      '/search-flow?subject=physics&class=10',
+      '/search-flow?subject=physics&chapter=2&class=10',
     );
   });
 
