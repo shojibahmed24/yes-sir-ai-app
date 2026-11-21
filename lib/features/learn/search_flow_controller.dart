@@ -12,6 +12,7 @@ import '../../core/services/profile_service.dart';
 import 'search_flow_bangla_papers.dart';
 import 'search_flow_chapter_fetch.dart';
 import 'search_flow_list_query.dart';
+import 'search_flow_memory.dart';
 import 'search_flow_types.dart';
 import '../../core/services/school_class_cache.dart';
 
@@ -70,7 +71,17 @@ class SearchFlowController {
 
   void dispose() => numberCtrl.dispose();
 
-  void _notify() => onChanged();
+  void _notify() {
+    // B10: keep the working picks for the next entry into this screen.
+    SearchFlowMemory.remember(
+      schoolClass: schoolClass,
+      subject: subjectId,
+      source: source,
+      chapter: chapter,
+      lesson: lesson,
+    );
+    onChanged();
+  }
 
   /// English guide section mode: the section picker replaces
   /// the type dropdown (Math's 5-type dropdown is untouched).
@@ -102,9 +113,30 @@ class SearchFlowController {
     applySubject(subjectId);
     final wanted = initialSource;
     if (wanted != null && wanted != source) changeSource(wanted);
-    final chapter0 = initialChapter;
+    // B10: no route params (e.g. back into the screen) -> reopen the
+    // subject/source/chapter the student was last working in.
+    final fromMemory =
+        initialSubjectId == 'math' &&
+        initialSource == null &&
+        initialChapter == null &&
+        SearchFlowMemory.hasPicks &&
+        SearchFlowMemory.schoolClass == cls;
+    if (fromMemory) {
+      final memSubject = normalizeBanglaSubject(SearchFlowMemory.subject!);
+      if (subjects.any((s) => s.id == memSubject)) {
+        subjectId = memSubject;
+        final memSource = SearchFlowMemory.source;
+        if (memSource != null && memSource != source) changeSource(memSource);
+        _notify();
+        loadChapters();
+      }
+    }
+    final chapter0 = fromMemory && SearchFlowMemory.chapter != null
+        ? SearchFlowMemory.chapter
+        : initialChapter;
     if (chapter0 != null && chapter0 > 0) {
       chapter = chapter0;
+      lesson = fromMemory ? SearchFlowMemory.lesson : lesson;
       _notify();
     }
   }
