@@ -49,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // shows 0, never a made-up number).
   int _streakDays = 0;
   int _medals = 0;
+  int _xp = 0;
   int _savedCount = 0;
 
   @override
@@ -81,6 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       _streakDays = summary.streakDays;
       _medals = _earnedMedals(summary);
+      _xp = summary.xp;
       _savedCount = saved.length;
     });
   }
@@ -192,6 +194,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     '{n}',
                     numStr(_medals, isBangla),
                   ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ProfileStatCard(
+                  color: AppTheme.success,
+                  icon: Icons.star_rounded,
+                  label: '${numStr(_xp, isBangla)} XP',
                 ),
               ),
             ],

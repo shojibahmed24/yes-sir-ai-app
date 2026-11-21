@@ -43,10 +43,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _guardianPhone = TextEditingController();
   bool _loaded = false;
 
+  /// Unsaved-change indicator: settings had no feedback about whether
+  /// the visible values differ from what is stored.
+  bool _dirty = false;
+
+  void _markDirty() {
+    if (!_dirty && mounted) setState(() => _dirty = true);
+  }
+
   @override
   void initState() {
     super.initState();
     _load();
+    for (final c in [_name, _school, _goal, _guardianName, _guardianPhone]) {
+      c.addListener(_markDirty);
+    }
   }
 
   Future<void> _load() async {
@@ -86,6 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _setFont(String font) {
     final scale = SettingsAppearanceSection.scaleFor(font);
     setState(() => _font = font);
+    _markDirty();
     fontScaleNotifier.value = scale;
     fontScaleChosen.value = true;
     persistFontScale(scale);
@@ -93,6 +105,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _setTheme(String theme) {
     setState(() => _theme = theme);
+    _markDirty();
     themeModeNotifier.value = theme == 'night'
         ? ThemeMode.dark
         : ThemeMode.light;
@@ -130,6 +143,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(ok ? s['saved']! : s['savedLocalOnly']!)),
     );
+    if (mounted) setState(() => _dirty = false);
   }
 
   @override
@@ -220,13 +234,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Sp.xxl,
                   Sp.md,
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: FilledButton(
-                    onPressed: _save,
-                    child: Text(s['save']!),
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _dirty
+                          ? (isBangla
+                                ? 'পরিবর্তন সংরক্ষিত হয়নি'
+                                : 'Unsaved changes')
+                          : (isBangla ? 'সব সংরক্ষিত' : 'All saved'),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: _save,
+                        child: Text(s['save']!),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
