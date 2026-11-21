@@ -6,12 +6,18 @@
 // --dart-define=SUPABASE_ANON_KEY=...
 // Without them the app runs in clearly-marked DEMO mode.
 class AppConfig {
-  static const supabaseUrl =
-      String.fromEnvironment('SUPABASE_URL', defaultValue: '');
-  static const supabaseAnonKey =
-      String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
-  static const googleOAuthClientId =
-      String.fromEnvironment('GOOGLE_OAUTH_CLIENT_ID', defaultValue: '');
+  static const supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: '',
+  );
+  static const supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: '',
+  );
+  static const googleOAuthClientId = String.fromEnvironment(
+    'GOOGLE_OAUTH_CLIENT_ID',
+    defaultValue: '',
+  );
   static const playProductId = String.fromEnvironment(
     'PLAY_SUBSCRIPTION_PRODUCT_ID',
     defaultValue: 'yes_sir_ai_premium_monthly',
@@ -26,8 +32,7 @@ class AppConfig {
   /// event (see auth_recovery_listener.dart). This exact URL must
   /// also be allow-listed in Supabase Auth URL Configuration, or
   /// Supabase will not redirect to it. Not a secret - just a scheme.
-  static const passwordRecoveryRedirectTo =
-      'com.yessirai.app://reset-password';
+  static const passwordRecoveryRedirectTo = 'com.yessirai.app://reset-password';
 
   /// Deep-link target for the sign-up confirmation email. Same
   /// scheme-only manifest filter as the recovery link, so the link
@@ -70,21 +75,22 @@ class AppConfig {
   /// H5 banner rule: fully live only when text AND voice are live.
   /// Voice is unwired, so the banner always shows while the
   /// backend is connected (partial-text row). See demo_banner.dart.
-  static bool get aiFullyConfigured =>
-      aiTextConfigured && aiVoiceConfigured;
+  static bool get aiFullyConfigured => aiTextConfigured && aiVoiceConfigured;
 
   /// Edge Function that reads book_questions with the service role.
   /// Override with --dart-define=EXPLAIN_FUNCTION_URL=...; otherwise
   /// derived from SUPABASE_URL. Empty when Supabase is unconfigured.
   /// NOTE: a non-empty URL does NOT mean the function is deployed —
   /// a 404 falls back honestly (see explanation_service.dart).
-  static const explainFunctionUrlOverride =
-      String.fromEnvironment('EXPLAIN_FUNCTION_URL', defaultValue: '');
+  static const explainFunctionUrlOverride = String.fromEnvironment(
+    'EXPLAIN_FUNCTION_URL',
+    defaultValue: '',
+  );
   static String get explainEndpoint => explainFunctionUrlOverride.isNotEmpty
       ? explainFunctionUrlOverride
       : (supabaseUrl.isEmpty
-          ? ''
-          : '$supabaseUrl/functions/v1/explain-question');
+            ? ''
+            : '$supabaseUrl/functions/v1/explain-question');
 
   /// Edge Function that lists guide bank rows (chapter lists +
   /// model-test set metadata). Override with
@@ -92,14 +98,25 @@ class AppConfig {
   /// from SUPABASE_URL. NOTE: a non-empty URL does NOT mean the
   /// function is deployed — a 404 falls back honestly (the bank
   /// service returns null => unavailable state, never demo data).
-  static const guideBankFunctionUrlOverride =
-      String.fromEnvironment('GUIDE_BANK_FUNCTION_URL', defaultValue: '');
-  static String get guideBankEndpoint =>
-      guideBankFunctionUrlOverride.isNotEmpty
-          ? guideBankFunctionUrlOverride
-          : (supabaseUrl.isEmpty
-              ? ''
-              : '$supabaseUrl/functions/v1/guide-bank');
+  static const guideBankFunctionUrlOverride = String.fromEnvironment(
+    'GUIDE_BANK_FUNCTION_URL',
+    defaultValue: '',
+  );
+  static String get guideBankEndpoint => guideBankFunctionUrlOverride.isNotEmpty
+      ? guideBankFunctionUrlOverride
+      : (supabaseUrl.isEmpty ? '' : '$supabaseUrl/functions/v1/guide-bank');
+
+  /// Edge Function that sends/verifies phone OTP through the owner's
+  /// httpSMS gateway (secrets live server-side only). Empty when
+  /// Supabase is unconfigured.
+  static const phoneOtpFunctionUrlOverride = String.fromEnvironment(
+    'PHONE_OTP_FUNCTION_URL',
+    defaultValue: '',
+  );
+  static String get phoneOtpEndpoint => phoneOtpFunctionUrlOverride.isNotEmpty
+      ? phoneOtpFunctionUrlOverride
+      : (supabaseUrl.isEmpty ? '' : '$supabaseUrl/functions/v1/phone-otp');
+  static bool get phoneOtpConfigured => phoneOtpEndpoint.isNotEmpty;
 
   /// True when NO backend is configured - the app must show DEMO mode
   /// and keep working on local mock data instead of crashing.

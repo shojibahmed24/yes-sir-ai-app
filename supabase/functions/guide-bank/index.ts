@@ -298,7 +298,7 @@ Deno.serve(async (req) => {
   if (action !== 'list' && action !== 'sets' &&
       action !== 'guideChapters' && action !== 'guideLessons' &&
       action !== 'search' && action !== 'get' &&
-      action !== 'guideFlags') {
+      action !== 'guideFlags' && action !== 'pageText') {
     return json({ error: 'bad-request' }, 400);
   }
   const supabase = createClient(supabaseUrl, serviceKey);
@@ -447,6 +447,54 @@ Deno.serve(async (req) => {
     const flags: Record<string, unknown> = {};
     for (const r of resolved) flags[r.subject] = r.flags;
     return json({ found: true, action: 'guideFlags', classId: cls, flags });
+  }
+
+  // 'pageText' (Book Reader): the printed page's real text from the
+  // OCR chunks imported in migration 007. The table is server-only
+  // (no client policy), so the reader must come through here. This
+  // is OCR text, NOT an answer key — the app labels it as such.
+  if (action === 'pageText') {
+    const bookId = typeof body.bookId === 'string' ? body.bookId : '';
+    const page = body.page;
+    if (bookId === '' || typeof page !== 'number' || !Number.isInteger(page) || page < 1) {
+      return json({ error: 'bad-request' }, 400);
+    }
+    let query = supabase
+      .from('book_chunks')
+      .select('chunk_text, page_start, page_end, chapter_id, chunk_index')
+      .eq('book_id', bookId)
+      .lte('page_start', page)
+      .gte('page_end', page)
+      .order('chunk_index', { ascending: true })
+      .limit(8);
+    const res = await query;
+    if (res.error) {
+      if (isMissingTable(res.error)) {
+        return json({ error: 'guide-tables-missing' }, 500);
+      }
+      return json({ error: 'query-failed' }, 500);
+    }
+    const rows = (res.data ?? []) as {
+      chunk_text: string;
+      page_start: number;
+      page_end: number;
+      chapter_id: string | null;
+    }[];
+    if (rows.length === 0) {
+      return json({ found: false, action: 'pageText', page });
+    }
+    const text = rows.map((r) => r.chunk_text.trim()).filter((t) => t !== '')
+      .join('\n\n');
+    return json({
+      found: true,
+      action: 'pageText',
+      page,
+      bookId,
+      chapterId: rows[0].chapter_id,
+      fromPage: Math.min(...rows.map((r) => r.page_start)),
+      toPage: Math.max(...rows.map((r) => r.page_end)),
+      text,
+    });
   }
 
   const classId = body.classId;

@@ -229,10 +229,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
                 const SizedBox(height: 8),
-                AuthTextLink(
-                  label: s['otp']!,
-                  onPressed: () => context.go('/otp?from=/login'),
-                ),
+                // Phone OTP is verification-only (registration step 9):
+                // it does not create a session, so it is not a login
+                // method. The old link opened a flow that could not
+                // sign anyone in.
                 AuthTextLink(
                   label: s['newAccount']!,
                   onPressed: () => context.go('/register/welcome'),

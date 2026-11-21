@@ -1,16 +1,19 @@
 // Route: /register/otp (Step 9/13)
-// Honest DEMO OTP: real SMS OTP is not configured (Supabase Phone
-// Auth provider pending), so the screen says so in DEMO mode and any
-// 4 digits complete locally. In real mode resend says plainly that
-// SMS is not enabled; the code is still recorded and Step 12 is the
-// real save gate, never a fake verification claim.
+// Real phone verification: the `phone-otp` Edge Function sends a
+// 6-digit code through the owner's httpSMS gateway (the app never
+// holds the key). Only the code's hash is stored server-side, with a
+// 5-minute expiry, a 60s resend cooldown and 5 wrong guesses max.
+// DEMO mode (no backend configured) keeps the labelled local check so
+// the flow still works offline, never silently pretending an SMS went
+// out.
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/services/auth_phone_service.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../l10n/language_provider.dart';
-import '../../../theme/app_theme.dart';
 import '../../../l10n/pages/reg_step09_strings.dart';
+import '../../../theme/app_theme.dart';
 import '../registration_data.dart';
 import '../widgets/reg_scaffold.dart';
 import '../widgets/reg_widgets.dart';
@@ -25,14 +28,22 @@ class Step09Otp extends StatefulWidget {
 }
 
 class _Step09OtpState extends State<Step09Otp> with RegLangMixin {
-  final _boxes = List.generate(4, (_) => TextEditingController());
+  final _boxes = List.generate(6, (_) => TextEditingController());
   String? _error;
-  // Phase 17 (L6): resend cooldown — the old button showed only a
-  // snackbar and could be tapped endlessly. 30 s between resends;
-  // the button shows the countdown and is disabled while it runs.
-  // (No real SMS is sent in either mode — see the notes above.)
+  bool _busy = false;
+  bool _sent = false;
   int _cooldown = 0;
   Timer? _cooldownTimer;
+
+  Map<String, String> get _s => isBangla ? regStep09Bn : regStep09En;
+
+  @override
+  void initState() {
+    super.initState();
+    // Send the first code after the first frame (no setState during
+    // initState, and the phone is already saved by step 7).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _send());
+  }
 
   @override
   void dispose() {
@@ -43,8 +54,7 @@ class _Step09OtpState extends State<Step09Otp> with RegLangMixin {
     super.dispose();
   }
 
-  void _resend(Map<String, String> s) {
-    if (_cooldown > 0) return;
+  void _startCooldown() {
     setState(() => _cooldown = 30);
     _cooldownTimer?.cancel();
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -59,22 +69,67 @@ class _Step09OtpState extends State<Step09Otp> with RegLangMixin {
         setState(() => _cooldown--);
       }
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(authService.isDemo
-          ? s['demoResend']!
-          : s['phoneNotConfigured']!)),
-    );
   }
 
-  void _next() {
-    final code = _boxes.map((c) => c.text).join();
-    if (code.length != 4) {
-      setState(() => _error =
-          (isBangla ? regStep09Bn : regStep09En)['error']);
+  Future<void> _send() async {
+    if (_busy || _cooldown > 0) return;
+    final s = _s;
+    final phone = toE164Bd(registrationDataNotifier.value.phone);
+    if (phone.isEmpty) {
+      setState(() => _error = s['phoneMissing']);
       return;
     }
-    updateRegistration(
-        registrationDataNotifier.value.copyWith(otp: code));
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final res = await authPhoneService.sendPhoneOtp(phone, purpose: 'register');
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (res.ok) {
+      setState(() => _sent = true);
+      _startCooldown();
+      if (authService.isDemo) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(s['demoResend']!)));
+      }
+      return;
+    }
+    setState(() => _error = phoneOtpErrorLabel(res.error, s));
+  }
+
+  Future<void> _next() async {
+    final s = _s;
+    final code = _boxes.map((c) => c.text).join();
+    if (code.length != 6) {
+      setState(() => _error = s['error']);
+      return;
+    }
+    final phone = toE164Bd(registrationDataNotifier.value.phone);
+    if (phone.isEmpty) {
+      setState(() => _error = s['phoneMissing']);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final res = await authPhoneService.verifyPhoneOtp(
+      phone,
+      code,
+      purpose: 'register',
+    );
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (!res.ok) {
+      setState(() => _error = phoneOtpErrorLabel(res.error, s));
+      for (final c in _boxes) {
+        c.clear();
+      }
+      return;
+    }
+    updateRegistration(registrationDataNotifier.value.copyWith(otp: code));
     if (widget.onNext != null) {
       widget.onNext!();
     } else {
@@ -84,37 +139,46 @@ class _Step09OtpState extends State<Step09Otp> with RegLangMixin {
 
   @override
   Widget build(BuildContext context) {
-    final s = isBangla ? regStep09Bn : regStep09En;
+    final s = _s;
     return RegScaffold(
       step: 9,
       title: s['title']!,
       subtitle: s['subtitle']!,
       nextLabel: s['next']!,
-      onNext: _next,
+      onNext: _busy ? null : _next,
       onBack: widget.onBack,
       child: Column(
         children: [
           Text(
-              authService.isDemo
-                  ? s['demoNote']!
-                  : s['phoneNotConfigured']!,
-              style: Theme.of(context).textTheme.bodySmall),
+            !_sent && authService.isDemo
+                ? s['demoNote']!
+                : (_sent ? s['codeSent']! : s['sending']!),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 16),
           OtpField(controllers: _boxes),
           const SizedBox(height: 16),
           Center(
-            child: TextButton(
-              onPressed: _cooldown > 0 ? null : () => _resend(s),
-              child: Text(_cooldown > 0
-                  ? s['resendWait']!.replaceFirst('{n}', '$_cooldown')
-                  : s['resend']!),
-            ),
+            child: _busy
+                ? const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : TextButton(
+                    onPressed: _cooldown > 0 ? null : _send,
+                    child: Text(
+                      _cooldown > 0
+                          ? s['resendWait']!.replaceFirst('{n}', '$_cooldown')
+                          : s['resend']!,
+                    ),
+                  ),
           ),
           if (_error != null)
-            Text(_error!,
-                style: TextStyle(
-                    color: AppTheme.errorTextFor(Theme.of(context).brightness == Brightness.dark),
-                    fontWeight: FontWeight.w600)),
+            Text(_error!, style: const TextStyle(color: AppTheme.error)),
         ],
       ),
     );

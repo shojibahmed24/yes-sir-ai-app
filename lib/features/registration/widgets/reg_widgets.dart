@@ -76,16 +76,17 @@ class _RegTextFieldState extends State<RegTextField> {
             decoration: InputDecoration(
               hintText: widget.hint,
               border: InputBorder.none,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
               counterText: '',
               suffixIcon: widget.showObscureToggle
                   ? IconButton(
-                      icon: Icon(_obscured
-                          ? Icons.visibility_off
-                          : Icons.visibility),
-                      onPressed: () =>
-                          setState(() => _obscured = !_obscured),
+                      icon: Icon(
+                        _obscured ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () => setState(() => _obscured = !_obscured),
                     )
                   : null,
             ),
@@ -135,12 +136,10 @@ class OptionCard extends StatelessWidget {
             children: [
               Text(emoji, style: const TextStyle(fontSize: 28)),
               const SizedBox(height: 12),
-              Text(title,
-                  style: Theme.of(context).textTheme.headlineMedium),
+              Text(title, style: Theme.of(context).textTheme.headlineMedium),
               if (subtitle.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                Text(subtitle,
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
               ],
             ],
           ),
@@ -165,7 +164,7 @@ class OtpField extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 320),
         child: Row(
           children: [
-            for (int i = 0; i < 4; i++) ...[
+            for (int i = 0; i < controllers.length; i++) ...[
               if (i > 0) const SizedBox(width: 12),
               Expanded(
                 child: Card(
@@ -176,7 +175,9 @@ class OtpField extends StatelessWidget {
                     maxLength: 1,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.w700),
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                    ),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       counterText: '',

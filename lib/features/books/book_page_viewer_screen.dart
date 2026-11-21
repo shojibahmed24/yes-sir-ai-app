@@ -16,6 +16,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yes_sir_ai/core/services/learn_service.dart';
+import 'package:yes_sir_ai/core/services/page_text_service.dart';
 import 'package:yes_sir_ai/core/services/profile_service.dart';
 import 'package:yes_sir_ai/core/services/supabase_client.dart';
 import 'package:yes_sir_ai/features/learn/learn_store.dart';
@@ -38,13 +39,36 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
   bool _bookmarked = false;
   final _jumpController = TextEditingController();
 
+  /// Real page text from the live OCR chunks (null = not available).
+  String? _pageText;
+  bool _textLoading = false;
+  int _textSeq = 0;
+
   @override
   void initState() {
     super.initState();
     _page = BookSelectionHolder.page;
     _subject = BookSelectionHolder.subject;
-    LearnStore.isSaved('book:$_subject|$_page').then((v) {
+    LearnStore.isBookBookmarked('book:$_subject|$_page').then((v) {
       if (mounted) setState(() => _bookmarked = v);
+    });
+    _loadPageText();
+  }
+
+  Future<void> _loadPageText() async {
+    final seq = ++_textSeq;
+    setState(() {
+      _textLoading = true;
+      _pageText = null;
+    });
+    final text = await fetchPageText(
+      bookId: BookSelectionHolder.bookId,
+      page: _page,
+    );
+    if (!mounted || seq != _textSeq) return;
+    setState(() {
+      _pageText = text;
+      _textLoading = false;
     });
   }
 
@@ -62,6 +86,7 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
     LearnStore.isBookBookmarked('book:$_subject|$_page').then((v) {
       if (mounted) setState(() => _bookmarked = v);
     });
+    _loadPageText();
   }
 
   Future<void> _toggleBookmark(Map<String, String> s) async {
@@ -181,10 +206,7 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(
-                '$subjectName · ${s['class6Label']!}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              Text(subjectName, style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -192,19 +214,34 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        grounded == null
-                            ? s['noIndexedQuestion']!
-                            : grounded.question,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        grounded == null
-                            ? s['pagePlaceholder']!
-                            : s['aiReady']!,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      if (_textLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_pageText != null) ...[
+                        SelectableText(
+                          _pageText!,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          s['ocrNote']!,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ] else ...[
+                        Text(
+                          grounded == null
+                              ? s['noIndexedQuestion']!
+                              : grounded.question,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          s['pageTextMissing']!,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ],
                   ),
                 ),

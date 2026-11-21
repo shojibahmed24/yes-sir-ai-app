@@ -3,7 +3,8 @@ const Map<String, String> bookPageViewerStringsBn = {
   'title': 'বই রিডার',
   'page': 'পৃষ্ঠা ৪৫ / ২৪০',
   'chapter': 'অধ্যায় ৩: পরিমাপ ও ক্ষেত্রফল · অনুশীলনী ৩.১',
-  'q': 'প্রশ্ন ৫: একটি আয়তাকার বাগানের দৈর্ঘ্য ৬০ মিটার এবং প্রস্থ ৪০ মিটার হলে ক্ষেত্রফল ও পরিসীমা নির্ণয় করো।',
+  'q':
+      'প্রশ্ন ৫: একটি আয়তাকার বাগানের দৈর্ঘ্য ৬০ মিটার এবং প্রস্থ ৪০ মিটার হলে ক্ষেত্রফল ও পরিসীমা নির্ণয় করো।',
   'aiReady': 'AI সমাধান প্রস্তুত',
   'viewSolution': 'ব্যাখ্যা দেখুন',
   'prev': 'আগের পৃষ্ঠা',
@@ -13,7 +14,12 @@ const Map<String, String> bookPageViewerStringsBn = {
   'jump': 'যাও',
   'invalidPage': '১ বা তার বেশি পৃষ্ঠা নম্বর দাও',
   'noIndexedQuestion': 'এই পৃষ্ঠার কোনো ইনডেক্স করা প্রশ্ন এখনো নেই',
-  'pagePlaceholder': 'বইয়ের আসল পৃষ্ঠার লেখা এখনো এই রিডারে আসেনি — শুধু ইনডেক্স করা প্রশ্ন থাকলে তা দেখানো হয়।',
+  'pagePlaceholder':
+      'বইয়ের আসল পৃষ্ঠার লেখা এখনো এই রিডারে আসেনি — শুধু ইনডেক্স করা প্রশ্ন থাকলে তা দেখানো হয়।',
+  'ocrNote':
+      'লেখাটি বইয়ের OCR থেকে নেওয়া — বানান/চিহ্নে ভুল থাকতে পারে; এটি উত্তরের চাবি নয়।',
+  'pageTextMissing':
+      'এই পৃষ্ঠার লেখা এখনো লোড করা যায়নি — অন্য পৃষ্ঠা দেখো বা পরে আবার চেষ্টা করো।',
   'bookmarked': 'বুকমার্ক সংরক্ষিত হয়েছে',
   'pageLabel': 'পৃষ্ঠা {n}',
   'class6Label': 'ক্লাস ৬',
@@ -23,7 +29,8 @@ const Map<String, String> bookPageViewerStringsEn = {
   'title': 'Book Reader',
   'page': 'Page 45 / 240',
   'chapter': 'Chapter 3: Measurement and Area · Exercise 3.1',
-  'q': 'Question 5: A rectangular garden is 60 m long and 40 m wide. Find its area and perimeter.',
+  'q':
+      'Question 5: A rectangular garden is 60 m long and 40 m wide. Find its area and perimeter.',
   'aiReady': 'AI solution ready',
   'viewSolution': 'View Explanation',
   'prev': 'Previous Page',
@@ -33,7 +40,12 @@ const Map<String, String> bookPageViewerStringsEn = {
   'jump': 'Go',
   'invalidPage': 'Enter a page number of 1 or more',
   'noIndexedQuestion': 'No indexed question for this page yet',
-  'pagePlaceholder': 'The book\'s actual page text is not in this reader yet — only an indexed question is shown when one exists.',
+  'pagePlaceholder':
+      'The book\'s actual page text is not in this reader yet — only an indexed question is shown when one exists.',
+  'ocrNote':
+      'Text comes from the book\'s OCR — spelling or symbols may be off; it is not an answer key.',
+  'pageTextMissing':
+      'This page\'s text could not be loaded — try another page or retry later.',
   'bookmarked': 'Bookmark saved',
   'pageLabel': 'Page {n}',
   'class6Label': 'Class 6',
