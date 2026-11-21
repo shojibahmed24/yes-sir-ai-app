@@ -40,8 +40,7 @@ class ChapterQuestionsScreen extends StatefulWidget {
   final TextbookChapterService? service;
 
   @override
-  State<ChapterQuestionsScreen> createState() =>
-      _ChapterQuestionsScreenState();
+  State<ChapterQuestionsScreen> createState() => _ChapterQuestionsScreenState();
 }
 
 class _ChapterQuestionsScreenState extends State<ChapterQuestionsScreen> {
@@ -76,11 +75,18 @@ class _ChapterQuestionsScreenState extends State<ChapterQuestionsScreen> {
     final bn = languageNotifier.value.languageCode == 'bn';
     final svc = widget.service ?? textbookChapterService;
     final rows = await svc.fetchChapter(
-        widget.subjectId, cls, widget.chapterNumber, bn);
+      widget.subjectId,
+      cls,
+      widget.chapterNumber,
+      bn,
+    );
     String title = '';
     try {
       final chapters = await booksService.chaptersForSubjectAsync(
-          cls, widget.subjectId, bn);
+        cls,
+        widget.subjectId,
+        bn,
+      );
       final match = chapters?.where((c) => c.number == widget.chapterNumber);
       if (match != null && match.isNotEmpty) title = match.first.title(bn);
     } catch (_) {}
@@ -97,19 +103,20 @@ class _ChapterQuestionsScreenState extends State<ChapterQuestionsScreen> {
   final _filters = ChapterFilterCache();
 
   List<TextbookChapterQuestion> get _filtered => _filters.filter(
-      all: _all,
-      type: _type,
-      query: _query,
-      pageText: _pageText,
-      epoch: _filterEpoch);
+    all: _all,
+    type: _type,
+    query: _query,
+    pageText: _pageText,
+    epoch: _filterEpoch,
+  );
 
   void _resetFilters() => setState(() {
-        _query = '';
-        _pageText = '';
-        _type = 'all';
-        _visible = 20;
-        _filterEpoch++;
-      });
+    _query = '';
+    _pageText = '';
+    _type = 'all';
+    _visible = 20;
+    _filterEpoch++;
+  });
 
   void _onFilterChanged() => setState(() => _visible = 20);
 
@@ -122,33 +129,43 @@ class _ChapterQuestionsScreenState extends State<ChapterQuestionsScreen> {
         final s = bn ? chapterQuestionsStringsBn : chapterQuestionsStringsEn;
         final title = _chapterTitle.isNotEmpty
             ? _chapterTitle
-            : s['chapterFallback']!
-                .replaceAll('{n}', numStr(widget.chapterNumber, bn));
+            : s['chapterFallback']!.replaceAll(
+                '{n}',
+                numStr(widget.chapterNumber, bn),
+              );
         return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.go('/search'),
             ),
-            title: Text('${subjectNameFor(widget.subjectId, bn)} · $title',
-                maxLines: 1, overflow: TextOverflow.ellipsis),
+            title: Text(
+              '${subjectNameFor(widget.subjectId, bn)} · $title',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           body: _loading
               ? const GuideListLoadingShimmer()
               : _unavailable
-                  ? ChapterMessage(
-                      title: s['unavailableTitle']!,
-                      body: s['unavailableBody']!)
-                  : _all.isEmpty
-                      ? ChapterMessage(title: s['emptyChapter']!)
-                      : _list(context, s, bn, title),
+              ? ChapterMessage(
+                  title: s['unavailableTitle']!,
+                  body: s['unavailableBody']!,
+                )
+              : _all.isEmpty
+              ? ChapterMessage(title: s['emptyChapter']!)
+              : _list(context, s, bn, title),
         );
       },
     );
   }
 
-  Widget _list(BuildContext context, Map<String, String> s, bool bn,
-      String title) {
+  Widget _list(
+    BuildContext context,
+    Map<String, String> s,
+    bool bn,
+    String title,
+  ) {
     final filtered = _filtered;
     final shown = filtered.take(_visible).toList();
     final rows = buildChapterQuestionRows(
@@ -157,88 +174,107 @@ class _ChapterQuestionsScreenState extends State<ChapterQuestionsScreen> {
       s: s,
       bn: bn,
       onTap: (q) {
-        LessonSelectionHolder.set(LessonSelection(
-          subject: widget.subjectId,
-          chapter: widget.chapterNumber,
-          page: q.page,
-          problem: q.problem ?? 0,
-          questionId: q.id,
-          schoolClass: _schoolClass,
-        ));
+        LessonSelectionHolder.set(
+          LessonSelection(
+            subject: widget.subjectId,
+            chapter: widget.chapterNumber,
+            page: q.page,
+            problem: q.problem ?? 0,
+            questionId: q.id,
+            schoolClass: _schoolClass,
+          ),
+        );
         context.go('/lesson');
       },
     );
-    return ListView(
-      padding: const EdgeInsets.all(20),
+    return Column(
       children: [
-        ChapterClassSelector(
-          schoolClass: _schoolClass,
-          label: s['classLabel']!,
-          onChanged: (v) {
-            setState(() {
-              _query = '';
-              _pageText = '';
-              _type = 'all';
-              _visible = 20;
-              _filterEpoch++;
-            });
-            _load(schoolClass: v);
-          },
+        // Sticky filter bar (S6.4): filters used to scroll away, so a
+        // long list made re-filtering a scroll hunt.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+          child: TextbookFilterBar(
+            key: ValueKey(_filterEpoch),
+            s: s,
+            presentTypes: textbookPresentTypes(_all),
+            selectedType: _type,
+            onTypeChanged: (v) => setState(() {
+              _type = v;
+              _onFilterChanged();
+            }),
+            onQueryChanged: (v) => setState(() {
+              _query = v;
+              _onFilterChanged();
+            }),
+            onPageChanged: (v) => setState(() {
+              _pageText = v;
+              _onFilterChanged();
+            }),
+          ),
         ),
-        if (widget.bannerPage != null) ...[
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(s['pageNotInVersion']!
-                  .replaceAll('{page}', numStr(widget.bannerPage!, bn))),
-            ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            children: [
+              ChapterClassSelector(
+                schoolClass: _schoolClass,
+                label: s['classLabel']!,
+                onChanged: (v) {
+                  setState(() {
+                    _query = '';
+                    _pageText = '';
+                    _type = 'all';
+                    _visible = 20;
+                    _filterEpoch++;
+                  });
+                  _load(schoolClass: v);
+                },
+              ),
+              if (widget.bannerPage != null) ...[
+                const SizedBox(height: 12),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      s['pageNotInVersion']!.replaceAll(
+                        '{page}',
+                        numStr(widget.bannerPage!, bn),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Text(title, style: Theme.of(context).textTheme.headlineMedium),
+              Text(
+                s['totalQuestions']!.replaceAll('{n}', numStr(_all.length, bn)),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                s['showing']!
+                    .replaceAll('{total}', numStr(filtered.length, bn))
+                    .replaceAll('{shown}', numStr(shown.length, bn)),
+              ),
+              const SizedBox(height: 8),
+              if (filtered.isEmpty) ...[
+                Text(s['emptyFiltered']!),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: _resetFilters,
+                  child: Text(s['clearFilters']!),
+                ),
+              ],
+              ...rows,
+              if (filtered.length > _visible) ...[
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: () => setState(() => _visible += 20),
+                  child: Text(s['loadMore']!),
+                ),
+              ],
+            ],
           ),
-        ],
-        const SizedBox(height: 12),
-        Text(title, style: Theme.of(context).textTheme.headlineMedium),
-        Text(s['totalQuestions']!
-            .replaceAll('{n}', numStr(_all.length, bn))),
-        const SizedBox(height: 12),
-        TextbookFilterBar(
-          key: ValueKey(_filterEpoch),
-          s: s,
-          presentTypes: textbookPresentTypes(_all),
-          selectedType: _type,
-          onTypeChanged: (v) => setState(() {
-            _type = v;
-            _onFilterChanged();
-          }),
-          onQueryChanged: (v) => setState(() {
-            _query = v;
-            _onFilterChanged();
-          }),
-          onPageChanged: (v) => setState(() {
-            _pageText = v;
-            _onFilterChanged();
-          }),
         ),
-        const SizedBox(height: 12),
-        Text(s['showing']!
-            .replaceAll('{total}', numStr(filtered.length, bn))
-            .replaceAll('{shown}', numStr(shown.length, bn))),
-        const SizedBox(height: 8),
-        if (filtered.isEmpty) ...[
-          Text(s['emptyFiltered']!),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: _resetFilters,
-            child: Text(s['clearFilters']!),
-          ),
-        ],
-        ...rows,
-        if (filtered.length > _visible) ...[
-          const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: () => setState(() => _visible += 20),
-            child: Text(s['loadMore']!),
-          ),
-        ],
       ],
     );
   }
