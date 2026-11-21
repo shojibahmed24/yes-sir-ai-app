@@ -420,13 +420,18 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen>
               Row(
                 children: [
                   SizedBox(
-                    width: 52,
-                    height: 48,
+                    width: 44,
+                    height: 44,
                     child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(44, 44),
+                        shape: const CircleBorder(),
+                      ),
                       onPressed: _index > 0
                           ? () => setState(() => _index--)
                           : null,
-                      child: const Icon(Icons.arrow_back),
+                      child: const Icon(Icons.arrow_back, size: 20),
                     ),
                   ),
                   const SizedBox(width: 8),

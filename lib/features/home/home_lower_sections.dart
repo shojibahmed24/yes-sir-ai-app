@@ -50,7 +50,7 @@ class HomeLowerSections extends StatelessWidget {
         ),
         if (lastLesson == null)
           HomeEmptyState(
-            message: s['noWeakYet']!,
+            message: s['noLastStudied']!,
             actionLabel: s['findQuestions']!,
             onAction: onSearch,
           )
