@@ -5,10 +5,13 @@
 // 'AI: OpenRouter • nvidia/...', or — when the Edge deploy
 // predates attribution and reported neither field — the
 // caller-supplied localized unknown text, never a guess from
-// the provider the user merely selected in Settings. The
-// provider/model names are language-neutral; only the unknown
-// sentence is localized, and it comes from the page's own
-// strings map (page-wise rule), never hardcoded here.
+// the provider the user merely selected in Settings.
+//
+// B5: students never see provider/model names. The technical line
+// is DEBUG-only (support/debugging); a release build renders
+// nothing here, because the card already labels the text as an AI
+// explanation.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AiAttributionLabel extends StatelessWidget {
@@ -30,6 +33,8 @@ class AiAttributionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Release builds show no provider/model names at all (B5).
+    if (kReleaseMode) return const SizedBox.shrink();
     final style = Theme.of(context).textTheme.bodySmall;
     if (provider != 'openrouter' && provider != 'gemini') {
       return Text(unknownText, style: style);
