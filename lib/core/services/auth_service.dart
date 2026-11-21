@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/parent/parent_pin_store.dart';
 import 'app_config.dart';
 import 'auth_result.dart';
+import 'google_sign_in_flow.dart';
 import 'local_store.dart';
 import 'supabase_client.dart';
 
@@ -260,48 +261,13 @@ class AuthService {
     }
   }
 
-  /// Google sign-in via Supabase OAuth (Supabase holds the real
-  /// client id/secret; GOOGLE_OAUTH_CLIENT_ID is only the button
-  /// gate). Returns googleLaunched, never ok:true: the session
-  /// arrives via the signedIn event and only then may the caller
-  /// navigate. Launch failure maps to a Bangla-safe errorKind.
-  Future<AuthResult> signInWithGoogle() async {
-    final client = supabaseOrNull;
-    if (client == null || AppConfig.googleOAuthClientId.isEmpty) {
-      // No real OAuth path: never a fake success (button hidden too).
-      return AuthResult(
-        ok: false,
-        mode: client == null ? AuthMode.demo : AuthMode.supabase,
-        googleNotConfigured: true,
-      );
-    }
-    try {
-      final launched = await client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: AppConfig.googleOAuthRedirectTo,
-      );
-      return AuthResult(
-        ok: false,
-        mode: AuthMode.supabase,
-        googleLaunched: launched,
-        errorKind: launched ? AuthErrorKind.none : AuthErrorKind.unknown,
-      );
-    } on AuthException catch (e) {
-      return AuthResult(
-        ok: false,
-        error: e.message,
-        mode: AuthMode.supabase,
-        errorKind: classifySignInError(e),
-      );
-    } catch (e) {
-      return AuthResult(
-        ok: false,
-        error: e.toString(),
-        mode: AuthMode.supabase,
-        errorKind: classifySignInError(e),
-      );
-    }
-  }
+  /// Google sign-in: native account picker first (A14 — the browser
+  /// flow exposes "supabase.co" on the Google screen), browser OAuth
+  /// only when the native path is unavailable. Returns googleLaunched
+  /// when a browser was started: the session then arrives via the
+  /// signedIn event, so the caller must not navigate on that alone.
+  Future<AuthResult> signInWithGoogle() =>
+      performGoogleSignIn(client: supabaseOrNull);
 }
 
 final authService = AuthService();

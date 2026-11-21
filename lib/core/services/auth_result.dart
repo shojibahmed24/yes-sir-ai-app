@@ -44,6 +44,11 @@ class AuthResult {
   /// treating a launch as a login would be a fake success.
   final bool googleLaunched;
 
+  /// True when the student closed the native Google account picker.
+  /// Not an error: the screen must stay silent instead of showing a
+  /// failure message.
+  final bool googleCancelled;
+
   const AuthResult({
     required this.ok,
     this.userId,
@@ -54,6 +59,7 @@ class AuthResult {
     this.errorKind = AuthErrorKind.none,
     this.googleNotConfigured = false,
     this.googleLaunched = false,
+    this.googleCancelled = false,
   });
 }
 

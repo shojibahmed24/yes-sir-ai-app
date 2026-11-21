@@ -121,6 +121,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final s = isBangla ? loginStringsBn : loginStringsEn;
     final res = await authService.signInWithGoogle();
     if (!mounted) return;
+    if (res.ok || res.googleCancelled) {
+      // Native sign-in already created the session (the signedIn
+      // listener navigates) — or the student closed the picker.
+      return;
+    }
     if (res.googleLaunched) {
       // Browser launched, NOT signed in: stay here for signedIn.
       ScaffoldMessenger.of(context).showSnackBar(
