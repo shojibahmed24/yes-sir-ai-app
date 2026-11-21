@@ -112,6 +112,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (mounted) context.go('/login');
   }
 
+  Widget _header(BuildContext context, String text) => Padding(
+    padding: const EdgeInsets.only(top: 8, bottom: 6),
+    child: Text(
+      text,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final s = isBangla ? profileStringsBn : profileStringsEn;
@@ -197,8 +207,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          tile(Icons.person, s['myInfo']!, s['myInfoSub']!, '/settings'),
+          _header(context, s['sectionStudy']!),
           tile(Icons.bookmark_added, s['savedQ']!, s['savedQSub']!, '/saved'),
+          _header(context, s['sectionAccount']!),
+          tile(Icons.person, s['myInfo']!, s['myInfoSub']!, '/settings'),
           tile(
             Icons.supervisor_account,
             s['parentMode']!,
@@ -217,6 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             s['notificationsSub']!,
             '/notifications',
           ),
+          _header(context, s['sectionHelp']!),
           tile(Icons.info_outline, s['about']!, s['aboutSub']!, '/about'),
           tile(Icons.help_center, s['help']!, s['helpSub']!, '/help'),
           DeleteAccountTile(

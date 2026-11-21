@@ -205,8 +205,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // backend, so it stays outside the group cards.
                 const DemoPremiumToggle(),
                 const SizedBox(height: Sp.xl),
-                ElevatedButton(onPressed: _save, child: Text(s['save']!)),
               ],
+            ),
+      // Sticky save: the primary action of this screen must stay
+      // reachable after scrolling through every group.
+      bottomNavigationBar: !_loaded
+          ? null
+          : SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Sp.xxl,
+                  Sp.sm,
+                  Sp.xxl,
+                  Sp.md,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: FilledButton(
+                    onPressed: _save,
+                    child: Text(s['save']!),
+                  ),
+                ),
+              ),
             ),
     );
   }
