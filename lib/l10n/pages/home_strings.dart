@@ -67,6 +67,19 @@ const Map<String, String> homeStringsBn = {
   // Phase 6 (H1): home is the tab root, so system back asks twice
   // instead of silently exiting the app.
   'pressBackAgain': 'আবার ব্যাক চাপলে অ্যাপ বন্ধ হবে',
+  'streakSuffix': 'দিন',
+  'dailyGoal': 'আজকের লক্ষ্য',
+  'minutesWord': 'মিনিট',
+  'setGoal': 'Settings-এ গিয়ে দৈনিক লক্ষ্য সেট করো',
+  'qaSearch': 'খোঁজো',
+  'qaPractice': 'প্র্যাকটিস',
+  'qaTest': 'মডেল টেস্ট',
+  'qaSaved': 'সেভ করা',
+  'qaAskAi': 'AI-কে জিজ্ঞাসা',
+  'todayPlan': 'আজকের পরিকল্পনা',
+  'planQuiz': 'স্ট্রিক কুইজ শেষ করো',
+  'planRevision': 'দুর্বল অধ্যায় রিভিশন',
+  'planTest': 'সাপ্তাহিক মডেল টেস্ট',
 };
 const Map<String, String> homeStringsEn = {
   'greeting': 'Hello',
@@ -126,4 +139,17 @@ const Map<String, String> homeStringsEn = {
   'guideAvailable': 'Guide available',
   'refreshSubjects': 'Refresh subjects',
   'pressBackAgain': 'Press back again to exit the app',
+  'streakSuffix': 'days',
+  'dailyGoal': "Today's goal",
+  'minutesWord': 'minutes',
+  'setGoal': 'Set a daily goal in Settings',
+  'qaSearch': 'Search',
+  'qaPractice': 'Practice',
+  'qaTest': 'Model test',
+  'qaSaved': 'Saved',
+  'qaAskAi': 'Ask AI',
+  'todayPlan': "Today's plan",
+  'planQuiz': 'Finish the streak quiz',
+  'planRevision': 'Revise weak chapters',
+  'planTest': 'Weekly model test',
 };

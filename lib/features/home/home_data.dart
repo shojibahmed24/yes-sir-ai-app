@@ -18,6 +18,7 @@
 //                   class source Settings also reads.
 import '../../core/services/local_store.dart';
 import '../../core/services/profile_service.dart';
+import '../../core/services/progress_service.dart';
 import '../learn/learn_store.dart';
 
 class HomeData {
@@ -25,10 +26,14 @@ class HomeData {
     required this.summary,
     required this.savedCount,
     required this.schoolClass,
+    required this.progress,
   });
   final LearnSummary summary;
   final int savedCount;
   final int? schoolClass;
+
+  /// Real streak / xp / goal / weak chapters / week activity (D1–D4).
+  final ProgressSummary progress;
 }
 
 Future<HomeData> loadHomeData() async {
@@ -36,11 +41,13 @@ Future<HomeData> loadHomeData() async {
     LearnStore.summary(),
     LocalStore.savedQuestions(),
     profileService.loadSchoolClass(),
+    progressService.summary(),
   ]);
   final saved = results[1] as List<String>;
   return HomeData(
     summary: results[0] as LearnSummary,
     savedCount: saved.length,
     schoolClass: results[2] as int?,
+    progress: results[3] as ProgressSummary,
   );
 }

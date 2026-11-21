@@ -21,6 +21,6 @@ String homeContinueRoute(LessonSelection? last) {
         ? '/search-flow?subject=english'
         : '/search-flow?subject=english&class=$cls';
   }
-  final query = 'subject=${last.subject}';
+  final query = 'subject=${last.subject}&chapter=${last.chapter}';
   return cls == null ? '/search-flow?$query' : '/search-flow?$query&class=$cls';
 }

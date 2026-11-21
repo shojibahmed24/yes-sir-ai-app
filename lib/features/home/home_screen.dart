@@ -21,6 +21,7 @@ import '../learn/widgets/mock_data.dart';
 import 'widgets/home_top_bar.dart';
 import 'widgets/home_hero_card.dart';
 import 'widgets/home_stats_row.dart';
+import 'widgets/home_dashboard_cards.dart';
 import 'widgets/home_subject_grid.dart';
 import 'widgets/home_search_field.dart';
 import 'widgets/home_bottom_nav.dart';
@@ -100,6 +101,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         HomeTopBar(
                           greeting: s['greeting']!,
                           classChip: s['classChip']!,
+                          streakDays: data?.progress.streakDays ?? 0,
+                          xp: data?.progress.xp ?? 0,
+                          streakSuffix: s['streakSuffix']!,
                         ),
                         const SizedBox(height: HomeDesign.tightGap),
                         // Tappable today line: opens the study-plan
@@ -157,6 +161,42 @@ class _HomeScreenState extends State<HomeScreen> {
                             data?.savedCount ?? 0,
                           ],
                           bangla: bn,
+                        ),
+                        const SizedBox(height: HomeDesign.sectionGap),
+                        HomeGoalCard(
+                          bn: bn,
+                          doneMinutes: data?.progress.todayMinutes ?? 0,
+                          goalMinutes: data?.progress.goalMinutes ?? 0,
+                          title: s['dailyGoal']!,
+                          doneLabel: s['minutesWord']!,
+                          setGoalLabel: s['setGoal']!,
+                        ),
+                        const SizedBox(height: HomeDesign.blockGap),
+                        HomeQuickActions(
+                          labels: [
+                            s['qaSearch']!,
+                            s['qaPractice']!,
+                            s['qaTest']!,
+                            s['qaSaved']!,
+                            s['qaAskAi']!,
+                          ],
+                        ),
+                        const SizedBox(height: HomeDesign.blockGap),
+                        HomeTodayPlan(
+                          title: s['todayPlan']!,
+                          rows: [
+                            (
+                              s['planQuiz']!,
+                              (data?.summary.lessonsToday ?? 0) > 0,
+                              '/practice',
+                            ),
+                            (
+                              s['planRevision']!,
+                              data?.progress.weakItems.isEmpty ?? true,
+                              '/practice',
+                            ),
+                            (s['planTest']!, false, '/guide-model-tests'),
+                          ],
                         ),
                         const SizedBox(height: HomeDesign.sectionGap),
                         SectionHeader(

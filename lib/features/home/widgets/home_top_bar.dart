@@ -16,9 +16,18 @@ class HomeTopBar extends StatefulWidget {
     super.key,
     required this.greeting,
     required this.classChip,
+    this.streakDays = 0,
+    this.xp = 0,
+    this.streakSuffix = 'days',
   });
   final String greeting;
   final String classChip;
+
+  /// Real numbers from ProgressSummary (D1). Zero is honest: a new
+  /// student really has no streak/xp yet.
+  final int streakDays;
+  final int xp;
+  final String streakSuffix;
 
   @override
   State<HomeTopBar> createState() => _HomeTopBarState();
@@ -141,8 +150,51 @@ class _HomeTopBarState extends State<HomeTopBar> {
           ],
         ),
         const SizedBox(height: 6),
-        Row(children: [langChip('বাংলা', 'bn'), langChip('English', 'en')]),
+        Row(
+          children: [
+            _statChip(
+              context,
+              Icons.local_fire_department,
+              '${widget.streakDays} ${widget.streakSuffix}',
+              const Color(0xFFE8590C),
+            ),
+            const SizedBox(width: 8),
+            _statChip(
+              context,
+              Icons.star_rounded,
+              '${widget.xp} XP',
+              const Color(0xFFF59F00),
+            ),
+            const Spacer(),
+            langChip('বাংলা', 'bn'),
+            const SizedBox(width: 6),
+            langChip('English', 'en'),
+          ],
+        ),
       ],
+    );
+  }
+
+  Widget _statChip(
+    BuildContext context,
+    IconData icon,
+    String label,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 4),
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+        ],
+      ),
     );
   }
 }
