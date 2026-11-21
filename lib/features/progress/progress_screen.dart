@@ -179,21 +179,16 @@ class ProgressScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  ProgressScoreCard(
+                  ProgressPeriodSection(
                     bn: bangla,
-                    score: sum.averageScore,
-                    runs: sum.totalAttempts,
-                    answered: sum.totalAnswered,
+                    attempts: sum.attempts,
                     title: s['overallScore']!,
                     runsLabel: s['runs']!,
                     questionsLabel: s['questions']!,
-                  ),
-                  const SizedBox(height: 12),
-                  ProgressSubjectBreakdown(
-                    bn: bangla,
-                    attempts: sum.attempts,
-                    title: s['bySubject']!,
+                    bySubjectTitle: s['bySubject']!,
                     emptyLabel: s['noDataSub']!,
+                    last7: s['last7']!,
+                    last30: s['last30']!,
                   ),
                   const SizedBox(height: 12),
                   Text(

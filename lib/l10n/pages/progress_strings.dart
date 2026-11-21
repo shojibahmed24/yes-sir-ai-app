@@ -25,6 +25,8 @@ const Map<String, String> progressStringsBn = {
   'questions': 'টি প্রশ্ন',
   'overallScore': 'সামগ্রিক স্কোর',
   'bySubject': 'বিষয়ভিত্তিক ফলাফল',
+  'last7': '৭ দিন',
+  'last30': '৩০ দিন',
   'startPractice': 'প্র্যাকটিস শুরু করো',
 };
 const Map<String, String> progressStringsEn = {
@@ -54,6 +56,8 @@ const Map<String, String> progressStringsEn = {
   'questions': 'questions',
   'overallScore': 'Overall score',
   'bySubject': 'Results by subject',
+  'last7': '7 days',
+  'last30': '30 days',
   'startPractice': 'Start Practice',
 };
 

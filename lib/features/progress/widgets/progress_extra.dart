@@ -78,6 +78,93 @@ class ProgressScoreCard extends StatelessWidget {
   }
 }
 
+class ProgressPeriodSection extends StatefulWidget {
+  const ProgressPeriodSection({
+    super.key,
+    required this.bn,
+    required this.attempts,
+    required this.title,
+    required this.runsLabel,
+    required this.questionsLabel,
+    required this.bySubjectTitle,
+    required this.emptyLabel,
+    required this.last7,
+    required this.last30,
+  });
+  final bool bn;
+  final List<Attempt> attempts;
+  final String title;
+  final String runsLabel;
+  final String questionsLabel;
+  final String bySubjectTitle;
+  final String emptyLabel;
+  final String last7;
+  final String last30;
+
+  @override
+  State<ProgressPeriodSection> createState() => _ProgressPeriodSectionState();
+}
+
+class _ProgressPeriodSectionState extends State<ProgressPeriodSection> {
+  int _days = 7;
+
+  bool _inWindow(Attempt a, DateTime today) {
+    final p = a.date.split('-');
+    if (p.length < 3) return false;
+    final d = DateTime(
+      int.tryParse(p[0]) ?? 0,
+      int.tryParse(p[1]) ?? 1,
+      int.tryParse(p[2]) ?? 1,
+    );
+    return today.difference(d).inDays < _days;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateTime.now();
+    final rows = widget.attempts
+        .where((a) => _inWindow(a, today))
+        .toList(growable: false);
+    var correct = 0, total = 0;
+    for (final a in rows) {
+      correct += a.correct;
+      total += a.total;
+    }
+    final score = total == 0 ? 0 : ((correct / total) * 100).round();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SegmentedButton<int>(
+          segments: [
+            ButtonSegment(value: 7, label: Text(widget.last7)),
+            ButtonSegment(value: 30, label: Text(widget.last30)),
+          ],
+          selected: {_days},
+          showSelectedIcon: false,
+          onSelectionChanged: (v) => setState(() => _days = v.first),
+        ),
+        const SizedBox(height: Sp.sm),
+        ProgressScoreCard(
+          bn: widget.bn,
+          score: score,
+          runs: rows.length,
+          answered: total,
+          title: widget.title,
+          runsLabel: widget.runsLabel,
+          questionsLabel: widget.questionsLabel,
+        ),
+        const SizedBox(height: Sp.md),
+        ProgressSubjectBreakdown(
+          bn: widget.bn,
+          attempts: rows,
+          title: widget.bySubjectTitle,
+          emptyLabel: widget.emptyLabel,
+        ),
+      ],
+    );
+  }
+}
+
 class ProgressSubjectBreakdown extends StatelessWidget {
   const ProgressSubjectBreakdown({
     super.key,
