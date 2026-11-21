@@ -8,6 +8,12 @@
          needed); a denied camera permission is handled in-app. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Local study reminders (2026-11-22): daily/streak/test/weekly
+         notifications are scheduled on the phone itself. Android 13+
+         asks for POST_NOTIFICATIONS at runtime; RECEIVE_BOOT_COMPLETED
+         re-schedules them after a restart. Inexact alarms only. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:label="Yes Sir AI"
         android:name="${applicationName}"
@@ -49,6 +55,22 @@
                 <data android:scheme="com.yessirai.app"/>
             </intent-filter>
         </activity>
+        <!-- flutter_local_notifications: scheduled reminders fire
+             through this receiver; the boot one re-schedules after a
+             restart (both are required by the plugin on Android). -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

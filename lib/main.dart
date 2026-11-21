@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'core/services/auth_recovery_listener.dart';
+import 'core/services/reminder_service.dart';
 import 'core/services/supabase_client.dart';
 
 Future<void> main() async {
@@ -22,6 +23,10 @@ Future<void> main() async {
       // email links to /reset-password (see auth_recovery_listener).
       startAuthRecoveryListener();
       runApp(const ProviderScope(child: YesSirApp()));
+      // Local reminders (2026-11-22): permission + schedules are set
+      // AFTER the first frame, so a denied permission never delays
+      // the app from opening.
+      unawaited(ReminderService.reschedule());
     },
     (error, stack) {
       debugPrint('Uncaught error: $error');

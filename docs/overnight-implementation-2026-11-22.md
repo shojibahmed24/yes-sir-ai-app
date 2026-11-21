@@ -126,7 +126,45 @@
 
 ---
 
-## ৮. নতুন বিল্ড (সকালের জন্য)
+## ৯. রাতের দ্বিতীয় অংশ (P8–P11) — সাপোর্ট, OTP, Reader, নোটিফিকেশন
+
+### ৯.১ সাপোর্ট ও Play URL (commit `1c199a1`)
+- `rajshahi.jibon@gmail.com` — Help/FAQ ক্লিকেবল + About-এ
+- নতুন **`docs/account-deletion.html`** (bn+en, ইন-অ্যাপ + ইমেইল পথ) — Play-এর বাধ্যতামূলক URL
+- About-এ Privacy / Terms / **Account deletion** তিনটি লিংক; “ডেমো টার্মস” লেবেল বাদ
+- `lib/core/services/contact_info.dart` — এক জায়গায় ইমেইল + তিনটি URL
+
+### ৯.২ আসল ফোন OTP — httpSMS (commit `15e458b`)
+- **`supabase/migrations/023_phone_otps.sql`** — server-only টেবিল (hash, expiry, attempts); লাইভে প্রয়োগ হয়েছে (Management API SQL)
+- **`supabase/functions/phone-otp`** (v3, `verify_jwt=false`):
+  - ৬-ডিজিট কোড, SHA-256 হ্যাশ (pepper secret), ৫ মিনিট expiry
+  - ৬০s cooldown, দিনে ৫টি, ৫ ভুলে কোড বাতিল
+  - httpSMS: `POST https://api.httpsms.com/v1/messages/send` (`x-api-key`, `from`, `to` string)
+- **লাইভ টেস্ট:** `send` → 200 `{ok:true}` (SMS গেছে), ভুল কোড → `wrong` + attemptsLeft
+- **সিক্রেট:** `HTTPSMS_API_KEY`, `HTTPSMS_FROM_NUMBER (+8801721013902)`, `OTP_PEPPER` — শুধু function secrets-এ, কোডে নেই
+- অ্যাপে: `auth_phone_service` Edge-এ যায়; **Step 9 ahora ৬ ডিজিট + আসল যাচাই**; লগইনের “OTP” লিংক বাদ (সেশন বানায় না, তাই ভুয়া লগইন হতো)
+
+### ৯.৩ Book Reader — আসল পৃষ্ঠার লেখা (commit `15e458b`)
+- `guide-bank` **v35**-এ নতুন `action:'pageText'` — `book_chunks` (migration 007) থেকে **প্রিন্টেড পৃষ্ঠার OCR টেক্সট**; কোনো নতুন OCR/স্টোরেজ নেই
+- লাইভ যাচাই: `class6-math-bn` p10 → ৫৫৮৩ অক্ষর, pages 8–11
+- Reader এখন আসল লেখা দেখায় + **OCR সতর্কতা** (“উত্তরের চাবি নয়”); না পেলে সৎ “লোড করা যায়নি”
+- ⚠️ কিছু বই (যেমন class9 chemistry)-এ ওই পৃষ্ঠার chunk নেই → সৎ empty
+
+### ৯.৪ লোকাল নোটিফিকেশন (commit পরবর্তী)
+- `flutter_local_notifications` + `timezone` + desugaring + manifest receivers/permission
+- ৭টি শিডিউল: দৈনিক পড়া (৭টা), স্ট্রিক (৯:৩০), দৈনিক গোল (৮টা), সাপ্তাহিক মডেল টেস্ট (শনি ১০টা), সাপ্তাহিক রিপোর্ট (রবি ৬টা), সেভ-প্রশ্ন রিভিশন (৮টা), + new-content (অ্যাপ খোলার সময় ভার্সন বদলালে একবার)
+- Settings-এর ৩টি সুইচ এখন **আসল** — সেভ করলেই reschedule
+- সব inexact alarm (ব্যাটারি/অনুমতি ঝামেলা নেই)
+
+### ৯.৫ অন্যান্য (commit `1a7f3b3`)
+- চ্যাট: AI টেক্সট **selectable (long-press copy)** + ফেল হলে **Retry** বার
+- ক্লাস ১–৫: “শীঘ্রই আসছে” কার্ড (ভুয়া লেসন নেই)
+- `/search` → `/search-flow`, `/practice-tab` → `/practice` redirect
+- SEO/সিক্রেট স্ক্যান: কোনো key/token কোডে বা ডকে নেই
+
+---
+
+## ১০. নতুন বিল্ড (সকালের জন্য)
 
 - **zip:** `C:\Users\rajsh\Downloads\yes-sir-ai-app-2026-11-22.zip` (৮৬৮ এন্ট্রি, ২.৬ MB)
 - আছে: সব নতুন কোড + `supabase/functions` + keystore + `key.properties` + `dart_defines.json` + দুই ডক

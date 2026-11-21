@@ -4,10 +4,13 @@
 // No bKash anywhere: premium is Google Play Billing only.
 // Layout: appearance and account groups were split into
 // widgets/ (250-line cap); this screen owns all state and writes.
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/profile_service.dart';
+import '../../core/services/reminder_service.dart';
 import 'widgets/ai_provider_settings_section.dart';
 import 'widgets/demo_premium_toggle.dart';
 import 'widgets/settings_account_section.dart';
@@ -121,6 +124,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // cloud upsert failed, and the local copy still holds the edit.
     // The header refreshes itself from the profile notifier on Save.
     if (!ok) debugPrint('Settings: Supabase upsert failed, local kept');
+    // Notification switches are only real if the schedules follow
+    // them immediately.
+    unawaited(ReminderService.reschedule());
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(ok ? s['saved']! : s['savedLocalOnly']!)),
     );

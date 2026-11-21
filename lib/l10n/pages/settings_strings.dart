@@ -23,7 +23,7 @@ const Map<String, String> settingsStringsBn = {
   'sepia': 'সেপিয়া আই-কেয়ার',
   'notifications': 'নোটিফিকেশন ও অ্যালার্ট',
   'dailyReminder': 'দৈনিক পড়ার রিমাইন্ডার',
-  'reminderTime': 'নির্ধারিত সময়: সন্ধ্যা ৭:৩০ মি.',
+  'reminderTime': 'দৈনিক রিমাইন্ডার: সন্ধ্যা ৭টা',
   'testUpdates': 'নতুন মডেল টেস্ট ও কুইজ আপডেট',
   'streakAlert': 'স্ট্রিক নষ্ট হওয়ার সতর্কবার্তা',
   'classSection': 'শ্রেণি ও বিভাগ নির্বাচন',
@@ -64,7 +64,7 @@ const Map<String, String> settingsStringsBn = {
   'pictureLocalOnlyNote':
       'নোট: এই ছবি শুধু এই ডিভাইসে আছে — অনলাইনে আপলোড হয়নি, তাই অন্য ডিভাইসে দেখাবে না।',
   'notifNote':
-      'নোট: এই টগলগুলো এখনো কোনো আসল নোটিফিকেশন চালু/বন্ধ করে না — পুশ বা লোকাল নোটিফিকেশন এখনো চালু হয়নি।',
+      'এই সুইচগুলো সেভ করলেই ফোনে রিমাইন্ডার সেট/বাতিল হয় (দৈনিক ৭টা, স্ট্রিক ৯:৩০, সাপ্তাহিক টেস্ট শনিবার)। ফোনের সেটিংসে নোটিফিকেশন বন্ধ থাকলে আসবে না।',
   // AI provider (2026-11-04): OpenRouter + Gemini, both via Edge.
   'aiProvider': 'AI প্রোভাইডার',
   'aiProviderSub': 'লেখা উত্তরের জন্য কোন AI ব্যবহার হবে',
@@ -95,7 +95,7 @@ const Map<String, String> settingsStringsEn = {
   'sepia': 'Sepia eye-care',
   'notifications': 'Notifications and alerts',
   'dailyReminder': 'Daily study reminder',
-  'reminderTime': 'Set time: 7:30 PM',
+  'reminderTime': 'Daily reminder: 7 PM',
   'testUpdates': 'New model test and quiz updates',
   'streakAlert': 'Streak-loss warning',
   'classSection': 'Class and stream selection',
@@ -136,7 +136,7 @@ const Map<String, String> settingsStringsEn = {
   'pictureLocalOnlyNote':
       'Note: this picture lives on this device only — it was not uploaded online, so it will not show on another device.',
   'notifNote':
-      'Note: these toggles do not switch any real notification on or off yet — no push or local notification scheduling exists yet.',
+      'Saving these switches schedules or cancels the reminders on your phone (daily 7 PM, streak 9:30 PM, weekly test on Saturday). Nothing arrives if notifications are off in the phone settings.',
   // AI provider (2026-11-04): OpenRouter + Gemini, both via Edge.
   'aiProvider': 'AI provider',
   'aiProviderSub': 'Which AI answers written explanations',

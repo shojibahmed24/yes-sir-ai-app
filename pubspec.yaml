@@ -24,6 +24,11 @@ dependencies:
   # Batch 2, item 6: app-documents copy of the picked picture, so
   # the avatar survives the picker's cache being cleared.
   path_provider: 2.1.5
+  # Local study reminders (2026-11-22): daily/streak/test/weekly
+  # notifications scheduled on the phone — no server push needed.
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+  flutter_timezone: ^3.0.1
   # Solution display: block renderer + real LaTeX math rendering
   # for formulas (never caret-text). flutter_markdown was removed
   # 2026-10-31: grep-verified unused after the audit-fix round
