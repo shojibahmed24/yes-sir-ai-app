@@ -8,6 +8,7 @@
 // scroll/load-more state.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 
 import '../../core/models/guide_bank_model.dart';
 import '../../core/services/app_config.dart';
@@ -17,6 +18,7 @@ import '../../core/services/guide_bank_service.dart';
 import '../../core/services/textbook_chapter_service.dart';
 import 'guide_answer_holder.dart';
 import 'lesson_selection.dart';
+import 'learn_store.dart';
 
 String searchFlowListUrl({
   required String subjectId,
@@ -31,9 +33,11 @@ String searchFlowListUrl({
   bool chapterless = false,
   bool board = false,
 }) {
-  final q = StringBuffer('/search-flow-list?subject=$subjectId'
-      '&class=$schoolClass&source=$source'
-      '&chapter=$chapterNumber&type=$typeName');
+  final q = StringBuffer(
+    '/search-flow-list?subject=$subjectId'
+    '&class=$schoolClass&source=$source'
+    '&chapter=$chapterNumber&type=$typeName',
+  );
   if (lesson != null) q.write('&lesson=${Uri.encodeComponent(lesson)}');
   if (questionNumber != null) q.write('&questionNumber=$questionNumber');
   if (section != null) q.write('&section=$section');
@@ -43,10 +47,11 @@ String searchFlowListUrl({
   return q.toString();
 }
 
-bool _unlocked(bool isPremium, int index) =>
-    guideBankService.isUnlocked(
-        isPremium: isPremium, index: index,
-        freeLimit: AppConfig.freeGuideLimit);
+bool _unlocked(bool isPremium, int index) => guideBankService.isUnlocked(
+  isPremium: isPremium,
+  index: index,
+  freeLimit: AppConfig.freeGuideLimit,
+);
 
 /// Single-question open: holder.set() + /guide-answer, with
 /// returnTo pointing back at this list. Slim rows (Phase 3)
@@ -69,14 +74,28 @@ Future<void> openSearchFlowGuideAnswer(
   var open = q;
   if (q.slim && AppConfig.guideBankEndpoint.isNotEmpty) {
     final full = await fetchFullRowById(
-        post: (body, {endpoint}) =>
-            edgePost(body, endpoint: AppConfig.guideBankEndpoint),
-        id: q.id);
+      post: (body, {endpoint}) =>
+          edgePost(body, endpoint: AppConfig.guideBankEndpoint),
+      id: q.id,
+    );
     if (full != null) open = GuideBankQuestion.fromServerJson(full);
   }
-  GuideAnswerHolder.set(q: open, subject: subjectId,
-      chapter: chapterNumber, schoolClass: schoolClass,
-      returnTo: returnTo);
+  GuideAnswerHolder.set(
+    q: open,
+    subject: subjectId,
+    chapter: chapterNumber,
+    schoolClass: schoolClass,
+    returnTo: returnTo,
+  );
+  // Recent questions (D5): stored before the async open so a slow
+  // full-row fetch never loses the entry.
+  final snippet = q.questionText.replaceAll('|', ' ').replaceAll('\n', ' ');
+  unawaited(
+    LearnStore.addRecentQuestion(
+      '$subjectId|${q.chapterNumber ?? chapterNumber}|${q.id}|'
+      '${snippet.length > 80 ? snippet.substring(0, 80) : snippet}',
+    ),
+  );
   context.go('/guide-answer');
 }
 
@@ -98,14 +117,17 @@ void openSearchFlowGuideGroupAnswer(
     context.go('/premium');
     return;
   }
-  context.go('/guide-answer', extra: {
-    'group': parts,
-    'stimulusText': stimulusText,
-    'subjectId': subjectId,
-    'chapterNumber': chapterNumber,
-    'schoolClass': schoolClass,
-    'returnTo': returnTo,
-  });
+  context.go(
+    '/guide-answer',
+    extra: {
+      'group': parts,
+      'stimulusText': stimulusText,
+      'subjectId': subjectId,
+      'chapterNumber': chapterNumber,
+      'schoolClass': schoolClass,
+      'returnTo': returnTo,
+    },
+  );
 }
 
 /// Textbook answer open (moved from the list screen for the
@@ -117,12 +139,15 @@ void openSearchFlowBookAnswer(
   required int chapterNumber,
   required int schoolClass,
 }) {
-  LessonSelectionHolder.set(LessonSelection(
+  LessonSelectionHolder.set(
+    LessonSelection(
       subject: subjectId,
       chapter: chapterNumber,
       page: q.page,
       problem: q.problem ?? 0,
       questionId: q.id,
-      schoolClass: schoolClass));
+      schoolClass: schoolClass,
+    ),
+  );
   context.go('/lesson');
 }

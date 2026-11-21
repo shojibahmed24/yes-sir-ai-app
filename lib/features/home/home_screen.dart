@@ -23,6 +23,7 @@ import 'widgets/home_hero_card.dart';
 import 'widgets/home_stats_row.dart';
 import 'widgets/home_dashboard_cards.dart';
 import 'widgets/home_dashboard_d4.dart';
+import 'widgets/home_dashboard_extra.dart';
 import 'widgets/home_subject_grid.dart';
 import 'widgets/home_search_field.dart';
 import 'widgets/home_bottom_nav.dart';
@@ -93,6 +94,13 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
+  int _nextMilestone(int streak) {
+    for (final m in const [3, 7, 30, 100]) {
+      if (streak < m) return m;
+    }
+    return 100;
+  }
+
   int _daysToSaturday() {
     final now = DateTime.now();
     final delta = (DateTime.saturday - now.weekday + 7) % 7;
@@ -138,6 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const DemoBanner(),
+                        HomeOfflineChip(label: s['offline']!),
                         HomeTopBar(
                           greeting: s['greeting']!,
                           classChip: s['classChip']!,
@@ -273,6 +282,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           actionLabel: s['start']!,
                         ),
                         const SizedBox(height: HomeDesign.sectionGap),
+                        HomeRecentQuestions(
+                          title: s['recentQ']!,
+                          entries: data?.recentQuestions ?? const [],
+                        ),
+                        if ((data?.recentQuestions ?? const []).isNotEmpty)
+                          const SizedBox(height: HomeDesign.blockGap),
+                        HomeNextMilestone(
+                          title: s['nextBadge']!,
+                          label: s['milestone']!.replaceFirst(
+                            '{n}',
+                            '${_nextMilestone(data?.progress.streakDays ?? 0)}',
+                          ),
+                          actionLabel: s['view']!,
+                        ),
+                        const SizedBox(height: HomeDesign.sectionGap),
                         SectionHeader(
                           title: s['subjects']!,
                           actionLabel: s['seeAll']!,
@@ -282,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         // class, never hardcoded 6; loading shows
                         // the loading line, not choose-class state.
                         if (data == null)
-                          Text(s['loadingSubjects']!)
+                          const SubjectGridSkeleton()
                         else
                           HomeSubjectGrid(
                             bn: bn,

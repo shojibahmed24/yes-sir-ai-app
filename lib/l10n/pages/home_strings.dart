@@ -88,6 +88,11 @@ const Map<String, String> homeStringsBn = {
   'weeklyTest': 'সাপ্তাহিক মডেল টেস্ট',
   'daysLeft': '{n} দিন বাকি',
   'start': 'শুরু',
+  'recentQ': 'সাম্প্রতিক প্রশ্ন',
+  'nextBadge': 'পরের ব্যাজ',
+  'milestone': '{n} দিনের স্ট্রিক',
+  'view': 'দেখো',
+  'offline': 'অফলাইন — সেভ করা ডেটা দেখা হচ্ছে',
 };
 const Map<String, String> homeStringsEn = {
   'greeting': 'Hello',
@@ -168,4 +173,9 @@ const Map<String, String> homeStringsEn = {
   'weeklyTest': 'Weekly model test',
   'daysLeft': '{n} days left',
   'start': 'Start',
+  'recentQ': 'Recent questions',
+  'nextBadge': 'Next badge',
+  'milestone': '{n}-day streak',
+  'view': 'View',
+  'offline': 'Offline — showing saved data',
 };

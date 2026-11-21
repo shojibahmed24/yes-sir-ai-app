@@ -39,6 +39,27 @@ class LearnStore {
   static const _lastLesson = 'area2_last_lesson';
   static const _photoNotes = 'area2_photo_notes';
 
+  /// Recently opened guide questions: 'subject|chapter|id|snippet'.
+  static const _recentQuestions = 'area2_recent_questions';
+
+  static Future<void> addRecentQuestion(String entry) async {
+    final p = await SharedPreferences.getInstance();
+    final list = p.getStringList(_recentQuestions) ?? [];
+    final parts = entry.split('|');
+    final id = parts.length > 2 ? parts[2] : entry;
+    list.removeWhere((e) {
+      final ep = e.split('|');
+      return (ep.length > 2 ? ep[2] : e) == id;
+    });
+    list.insert(0, entry);
+    await p.setStringList(_recentQuestions, list.take(5).toList());
+  }
+
+  static Future<List<String>> recentQuestions() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getStringList(_recentQuestions) ?? const [];
+  }
+
   static String _todayStr() {
     final n = DateTime.now();
     return '${n.year}-${n.month}-${n.day}';
