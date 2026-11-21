@@ -43,6 +43,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _guardianPhone = TextEditingController();
   bool _loaded = false;
 
+  /// Daily reminder hour/minute (S5.2): saved to prefs and applied
+  /// by ReminderService on the next reschedule.
+  TimeOfDay _reminderTime = const TimeOfDay(hour: 19, minute: 0);
+
   /// Unsaved-change indicator: settings had no feedback about whether
   /// the visible values differ from what is stored.
   bool _dirty = false;
@@ -66,6 +70,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
     setState(() {
       _daily = prefs.getBool('ys_notif_daily') ?? true;
+      final minutes = prefs.getInt('ys_notif_time') ?? 19 * 60;
+      _reminderTime = TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60);
       _tests = prefs.getBool('ys_notif_tests') ?? true;
       _streak = prefs.getBool('ys_notif_streak') ?? true;
       _theme = prefs.getString('ys_theme') ?? 'day';
@@ -156,6 +162,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
+  Future<void> _pickReminderTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _reminderTime,
+    );
+    if (picked == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('ys_notif_time', picked.hour * 60 + picked.minute);
+    setState(() => _reminderTime = picked);
+    await ReminderService.reschedule();
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = isBangla ? settingsStringsBn : settingsStringsEn;
@@ -214,6 +232,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: Sp.lg),
                 const SettingsGroupCard(child: AiProviderSettingsSection()),
+                const SizedBox(height: Sp.lg),
+                SettingsGroupCard(
+                  child: ListTile(
+                    leading: const Icon(Icons.schedule),
+                    title: Text(s['reminderTimeTitle']!),
+                    subtitle: Text(
+                      s['reminderTimeSub']!.replaceFirst(
+                        '{t}',
+                        _reminderTime.format(context),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _pickReminderTime,
+                  ),
+                ),
                 const SizedBox(height: Sp.lg),
                 // Demo-only test control: renders nothing with a real
                 // backend, so it stays outside the group cards.

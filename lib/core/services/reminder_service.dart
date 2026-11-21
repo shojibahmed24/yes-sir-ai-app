@@ -134,13 +134,17 @@ class ReminderService {
     final daily = prefs.getBool('ys_notif_daily') ?? true;
     final tests = prefs.getBool('ys_notif_tests') ?? true;
     final streak = prefs.getBool('ys_notif_streak') ?? true;
+    // User-chosen daily time (minutes since midnight); default 19:00.
+    final minutes = prefs.getInt('ys_notif_time') ?? 19 * 60;
+    final hour = (minutes ~/ 60).clamp(0, 23);
+    final minute = (minutes % 60).clamp(0, 59);
     try {
       await _plugin.cancelAll();
       if (daily) {
         await _daily(
           1,
-          19,
-          0,
+          hour,
+          minute,
           'আজকের পড়া শুরু করো',
           '১৫ মিনিট পড়লেও আজকের লক্ষ্য এগিয়ে যাবে।',
         );
