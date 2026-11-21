@@ -138,6 +138,34 @@ class GuideFlowCountService {
     String? lesson,
   ) async {
     if (!_customPost && AppConfig.guideBankEndpoint.isEmpty) return null;
+    // One retry: a heavy count can return a transient 5xx under load,
+    // and dropping that number made a lesson row look inconsistent
+    // (some types had counts, others silently vanished).
+    for (var attempt = 0; attempt < 2; attempt++) {
+      final total = await _fetchOnce(
+        key: key,
+        subject: subject,
+        schoolClass: schoolClass,
+        chapter: chapter,
+        type: type,
+        lesson: lesson,
+      );
+      if (total != null) return total;
+      if (attempt == 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      }
+    }
+    return null;
+  }
+
+  Future<int?> _fetchOnce({
+    required String key,
+    required String subject,
+    required int schoolClass,
+    required int chapter,
+    required SearchFlowType type,
+    required String? lesson,
+  }) async {
     try {
       final res = await _post({
         'action': 'list',

@@ -91,7 +91,10 @@ void main() {
     fail = false;
     expect(await ask(), 5);
     expect(await ask(), 5);
-    expect(calls, 2);
+    // The failed first call retries ONCE immediately (transient 5xx),
+    // then the second ask succeeds: 2 + 1 = 3 posts, both later asks
+    // served from cache.
+    expect(calls, 3);
   });
 
   test('concurrent identical requests share one call', () async {

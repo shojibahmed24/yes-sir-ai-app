@@ -1,3413 +1,775 @@
 [
  {
-  "cls": 9,
-  "subject": "math",
-  "chapters": [
-   {
-    "chapter": 2,
-    "chapterTotal": 889,
-    "keyed": 356,
-    "mcq": null,
-    "short": null,
-    "creative": null,
-    "offeredSum": null,
-    "mismatch": null
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 1430,
-    "keyed": 615,
-    "mcq": 0,
-    "short": 198,
-    "creative": 429,
-    "offeredSum": 627,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 479,
-    "keyed": 133,
-    "mcq": 0,
-    "short": 83,
-    "creative": 186,
-    "offeredSum": 269,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 969,
-    "keyed": 320,
-    "mcq": 0,
-    "short": 108,
-    "creative": 462,
-    "offeredSum": 570,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 799,
-    "keyed": 309,
-    "mcq": 0,
-    "short": 103,
-    "creative": 310,
-    "offeredSum": 413,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 460,
-    "keyed": 170,
-    "mcq": 0,
-    "short": 97,
-    "creative": 129,
-    "offeredSum": 226,
-    "mismatch": true
-   },
-   {
-    "chapter": 16,
-    "chapterTotal": 1043,
-    "keyed": 446,
-    "mcq": 0,
-    "short": 168,
-    "creative": 362,
-    "offeredSum": 530,
-    "mismatch": true
-   },
-   {
-    "chapter": 17,
-    "chapterTotal": 704,
-    "keyed": 245,
-    "mcq": 0,
-    "short": 110,
-    "creative": 326,
-    "offeredSum": 436,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "11.1",
-    "countByLesson": 257,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "11.2",
-    "countByLesson": 176,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "16.1",
-    "countByLesson": 221,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "16.2",
-    "countByLesson": 341,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "16.3",
-    "countByLesson": 198,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "16.4",
-    "countByLesson": 283,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "pilot21-creative-001",
-    "marks": 2,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4,
-     "মোট": 10
-    }
-   },
-   {
-    "id": "pilot21-creative-002",
-    "marks": 4,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4,
-     "মোট": 10
-    }
-   },
-   {
-    "id": "pilot21-creative-003",
-    "marks": 4,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4,
-     "মোট": 10
-    }
-   },
-   {
-    "id": "pilot21-creative-004",
-    "marks": 2,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4,
-     "মোট": 10
-    }
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "english",
-  "chapters": [],
-  "lessons": [
-   {
-    "lesson": "Unit 1: Unseen Passages",
-    "countByLesson": 465,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Unit 2: Matching Sentences",
-    "countByLesson": 175,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Unit 3: Re-Arranging Sentences",
-    "countByLesson": 35,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Unit-01: Completing a Story",
-    "countByLesson": 42,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Unit-01; Lesson-01",
-    "countByLesson": 5,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Unit-01; Lesson-03",
-    "countByLesson": 9,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": []
- },
- {
-  "cls": 9,
-  "subject": "bangla",
-  "chapters": [],
-  "lessons": [
-   {
-    "lesson": "আম-আঁটির ভেঁপু",
-    "countByLesson": 359,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "আমি কোনো আগন্তুক নই",
-    "countByLesson": 310,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "উমর ফারুক",
-    "countByLesson": 291,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "একুশের গল্প",
-    "countByLesson": 431,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কপোতাক্ষ নদ",
-    "countByLesson": 330,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "জীবন বিনিময়",
-    "countByLesson": 246,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": []
- },
- {
-  "cls": 9,
-  "subject": "english-2nd",
-  "chapters": [],
-  "lessons": [],
-  "creativeSample": []
- },
- {
-  "cls": 9,
-  "subject": "biology",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 548,
-    "keyed": 213,
-    "mcq": null,
-    "short": 148,
-    "creative": 120,
-    "offeredSum": 268,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 650,
-    "keyed": 287,
-    "mcq": 0,
-    "short": 111,
-    "creative": 108,
-    "offeredSum": 219,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 422,
-    "keyed": 115,
-    "mcq": 0,
-    "short": 137,
-    "creative": 128,
-    "offeredSum": 265,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 697,
-    "keyed": 223,
-    "mcq": 0,
-    "short": 101,
-    "creative": 236,
-    "offeredSum": 337,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 391,
-    "keyed": 135,
-    "mcq": 0,
-    "short": 165,
-    "creative": 48,
-    "offeredSum": 213,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 705,
-    "keyed": 238,
-    "mcq": 0,
-    "short": 117,
-    "creative": 204,
-    "offeredSum": 321,
-    "mismatch": true
-   },
-   {
-    "chapter": 13,
-    "chapterTotal": 588,
-    "keyed": 153,
-    "mcq": 0,
-    "short": 225,
-    "creative": 181,
-    "offeredSum": 406,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "1.1 জীববিজ্ঞানের ধারণা",
-    "countByLesson": 25,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.2 জীববিজ্ঞানের শাখাগুলো",
-    "countByLesson": 20,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.2 জীববিজ্ঞানের শাখাগুলো / 1.5 দ্বিপদ নামকরণ পদ্ধতি",
-    "countByLesson": 4,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.2.1 ভৌত জীববিজ্ঞান",
-    "countByLesson": 47,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.2.2 ফলিত জীববিজ্ঞান",
-    "countByLesson": 35,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.3 জীবের শ্রেণিবিন্যাস",
-    "countByLesson": 143,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "bio-ch1-creative-001-ga",
-    "marks": 3,
-    "partsType": "object",
-    "parts": {
-     "ga": 3,
-     "ka": 1,
-     "gha": 4,
-     "kha": 2
-    }
-   },
-   {
-    "id": "bio-ch1-creative-001-gha",
-    "marks": 4,
-    "partsType": "object",
-    "parts": {
-     "ga": 3,
-     "ka": 1,
-     "gha": 4,
-     "kha": 2
-    }
-   },
-   {
-    "id": "bio-ch1-creative-001-ka",
-    "marks": 1,
-    "partsType": "object",
-    "parts": {
-     "ga": 3,
-     "ka": 1,
-     "gha": 4,
-     "kha": 2
-    }
-   },
-   {
-    "id": "bio-ch1-creative-001-kha",
-    "marks": 2,
-    "partsType": "object",
-    "parts": {
-     "ga": 3,
-     "ka": 1,
-     "gha": 4,
-     "kha": 2
-    }
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "ict",
-  "chapters": [
-   {
-    "chapter": 2,
-    "chapterTotal": 506,
-    "keyed": 359,
-    "mcq": null,
-    "short": 67,
-    "creative": null,
-    "offeredSum": 67,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 854,
-    "keyed": 656,
-    "mcq": 0,
-    "short": 65,
-    "creative": 0,
-    "offeredSum": 65,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 438,
-    "keyed": 332,
-    "mcq": 0,
-    "short": 35,
-    "creative": 0,
-    "offeredSum": 35,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 440,
-    "keyed": 229,
-    "mcq": 0,
-    "short": 75,
-    "creative": 0,
-    "offeredSum": 75,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "16",
-    "countByLesson": 7,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Comparison বা তুলনা করার অপারেটর এবং তাদের ব্যবহার",
-    "countByLesson": 8,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Continue",
-    "countByLesson": 6,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "Continue স্টেটমেন্ট",
-    "countByLesson": 2,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "While লুপ",
-    "countByLesson": 18,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "While লুপ / break",
-    "countByLesson": 2,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": []
- },
- {
-  "cls": 9,
-  "subject": "islam",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 810,
-    "keyed": 336,
-    "mcq": null,
-    "short": 32,
-    "creative": 240,
-    "offeredSum": 272,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 716,
-    "keyed": 277,
-    "mcq": 0,
-    "short": 29,
-    "creative": 200,
-    "offeredSum": 229,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 527,
-    "keyed": 260,
-    "mcq": 0,
-    "short": 43,
-    "creative": 48,
-    "offeredSum": 91,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 372,
-    "keyed": 146,
-    "mcq": 0,
-    "short": 32,
-    "creative": 56,
-    "offeredSum": 88,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 392,
-    "keyed": 132,
-    "mcq": 0,
-    "short": 26,
-    "creative": 100,
-    "offeredSum": 126,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "5",
-    "countByLesson": 4,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কুইজ ১",
-    "countByLesson": 8,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কুইজ ২",
-    "countByLesson": 8,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কুইজ ৩",
-    "countByLesson": 8,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কুইজ ৪",
-    "countByLesson": 8,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কুইজ ৫",
-    "countByLesson": 8,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": []
- },
- {
-  "cls": 9,
-  "subject": "physics",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 632,
-    "keyed": 249,
-    "mcq": 0,
-    "short": 94,
-    "creative": 51,
-    "offeredSum": 145,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 776,
-    "keyed": 261,
-    "mcq": 0,
-    "short": 112,
-    "creative": 90,
-    "offeredSum": 202,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 788,
-    "keyed": 252,
-    "mcq": 0,
-    "short": 115,
-    "creative": 58,
-    "offeredSum": 173,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 827,
-    "keyed": 328,
-    "mcq": 0,
-    "short": 112,
-    "creative": 104,
-    "offeredSum": 216,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 726,
-    "keyed": 281,
-    "mcq": 0,
-    "short": 100,
-    "creative": 84,
-    "offeredSum": 184,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 723,
-    "keyed": 302,
-    "mcq": 0,
-    "short": 101,
-    "creative": 66,
-    "offeredSum": 167,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 627,
-    "keyed": 206,
-    "mcq": 0,
-    "short": 100,
-    "creative": 39,
-    "offeredSum": 139,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "1.1",
-    "countByLesson": 44,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.2",
-    "countByLesson": 14,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.3",
-    "countByLesson": 75,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.4",
-    "countByLesson": 15,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.5",
-    "countByLesson": 175,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "1.6",
-    "countByLesson": 230,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "phy-ch1-creative-001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "phy-ch1-creative-002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "phy-ch1-creative-003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "phy-ch1-creative-004",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "chemistry",
-  "chapters": [
-   {
-    "chapter": 3,
-    "chapterTotal": 823,
-    "keyed": 350,
-    "mcq": 0,
-    "short": 72,
-    "creative": 48,
-    "offeredSum": 120,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 666,
-    "keyed": 306,
-    "mcq": 0,
-    "short": 98,
-    "creative": 69,
-    "offeredSum": 167,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 773,
-    "keyed": 337,
-    "mcq": 0,
-    "short": 107,
-    "creative": 111,
-    "offeredSum": 218,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 924,
-    "keyed": 391,
-    "mcq": 0,
-    "short": 88,
-    "creative": 85,
-    "offeredSum": 173,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 647,
-    "keyed": 301,
-    "mcq": 0,
-    "short": 96,
-    "creative": 76,
-    "offeredSum": 172,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 421,
-    "keyed": 133,
-    "mcq": 0,
-    "short": 97,
-    "creative": 116,
-    "offeredSum": 213,
-    "mismatch": true
-   }
-  ],
-  "lessons": [],
-  "creativeSample": [
-   {
-    "id": "che-ch3-conceptual-creative-1",
-    "marks": null,
-    "partsType": "object",
-    "parts": null
-   },
-   {
-    "id": "che-ch3-conceptual-creative-2",
-    "marks": null,
-    "partsType": "object",
-    "parts": null
-   },
-   {
-    "id": "che-ch3-creative-1",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "che-ch3-creative-10",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "higher-math",
-  "chapters": [
-   {
-    "chapter": 2,
-    "chapterTotal": 416,
-    "keyed": 268,
-    "mcq": 0,
-    "short": 81,
-    "creative": 37,
-    "offeredSum": 118,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 366,
-    "keyed": 236,
-    "mcq": 0,
-    "short": 63,
-    "creative": 52,
-    "offeredSum": 115,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 732,
-    "keyed": 440,
-    "mcq": 0,
-    "short": 127,
-    "creative": 110,
-    "offeredSum": 237,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 514,
-    "keyed": 301,
-    "mcq": 0,
-    "short": 85,
-    "creative": 67,
-    "offeredSum": 152,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 415,
-    "keyed": 240,
-    "mcq": 0,
-    "short": 99,
-    "creative": 54,
-    "offeredSum": 153,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 700,
-    "keyed": 425,
-    "mcq": 0,
-    "short": 119,
-    "creative": 117,
-    "offeredSum": 236,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 227,
-    "keyed": 116,
-    "mcq": 0,
-    "short": 54,
-    "creative": 42,
-    "offeredSum": 96,
-    "mismatch": true
-   },
-   {
-    "chapter": 14,
-    "chapterTotal": 425,
-    "keyed": 236,
-    "mcq": 0,
-    "short": 90,
-    "creative": 68,
-    "offeredSum": 158,
-    "mismatch": true
-   }
-  ],
-  "lessons": [],
-  "creativeSample": [
-   {
-    "id": "hm-ch2-creative-01",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   },
-   {
-    "id": "hm-ch2-creative-02",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   },
-   {
-    "id": "hm-ch2-creative-03",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   },
-   {
-    "id": "hm-ch2-creative-04",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "bgs",
-  "chapters": [
-   {
-    "chapter": 2,
-    "chapterTotal": 429,
-    "keyed": 222,
-    "mcq": 0,
-    "short": 43,
-    "creative": 28,
-    "offeredSum": 71,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 765,
-    "keyed": 357,
-    "mcq": 0,
-    "short": 100,
-    "creative": 77,
-    "offeredSum": 177,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 500,
-    "keyed": 269,
-    "mcq": 0,
-    "short": 39,
-    "creative": 55,
-    "offeredSum": 94,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 571,
-    "keyed": 305,
-    "mcq": 0,
-    "short": 44,
-    "creative": 72,
-    "offeredSum": 116,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 544,
-    "keyed": 280,
-    "mcq": 0,
-    "short": 50,
-    "creative": 52,
-    "offeredSum": 102,
-    "mismatch": true
-   },
-   {
-    "chapter": 13,
-    "chapterTotal": 601,
-    "keyed": 311,
-    "mcq": 0,
-    "short": 51,
-    "creative": 49,
-    "offeredSum": 100,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "অনুন্নত দেশ",
-    "countByLesson": 7,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অনুন্নত দেশের অর্থনীতি ও বৈশিষ্ট্য",
-    "countByLesson": 1,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অর্থনৈতিক নির্দেশকসমূহ",
-    "countByLesson": 59,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অর্থনৈতিক নির্দেশকসমূহ ও বাংলাদেশের অর্থনীতির প্রকৃতি",
-    "countByLesson": 113,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "আইনের উৎস",
-    "countByLesson": 28,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "আইনের ধারণা",
-    "countByLesson": 24,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "bgs-ch2-creative-01",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "bgs-ch2-creative-02",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "bgs-ch2-creative-03",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "bgs-ch2-creative-04",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "science",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 802,
-    "keyed": 381,
-    "mcq": null,
-    "short": 117,
-    "creative": 91,
-    "offeredSum": 208,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 579,
-    "keyed": 275,
-    "mcq": 0,
-    "short": 95,
-    "creative": 60,
-    "offeredSum": 155,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 665,
-    "keyed": 297,
-    "mcq": 0,
-    "short": 95,
-    "creative": 71,
-    "offeredSum": 166,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 611,
-    "keyed": 311,
-    "mcq": 0,
-    "short": 78,
-    "creative": 70,
-    "offeredSum": 148,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 472,
-    "keyed": 231,
-    "mcq": 0,
-    "short": 62,
-    "creative": 58,
-    "offeredSum": 120,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 521,
-    "keyed": 256,
-    "mcq": 0,
-    "short": 77,
-    "creative": 69,
-    "offeredSum": 146,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "10.1 ধাক্কা ও টানা: বল",
-    "countByLesson": 50,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "10.1.1 জড়তা",
-    "countByLesson": 27,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "10.2 বলের পরিমাণ ও নিউটনের দ্বিতীয় গতিসূত্র",
-    "countByLesson": 11,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "10.2 বলের পরিমাপ ও নিউটনের দ্বিতীয় গতিসূত্র",
-    "countByLesson": 103,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "10.3 ক্রিয়া ও প্রতিক্রিয়া বল",
-    "countByLesson": 42,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "10.4 বলের প্রকৃতি",
-    "countByLesson": 62,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "gs-ch1-creative-01",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "gs-ch1-creative-02",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "gs-ch1-creative-03",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "gs-ch1-creative-04",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "economics",
-  "chapters": [
-   {
-    "chapter": 2,
-    "chapterTotal": 559,
-    "keyed": 309,
-    "mcq": 0,
-    "short": 68,
-    "creative": 93,
-    "offeredSum": 161,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 522,
-    "keyed": 273,
-    "mcq": 0,
-    "short": 51,
-    "creative": 111,
-    "offeredSum": 162,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 428,
-    "keyed": 209,
-    "mcq": 0,
-    "short": 47,
-    "creative": 75,
-    "offeredSum": 122,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 466,
-    "keyed": 255,
-    "mcq": 0,
-    "short": 51,
-    "creative": 80,
-    "offeredSum": 131,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 446,
-    "keyed": 201,
-    "mcq": 0,
-    "short": 87,
-    "creative": 49,
-    "offeredSum": 136,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 360,
-    "keyed": 160,
-    "mcq": 0,
-    "short": 50,
-    "creative": 53,
-    "offeredSum": 103,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "2.1",
-    "countByLesson": 158,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2.2",
-    "countByLesson": 40,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2.3",
-    "countByLesson": 15,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2.4",
-    "countByLesson": 43,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2.5",
-    "countByLesson": 12,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2.6",
-    "countByLesson": 7,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "eco-ch2-creative-001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "eco-ch2-creative-002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "eco-ch2-creative-003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "eco-ch2-creative-004",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "civics",
-  "chapters": [
-   {
-    "chapter": 6,
-    "chapterTotal": 537,
-    "keyed": 129,
-    "mcq": 353,
-    "short": 26,
-    "creative": 58,
-    "offeredSum": 437,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 284,
-    "keyed": 36,
-    "mcq": 161,
-    "short": 23,
-    "creative": 35,
-    "offeredSum": 219,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 394,
-    "keyed": 22,
-    "mcq": 253,
-    "short": 45,
-    "creative": 26,
-    "offeredSum": 324,
-    "mismatch": true
-   }
-  ],
-  "lessons": [],
-  "creativeSample": [
-   {
-    "id": "civ-ch6-creative-001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "civ-ch6-creative-002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "civ-ch6-creative-003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "civ-ch6-creative-004",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   }
-  ]
- },
- {
-  "cls": 9,
-  "subject": "accounting",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 276,
-    "keyed": 249,
-    "mcq": 0,
-    "short": 24,
-    "creative": 0,
-    "offeredSum": 24,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 562,
-    "keyed": 446,
-    "mcq": 0,
-    "short": 53,
-    "creative": 62,
-    "offeredSum": 115,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 478,
-    "keyed": 365,
-    "mcq": 0,
-    "short": 45,
-    "creative": 63,
-    "offeredSum": 108,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 488,
-    "keyed": 411,
-    "mcq": 0,
-    "short": 32,
-    "creative": 43,
-    "offeredSum": 75,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 341,
-    "keyed": 287,
-    "mcq": 0,
-    "short": 29,
-    "creative": 25,
-    "offeredSum": 54,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 627,
-    "keyed": 540,
-    "mcq": 0,
-    "short": 43,
-    "creative": 42,
-    "offeredSum": 85,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 526,
-    "keyed": 429,
-    "mcq": 0,
-    "short": 39,
-    "creative": 36,
-    "offeredSum": 75,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 437,
-    "keyed": 348,
-    "mcq": 0,
-    "short": 26,
-    "creative": 41,
-    "offeredSum": 67,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 554,
-    "keyed": 460,
-    "mcq": 0,
-    "short": 36,
-    "creative": 37,
-    "offeredSum": 73,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 648,
-    "keyed": 552,
-    "mcq": 0,
-    "short": 39,
-    "creative": 12,
-    "offeredSum": 51,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 381,
-    "keyed": 301,
-    "mcq": 0,
-    "short": 20,
-    "creative": 40,
-    "offeredSum": 60,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 270,
-    "keyed": 200,
-    "mcq": 0,
-    "short": 26,
-    "creative": 32,
-    "offeredSum": 58,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "T-ছক ও চলমান জের ছক",
-    "countByLesson": 3,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অগ্রিম ব্যয়",
-    "countByLesson": 1,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অদৃশ্যমান লেনদেন; মূলধনজাতীয় প্রাপ্তি; মুনাফাজাতীয় ব্যয়",
-    "countByLesson": 1,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অনার্থিক ঘটনা; হিসাব সমীকরণের প্রভাব; হিসাবের শ্রেণিবিভাগ",
-    "countByLesson": 1,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অনিশ্চিত হিসাব",
-    "countByLesson": 3,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অনুপাত বিশ্লেষণ",
-    "countByLesson": 4,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": []
- },
- {
-  "cls": 9,
-  "subject": "business-entrepreneurship",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 572,
-    "keyed": 387,
-    "mcq": 313,
-    "short": 59,
-    "creative": 65,
-    "offeredSum": 437,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 449,
-    "keyed": 291,
-    "mcq": 219,
-    "short": 38,
-    "creative": 52,
-    "offeredSum": 309,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 365,
-    "keyed": 214,
-    "mcq": 142,
-    "short": 42,
-    "creative": 51,
-    "offeredSum": 235,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 658,
-    "keyed": 413,
-    "mcq": 333,
-    "short": 71,
-    "creative": 73,
-    "offeredSum": 477,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 397,
-    "keyed": 260,
-    "mcq": 201,
-    "short": 13,
-    "creative": 50,
-    "offeredSum": 264,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 401,
-    "keyed": 286,
-    "mcq": 222,
-    "short": 40,
-    "creative": 24,
-    "offeredSum": 286,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 352,
-    "keyed": 246,
-    "mcq": 182,
-    "short": 18,
-    "creative": 21,
-    "offeredSum": 221,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 430,
-    "keyed": 251,
-    "mcq": 180,
-    "short": 41,
-    "creative": 68,
-    "offeredSum": 289,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 190,
-    "keyed": 95,
-    "mcq": null,
-    "short": null,
-    "creative": null,
-    "offeredSum": null,
-    "mismatch": null
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 198,
-    "keyed": 136,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 139,
-    "keyed": 70,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 180,
-    "keyed": 144,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "অংশীদারদের প্রকারভেদ",
-    "countByLesson": 10,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অংশীদারদের প্রকারভেদ ও অংশীদারি ব্যবসায়ের বিলোপসাধন",
-    "countByLesson": 3,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অংশীদারদের প্রকারভেদ; অংশীদারি ব্যবসায়ের নিবন্ধন",
-    "countByLesson": 1,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অংশীদারদের প্রকারভেদ; অংশীদারি ব্যবসায়ের বিলোপসাধন",
-    "countByLesson": 4,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অংশীদারদের প্রকারভেদ; একমালিকানা ব্যবসায়ের ধারণা ও বৈশিষ্ট্য",
-    "countByLesson": 1,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "অংশীদারদের প্রকারভেদ; একমালিকানা ব্যবসায়ের ধারণা; একমালিকানা ব্যবসায়ের উপযুক্ত ক্ষেত্র",
-    "countByLesson": 1,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "bus-ch1-creative-001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "bus-ch1-creative-002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "bus-ch1-creative-003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   },
-   {
-    "id": "bus-ch1-creative-004",
-    "marks": 10,
-    "partsType": "object",
-    "parts": [
-     1,
-     2,
-     3,
-     4
-    ]
-   }
-  ]
- },
- {
   "cls": 6,
   "subject": "bangla",
-  "chapters": [
+  "chapters": 20,
+  "issues": [
    {
+    "kind": "type-total-missing",
     "chapter": 1,
-    "chapterTotal": 284,
-    "keyed": 150,
-    "mcq": 0,
-    "short": null,
-    "creative": null,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "short"
    },
    {
+    "kind": "type-total-missing",
+    "chapter": 1,
+    "type": "creative"
+   },
+   {
+    "kind": "type-total-missing",
     "chapter": 2,
-    "chapterTotal": 374,
-    "keyed": 203,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "mcq"
    },
    {
+    "kind": "type-total-missing",
+    "chapter": 2,
+    "type": "short"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 2,
+    "type": "creative"
+   },
+   {
+    "kind": "type-total-missing",
     "chapter": 3,
-    "chapterTotal": 155,
-    "keyed": 100,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 183,
-    "keyed": 114,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 187,
-    "keyed": 116,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 190,
-    "keyed": 114,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 158,
-    "keyed": 94,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 197,
-    "keyed": 152,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 101,
-    "keyed": 20,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 79,
-    "keyed": 24,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 34,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 18,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 13,
-    "chapterTotal": 46,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 14,
-    "chapterTotal": 17,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 15,
-    "chapterTotal": 60,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 16,
-    "chapterTotal": 32,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 17,
-    "chapterTotal": 42,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 18,
-    "chapterTotal": 17,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 19,
-    "chapterTotal": 37,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 101,
-    "chapterTotal": 92,
-    "keyed": 57,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "mcq"
    }
   ],
-  "lessons": [
-   {
-    "lesson": "1",
-    "countByLesson": 147,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2",
-    "countByLesson": 183,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "3",
-    "countByLesson": 141,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "4",
-    "countByLesson": 120,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "5",
-    "countByLesson": 67,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "6",
-    "countByLesson": 19,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "class6-anandopath-bn-guide-ch1-p1-cr001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-anandopath-bn-guide-ch1-p2-cr002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-anandopath-bn-guide-ch1-p3-cr003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-charupath-bn-guide-ch1-p2-cr001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   }
-  ]
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "english",
-  "chapters": [
+  "chapters": 20,
+  "issues": [
    {
+    "kind": "type-total-missing",
     "chapter": 1,
-    "chapterTotal": 44,
-    "keyed": 5,
-    "mcq": 0,
-    "short": null,
-    "creative": null,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "short"
    },
    {
+    "kind": "type-total-missing",
+    "chapter": 1,
+    "type": "creative"
+   },
+   {
+    "kind": "type-total-missing",
     "chapter": 2,
-    "chapterTotal": 33,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "creative"
    },
    {
+    "kind": "type-total-missing",
     "chapter": 3,
-    "chapterTotal": 54,
-    "keyed": 1,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "short"
    },
    {
-    "chapter": 4,
-    "chapterTotal": 33,
-    "keyed": 1,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 35,
-    "keyed": 2,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 41,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 25,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 28,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 20,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 6,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 10,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 33,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 13,
-    "chapterTotal": 40,
-    "keyed": 4,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 14,
-    "chapterTotal": 19,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 15,
-    "chapterTotal": 56,
-    "keyed": 1,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 16,
-    "chapterTotal": 13,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 17,
-    "chapterTotal": 14,
-    "keyed": 5,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 18,
-    "chapterTotal": 13,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 19,
-    "chapterTotal": 13,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 20,
-    "chapterTotal": 29,
-    "keyed": 0,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "kind": "type-total-missing",
+    "chapter": 3,
+    "type": "creative"
    }
   ],
-  "lessons": [],
-  "creativeSample": []
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "math",
-  "chapters": [
+  "chapters": 8,
+  "issues": [
    {
-    "chapter": 1,
-    "chapterTotal": 576,
-    "keyed": 426,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
+    "kind": "type-total-missing",
     "chapter": 2,
-    "chapterTotal": 360,
-    "keyed": 274,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 199,
-    "keyed": 148,
-    "mcq": 0,
-    "short": 0,
-    "creative": null,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 356,
-    "keyed": 271,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 166,
-    "keyed": 121,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 276,
-    "keyed": 229,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 84,
-    "keyed": 55,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 177,
-    "keyed": 145,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "creative"
    }
   ],
-  "lessons": [
-   {
-    "lesson": "১.১",
-    "countByLesson": 60,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "১.২",
-    "countByLesson": 105,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "১.৩",
-    "countByLesson": 92,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "১.৪",
-    "countByLesson": 100,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "১.৫",
-    "countByLesson": 112,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "১.৬",
-    "countByLesson": 107,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "class6-math-bn-guide-ch1-p14-creative7",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   },
-   {
-    "id": "class6-math-bn-guide-ch1-p15-creative10",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   },
-   {
-    "id": "class6-math-bn-guide-ch1-p15-creative8",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   },
-   {
-    "id": "class6-math-bn-guide-ch1-p15-creative9",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 2,
-     "খ": 4,
-     "গ": 4
-    }
-   }
-  ]
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "ict",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 279,
-    "keyed": 254,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 280,
-    "keyed": 253,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 153,
-    "keyed": 138,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 141,
-    "keyed": 129,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 164,
-    "keyed": 148,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "অ্যাপ্লিকেশন সফটওয়্যার",
-    "countByLesson": 14,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "আইসিটি ব্যবহারে ঝুঁকি ও সতর্কতা অবলম্বনের পন্থা",
-    "countByLesson": 19,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "আইসিটি যন্ত্রপাতি রক্ষণাবেক্ষণ",
-    "countByLesson": 23,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "আউটপুট ডিভাইস",
-    "countByLesson": 21,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "আরও কিছু যন্ত্রপাতি",
-    "countByLesson": 23,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "ইনপুট ডিভাইস",
-    "countByLesson": 27,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": []
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "bgs",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 328,
-    "keyed": 226,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 185,
-    "keyed": 141,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 146,
-    "keyed": 104,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 107,
-    "keyed": 66,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 114,
-    "keyed": 72,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 140,
-    "keyed": 99,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 125,
-    "keyed": 71,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 157,
-    "keyed": 103,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 122,
-    "keyed": 71,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "পাঠ ১ ও ২: অর্থনৈতিক জীবনধারা",
-    "countByLesson": 27,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "পাঠ ১ ও ২: আঞ্চলিক সহযোগিতার গুরুত্ব ও এর ক্ষেত্র",
-    "countByLesson": 2,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "পাঠ ১ ও ২: বাংলাদেশের মুক্তিযুদ্ধ",
-    "countByLesson": 43,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "পাঠ ১: ভারত উপমহাদেশের নগর সভ্যতা",
-    "countByLesson": 13,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "পাঠ ১: মানুষ ও পরিবেশ",
-    "countByLesson": 20,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "পাঠ ১: রাষ্ট্রের ধারণা",
-    "countByLesson": 23,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "class6-bgs-bn-guide-ch1-p42-cr001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-bgs-bn-guide-ch1-p42-cr002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-bgs-bn-guide-ch1-p43-cr003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-bgs-bn-guide-ch1-p43-cr004",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   }
-  ]
+  "chapters": 9,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "science",
-  "chapters": [
+  "chapters": 14,
+  "issues": [
    {
-    "chapter": 1,
-    "chapterTotal": 205,
-    "keyed": 149,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
+    "kind": "type-total-missing",
     "chapter": 2,
-    "chapterTotal": 218,
-    "keyed": 161,
-    "mcq": 0,
-    "short": 0,
-    "creative": null,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 168,
-    "keyed": 119,
-    "mcq": 0,
-    "short": 0,
-    "creative": null,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 185,
-    "keyed": 135,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 111,
-    "keyed": 82,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 156,
-    "keyed": 109,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 7,
-    "chapterTotal": 161,
-    "keyed": 107,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 8,
-    "chapterTotal": 139,
-    "keyed": 90,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 9,
-    "chapterTotal": 125,
-    "keyed": 83,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 10,
-    "chapterTotal": 156,
-    "keyed": 112,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 11,
-    "chapterTotal": 123,
-    "keyed": 82,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 12,
-    "chapterTotal": 129,
-    "keyed": 101,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 13,
-    "chapterTotal": 157,
-    "keyed": 119,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 14,
-    "chapterTotal": 122,
-    "keyed": 88,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "creative"
    }
   ],
-  "lessons": [],
-  "creativeSample": [
-   {
-    "id": "class6-science-bn-guide-ch1-p10-creative14",
-    "marks": null,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-science-bn-guide-ch1-p10-creative15",
-    "marks": null,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-science-bn-guide-ch1-p11-creative16",
-    "marks": null,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-science-bn-guide-ch1-p11-creative17",
-    "marks": null,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   }
-  ]
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "physical",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 62,
-    "keyed": 53,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 61,
-    "keyed": 56,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 68,
-    "keyed": 57,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 68,
-    "keyed": 67,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 85,
-    "keyed": 78,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   }
-  ],
-  "lessons": [],
-  "creativeSample": []
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "agriculture",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 71,
-    "keyed": 52,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 81,
-    "keyed": 57,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 83,
-    "keyed": 56,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 81,
-    "keyed": 61,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 100,
-    "keyed": 71,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 6,
-    "chapterTotal": 63,
-    "keyed": 44,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "আবহাওয়া ও জলবায়ু (পাঠ্যবই পৃষ্ঠা ৪৭)",
-    "countByLesson": 5,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "উদ্যান ফসলের পরিচিতি ও অর্থনৈতিক গুরুত্ব (পাঠ্যবই পৃষ্ঠা ৬০)",
-    "countByLesson": 4,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কবুতরের পরিচিতি ও পালন পদ্ধতি (পাঠ্যবই পৃষ্ঠা ৮১)",
-    "countByLesson": 4,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কবুতরের বাসস্থান ও খাদ্য ব্যবস্থাপনা (পাঠ্যবই পৃষ্ঠা ৮৩)",
-    "countByLesson": 2,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কাঁচা ঘাস সংরক্ষণ (পাঠ্যবই পৃষ্ঠা ১৮)",
-    "countByLesson": 3,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "কৃষি প্রযুক্তির ধারণা (পাঠ্যবই পৃষ্ঠা ১০)",
-    "countByLesson": 3,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "class6-agriculture-bn-guide-ch1-p4-cr001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-agriculture-bn-guide-ch1-p4-cr002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-agriculture-bn-guide-ch1-p5-cr003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-agriculture-bn-guide-ch1-p5-cr004",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   }
-  ]
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "islam",
-  "chapters": [
-   {
-    "chapter": 1,
-    "chapterTotal": 257,
-    "keyed": 168,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 2,
-    "chapterTotal": 256,
-    "keyed": 163,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 3,
-    "chapterTotal": 231,
-    "keyed": 147,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 4,
-    "chapterTotal": 208,
-    "keyed": 145,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 263,
-    "keyed": 179,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   }
-  ],
-  "lessons": [
-   {
-    "lesson": "1",
-    "countByLesson": 25,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "10",
-    "countByLesson": 12,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "11",
-    "countByLesson": 4,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "12",
-    "countByLesson": 2,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "13",
-    "countByLesson": 6,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2",
-    "countByLesson": 16,
-    "listNoChapter": null
-   }
-  ],
-  "creativeSample": [
-   {
-    "id": "class6-islam-bn-guide-ch1-p10-cr016",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-islam-bn-guide-ch1-p2-cr001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-islam-bn-guide-ch1-p3-cr002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-islam-bn-guide-ch1-p4-cr003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   }
-  ]
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
  },
  {
   "cls": 6,
   "subject": "hindu",
-  "chapters": [
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "agriculture",
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "bangla",
+  "chapters": 17,
+  "issues": [
    {
+    "kind": "type-total-missing",
     "chapter": 1,
-    "chapterTotal": 122,
-    "keyed": 74,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "short"
    },
    {
+    "kind": "type-total-missing",
     "chapter": 2,
-    "chapterTotal": 143,
-    "keyed": 102,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "short"
    },
    {
+    "kind": "type-total-missing",
     "chapter": 3,
-    "chapterTotal": 153,
-    "keyed": 97,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "creative"
    },
    {
+    "kind": "type-total-missing",
     "chapter": 4,
-    "chapterTotal": 87,
-    "keyed": 54,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
-   },
-   {
-    "chapter": 5,
-    "chapterTotal": 95,
-    "keyed": 61,
-    "mcq": 0,
-    "short": 0,
-    "creative": 0,
-    "offeredSum": 0,
-    "mismatch": true
+    "type": "short"
    }
   ],
-  "lessons": [
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "arts",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "bgs",
+  "chapters": 11,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "english",
+  "chapters": 16,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "hindu",
+  "chapters": 8,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "homescience",
+  "chapters": 14,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "ict",
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "islam",
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "math",
+  "chapters": 11,
+  "issues": [
    {
-    "lesson": "1",
-    "countByLesson": 61,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "2",
-    "countByLesson": 33,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "3",
-    "countByLesson": 17,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "4",
-    "countByLesson": 29,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "5",
-    "countByLesson": 17,
-    "listNoChapter": null
-   },
-   {
-    "lesson": "6",
-    "countByLesson": 17,
-    "listNoChapter": null
+    "kind": "type-total-missing",
+    "chapter": 1,
+    "type": "mcq"
    }
   ],
-  "creativeSample": [
+  "lockedSets": 0,
+  "totalSets": 3
+ },
+ {
+  "cls": 7,
+  "subject": "physical",
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "science",
+  "chapters": 14,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 7,
+  "subject": "worklife",
+  "chapters": 3,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 8,
+  "subject": "math",
+  "chapters": 11,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 1
+ },
+ {
+  "cls": 8,
+  "subject": "bangla",
+  "chapters": 20,
+  "issues": [
    {
-    "id": "class6-hindu-bn-guide-ch1-p2-cr001",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-hindu-bn-guide-ch1-p3-cr002",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-hindu-bn-guide-ch1-p3-cr003",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
-   },
-   {
-    "id": "class6-hindu-bn-guide-ch1-p4-cr004",
-    "marks": 10,
-    "partsType": "object",
-    "parts": {
-     "ক": 1,
-     "খ": 2,
-     "গ": 3,
-     "ঘ": 4
-    }
+    "kind": "type-total-missing",
+    "chapter": 1,
+    "type": "mcq"
    }
-  ]
+  ],
+  "lockedSets": 10,
+  "totalSets": 27
+ },
+ {
+  "cls": 8,
+  "subject": "science",
+  "chapters": 14,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 2,
+    "type": "creative"
+   }
+  ],
+  "lockedSets": 0,
+  "totalSets": 1
+ },
+ {
+  "cls": 8,
+  "subject": "home-science",
+  "chapters": 14,
+  "issues": [],
+  "lockedSets": 1,
+  "totalSets": 1
+ },
+ {
+  "cls": 8,
+  "subject": "bgs",
+  "chapters": 13,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 1
+ },
+ {
+  "cls": 8,
+  "subject": "ict",
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 1
+ },
+ {
+  "cls": 8,
+  "subject": "agriculture",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 8,
+  "subject": "work-education",
+  "chapters": 3,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 8,
+  "subject": "english",
+  "chapters": 10,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 1
+ },
+ {
+  "cls": 8,
+  "subject": "physical-education",
+  "chapters": 4,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 9,
+  "subject": "math",
+  "chapters": 8,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 3,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 17,
+    "type": "creative"
+   }
+  ],
+  "lockedSets": 1,
+  "totalSets": 11
+ },
+ {
+  "cls": 9,
+  "subject": "english",
+  "chapters": 0,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 57
+ },
+ {
+  "cls": 9,
+  "subject": "bangla",
+  "chapters": 0,
+  "issues": [],
+  "lockedSets": 17,
+  "totalSets": 34
+ },
+ {
+  "cls": 9,
+  "subject": "english-2nd",
+  "chapters": 0,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 60
+ },
+ {
+  "cls": 9,
+  "subject": "biology",
+  "chapters": 7,
+  "issues": [],
+  "lockedSets": 21,
+  "totalSets": 66
+ },
+ {
+  "cls": 9,
+  "subject": "ict",
+  "chapters": 4,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 2,
+    "type": "mcq"
+   }
+  ],
+  "lockedSets": 0,
+  "totalSets": 71
+ },
+ {
+  "cls": 9,
+  "subject": "islam",
+  "chapters": 5,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 2,
+    "type": "mcq"
+   }
+  ],
+  "lockedSets": 39,
+  "totalSets": 83
+ },
+ {
+  "cls": 9,
+  "subject": "physics",
+  "chapters": 7,
+  "issues": [],
+  "lockedSets": 19,
+  "totalSets": 66
+ },
+ {
+  "cls": 9,
+  "subject": "chemistry",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 19,
+  "totalSets": 63
+ },
+ {
+  "cls": 9,
+  "subject": "higher-math",
+  "chapters": 8,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 2,
+    "type": "mcq"
+   }
+  ],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 9,
+  "subject": "bgs",
+  "chapters": 6,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 2,
+    "type": "mcq"
+   }
+  ],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 9,
+  "subject": "science",
+  "chapters": 6,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 1,
+    "type": "mcq"
+   }
+  ],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 9,
+  "subject": "economics",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 9,
+  "subject": "civics",
+  "chapters": 3,
+  "issues": [],
+  "lockedSets": 36,
+  "totalSets": 87
+ },
+ {
+  "cls": 9,
+  "subject": "accounting",
+  "chapters": 12,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 10,
+    "type": "mcq"
+   }
+  ],
+  "lockedSets": 34,
+  "totalSets": 34
+ },
+ {
+  "cls": 9,
+  "subject": "business-entrepreneurship",
+  "chapters": 12,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 9,
+    "type": "creative"
+   }
+  ],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 10,
+  "subject": "bangla",
+  "chapters": 0,
+  "issues": [],
+  "lockedSets": 20,
+  "totalSets": 58
+ },
+ {
+  "cls": 10,
+  "subject": "math",
+  "chapters": 8,
+  "issues": [],
+  "lockedSets": 1,
+  "totalSets": 11
+ },
+ {
+  "cls": 10,
+  "subject": "english",
+  "chapters": 0,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 57
+ },
+ {
+  "cls": 10,
+  "subject": "english-2nd",
+  "chapters": 0,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 60
+ },
+ {
+  "cls": 10,
+  "subject": "biology",
+  "chapters": 7,
+  "issues": [],
+  "lockedSets": 21,
+  "totalSets": 66
+ },
+ {
+  "cls": 10,
+  "subject": "ict",
+  "chapters": 4,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 71
+ },
+ {
+  "cls": 10,
+  "subject": "islam",
+  "chapters": 5,
+  "issues": [],
+  "lockedSets": 39,
+  "totalSets": 83
+ },
+ {
+  "cls": 10,
+  "subject": "physics",
+  "chapters": 7,
+  "issues": [],
+  "lockedSets": 19,
+  "totalSets": 66
+ },
+ {
+  "cls": 10,
+  "subject": "chemistry",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 19,
+  "totalSets": 63
+ },
+ {
+  "cls": 10,
+  "subject": "higher-math",
+  "chapters": 8,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 10,
+  "subject": "bgs",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 10,
+  "subject": "science",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 10,
+  "subject": "economics",
+  "chapters": 6,
+  "issues": [],
+  "lockedSets": 0,
+  "totalSets": 0
+ },
+ {
+  "cls": 10,
+  "subject": "civics",
+  "chapters": 3,
+  "issues": [],
+  "lockedSets": 36,
+  "totalSets": 87
+ },
+ {
+  "cls": 10,
+  "subject": "accounting",
+  "chapters": 12,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 6,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 7,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 8,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 9,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 10,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 11,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 12,
+    "type": "mcq"
+   }
+  ],
+  "lockedSets": 34,
+  "totalSets": 34
+ },
+ {
+  "cls": 10,
+  "subject": "business-entrepreneurship",
+  "chapters": 12,
+  "issues": [
+   {
+    "kind": "type-total-missing",
+    "chapter": 9,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 9,
+    "type": "short"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 9,
+    "type": "creative"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 10,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 10,
+    "type": "short"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 10,
+    "type": "creative"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 11,
+    "type": "mcq"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 11,
+    "type": "short"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 11,
+    "type": "creative"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 12,
+    "type": "short"
+   },
+   {
+    "kind": "type-total-missing",
+    "chapter": 12,
+    "type": "creative"
+   }
+  ],
+  "lockedSets": 0,
+  "totalSets": 0
  }
 ]
