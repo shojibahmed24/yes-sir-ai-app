@@ -27,6 +27,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _password = TextEditingController();
   bool _remember = true;
   bool _busy = false;
+
+  /// Inline, dismissible error: a snackbar vanished before the user
+  /// could read it; a professional form keeps the message next to the
+  /// fields until the next attempt.
+  String? _error;
   void Function()? _cancelAuthListener;
 
   @override
@@ -55,18 +60,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final contact = _contact.text.trim();
     // Empty contact/password used to sail through DEMO to /home.
     if (contact.isEmpty || _password.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(s['emptyError']!)));
+      setState(() => _error = s['emptyError']);
       return;
     }
     if (!authService.isDemo && !contact.contains('@')) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(s['phoneLoginError']!)));
+      setState(() => _error = s['phoneLoginError']);
       return;
     }
-    setState(() => _busy = true);
+    setState(() {
+      _error = null;
+      _busy = true;
+    });
     final res = await authService.signInEmail(contact, _password.text);
     if (!mounted) return;
     setState(() => _busy = false);
@@ -95,9 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       // Mapped Bangla/English message only — never raw SDK text.
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(s[signInErrorStringKey(res)]!)));
+      setState(() => _error = s[signInErrorStringKey(res)]);
     }
   }
 
@@ -156,13 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const DemoBanner(),
                 const SizedBox(height: 8),
-                const FadeSlide(
-                  child: Image(
-                    image: AssetImage('assets/logo/yes-sir-ai-icon.png'),
-                    width: 96,
-                    height: 96,
-                  ),
-                ),
+                const FadeSlide(child: _Logo()),
                 const SizedBox(height: 16),
                 FadeSlide(
                   delayMs: 80,
@@ -184,50 +180,63 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 FadeSlide(
                   delayMs: 240,
-                  child: AuthTextField(
-                    label: s['phoneEmail']!,
-                    hint: s['phoneEmailHint']!,
-                    icon: Icons.phone,
-                    controller: _contact,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                FadeSlide(
-                  delayMs: 300,
-                  child: PasswordField(
-                    label: s['password']!,
-                    hint: s['passwordHint']!,
-                    controller: _password,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _remember,
-                      onChanged: (v) => setState(() => _remember = v ?? true),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+                      child: Column(
+                        children: [
+                          AuthTextField(
+                            label: s['phoneEmail']!,
+                            hint: s['phoneEmailHint']!,
+                            icon: Icons.alternate_email,
+                            controller: _contact,
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          const SizedBox(height: 16),
+                          PasswordField(
+                            label: s['password']!,
+                            hint: s['passwordHint']!,
+                            controller: _password,
+                          ),
+                          CheckboxListTile(
+                            value: _remember,
+                            onChanged: (v) =>
+                                setState(() => _remember = v ?? true),
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            title: Text(s['rememberMe']!),
+                          ),
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: _ErrorBanner(message: _error!),
+                            ),
+                          AuthPrimaryButton(
+                            label: s['login']!,
+                            busy: _busy,
+                            busyLabel: s['loggingIn'] ?? s['login']!,
+                            onPressed: _signIn,
+                          ),
+                        ],
+                      ),
                     ),
-                    Expanded(child: Text(s['rememberMe']!)),
-                    AuthTextLink(
-                      label: s['forgot']!,
-                      onPressed: () => context.go('/forgot-password'),
-                    ),
-                  ],
-                ),
-                AuthPrimaryButton(
-                  label: s['login']!,
-                  busy: _busy,
-                  busyLabel: s['loggingIn'] ?? s['login']!,
-                  onPressed: _signIn,
+                  ),
                 ),
                 if (authService.googleSignInAvailable) ...[
-                  Text(s['or']!, style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 16),
+                  _OrDivider(label: s['or']!),
                   const SizedBox(height: 12),
                   AuthGoogleButton(
                     label: s['google']!,
                     onPressed: _signInGoogle,
                   ),
                 ],
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => context.go('/forgot-password'),
+                  child: Text(s['forgot']!),
+                ),
                 const SizedBox(height: 8),
                 // Phone OTP is verification-only (registration step 9):
                 // it does not create a session, so it is not a login
@@ -238,10 +247,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => context.go('/register/welcome'),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  s['safe']!,
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.verified_user_outlined,
+                      size: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        s['safe']!,
+                        style: Theme.of(context).textTheme.bodySmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
                 AuthTextLink(
                   label: s['help']!,
@@ -252,6 +274,80 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+/// Brand mark in a soft tinted ring (a bare image looked pasted on).
+class _Logo extends StatelessWidget {
+  const _Logo();
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: primary.withValues(alpha: 0.08),
+        border: Border.all(color: primary.withValues(alpha: 0.15)),
+      ),
+      child: Image(
+        image: const AssetImage('assets/logo/yes-sir-ai-icon.png'),
+        width: 84,
+        height: 84,
+      ),
+    );
+  }
+}
+
+/// "or" with rules on both sides (plain text read as a label).
+class _OrDivider extends StatelessWidget {
+  const _OrDivider({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.outlineVariant;
+    return Row(
+      children: [
+        Expanded(child: Divider(color: color)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ),
+        Expanded(child: Divider(color: color)),
+      ],
+    );
+  }
+}
+
+/// Inline form error: stays on screen until the next attempt.
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final error = Theme.of(context).colorScheme.error;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: error.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, size: 18, color: error),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(message, style: TextStyle(color: error)),
+          ),
+        ],
+      ),
     );
   }
 }
