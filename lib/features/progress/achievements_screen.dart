@@ -133,17 +133,31 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                         .toList(),
                   ),
                   const SizedBox(height: 12),
-                  for (final b in shown) ...[
-                    PracticeCard(
-                      title: s[b.titleKey]!,
-                      subtitle: '${s[b.subKey]!} · ${b.progress}',
-                      icon: b.icon,
-                      trailing: Chip(
-                        label: Text(b.earned ? s['earned']! : s['locked']!),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
+                  LayoutBuilder(
+                    builder: (context, box) {
+                      final w = (box.maxWidth - 12) / 2;
+                      return Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          for (final b in shown)
+                            SizedBox(
+                              width: w,
+                              child: _BadgeTile(
+                                title: s[b.titleKey]!,
+                                subtitle: b.progress,
+                                icon: b.icon,
+                                earned: b.earned,
+                                earnedLabel: b.earned
+                                    ? s['earned']!
+                                    : s['locked']!,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   ProgressBar(
                     value: badges.isEmpty ? 0 : earnedCount / badges.length,
                   ),
@@ -160,6 +174,79 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+/// One badge tile in the grid: round medal, name, progress line and
+/// a clear earned/locked state. Locked tiles stay visible but muted.
+class _BadgeTile extends StatelessWidget {
+  const _BadgeTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.earned,
+    required this.earnedLabel,
+  });
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool earned;
+  final String earnedLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = earned ? AppTheme.primary : scheme.outline;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(Sp.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accent.withValues(alpha: earned ? 0.15 : 0.08),
+                  ),
+                  child: Icon(icon, color: accent, size: 22),
+                ),
+                const Spacer(),
+                Icon(
+                  earned ? Icons.verified : Icons.lock_outline,
+                  size: 16,
+                  color: accent,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              earnedLabel,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: accent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
