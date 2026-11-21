@@ -166,10 +166,11 @@
 
 ## ১০. নতুন বিল্ড (সকালের জন্য)
 
-- **zip:** `C:\Users\rajsh\Downloads\yes-sir-ai-app-2026-11-22.zip` (৮৬৮ এন্ট্রি, ২.৬ MB)
-- আছে: সব নতুন কোড + `supabase/functions` + keystore + `key.properties` + `dart_defines.json` + দুই ডক
-- নেই: `.git`, `build`, `.dart_tool`
-- বিল্ড: `flutter build apk --release --dart-define-from-file=dart_defines.json`
+- **zip:** `C:\Users\rajsh\Downloads\yes-sir-ai-app-2026-11-22-final.zip` (৮৭৫ এন্ট্রি, ৩.৩ MB)
+- **তাৎক্ষণিক টেস্টের APK:** `build\app\outputs\flutter-apk\app-debug.apk` (debug, ১৬১ MB) — আজ রাতেই বানানো হয়েছে, নোটিফিকেশন প্লাগইন + desugaring সহ **সফল বিল্ড** (Gradle assembleDebug: 1016s)। ফোনে সরাসরি ইনস্টল করে UI/রিমাইন্ডার/OTP দেখতে পারবেন।
+- রিলিজ বিল্ড: `flutter build apk --release --dart-define-from-file=dart_defines.json`
 - ⚠️ zip-এ keystore + পাসওয়ার্ড আছে — শেয়ার করবেন না।
-- **সার্ভার:** guide-bank v33 আগেই ডিপ্লয় করা (এই রাতের UI পরিবর্তনে নতুন ডিপ্লয় লাগে না)। Access token revoke করে দিয়েছেন ধরে নিচ্ছি।
+- **সার্ভার (লাইভ):** guide-bank **v35** (`pageText`), phone-otp **v3**, migration **023** প্রয়োগ।
+- **সিক্রেট:** `HTTPSMS_API_KEY`, `HTTPSMS_FROM_NUMBER`, `OTP_PEPPER` — শুধু function secrets; কোড/ডকে নেই (স্ক্যান করে যাচাই করা)।
+- ⚠️ Supabase token + httpSMS key চ্যাটে এসেছে — **দুটোই revoke/rotate করে নিন** (চাইলে নতুন key দিয়ে secret আপডেট করব)।
 
