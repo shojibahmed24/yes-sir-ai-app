@@ -119,9 +119,11 @@ GlobalPickerTree buildGlobalPickerTree({
         GlobalPickerNode(
           id: 'chapter:${ch.$1}',
           title: searchFlowChapterLabel(ch.$1, ch.$2, bn, s),
-          subtitle: guide && (c.chapterTotals[ch.$1] ?? 0) > 0
-              ? '${numStr(c.chapterTotals[ch.$1]!, bn)} ${s['questionsWord']!}'
-              : null,
+          // No chapter-level aggregate here on purpose: that number
+          // counted ALL rows (including types the tiles do not offer
+          // and creative parts instead of groups), so it never matched
+          // the type list. Counts are shown only where they match the
+          // list they open (the type rows), one system for every class.
           kind: GlobalPickerNodeKind.chapter,
           hasChildren: guide,
           pick: GlobalPickerPick.chapter(ch.$1),
