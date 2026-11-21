@@ -144,7 +144,10 @@ class _LessonScreenState extends State<LessonScreen> {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/search'),
+              // Back to where the student came from (the search flow
+              // keeps its class/subject/chapter); the old hardcoded
+              // /search dropped them into the legacy stepper.
+              onPressed: () => context.go(_sel.returnTo),
             ),
             title: Text(s['title']!),
             actions: [

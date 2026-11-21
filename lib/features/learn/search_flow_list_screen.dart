@@ -39,12 +39,19 @@ class SearchFlowListScreen extends StatefulWidget {
     this.lesson,
     this.questionNumber,
     this.section,
-    this.setId, this.chapterless = false, this.board = false,
+    this.setId,
+    this.chapterless = false,
+    this.board = false,
     this.premiumCheck,
     this.listService,
+    this.backTo,
   });
   final String subjectId;
   final int schoolClass;
+
+  /// Caller-provided return target (e.g. the lesson hub). Null = the
+  /// search flow itself.
+  final String? backTo;
 
   /// 'textbook' or 'guide'.
   final String source;
@@ -101,21 +108,54 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
         }, onError: (_) {});
         if (widget.setId != null) {
           // Phase 1 set scope: all rows of one set, client-paged 20 by whole stimulus groups (visibleSetRows).
-          final rows = await modelTestSetService.fetchSetRows(widget.subjectId, widget.setId!, schoolClass: widget.schoolClass);
+          final rows = await modelTestSetService.fetchSetRows(
+            widget.subjectId,
+            widget.setId!,
+            schoolClass: widget.schoolClass,
+          );
           if (!mounted) return;
-          setState(() { _loading = false; _mode = rows == null ? GuideFlowMode.unavailable : GuideFlowMode.serverFiltered; _allSetRows = rows ?? []; _visible = 20; });
+          setState(() {
+            _loading = false;
+            _mode = rows == null
+                ? GuideFlowMode.unavailable
+                : GuideFlowMode.serverFiltered;
+            _allSetRows = rows ?? [];
+            _visible = 20;
+          });
         } else if (widget.chapterless || widget.board) {
           // Chapterless or Board (018): same paging shape,
           // different Edge scope; Board lists carry section
           // + type from the route, so they render exactly.
-          final page = widget.board ? await fetchBoardPage(subject: widget.subjectId, schoolClass: widget.schoolClass, section: widget.section) : await fetchChapterlessLessonPage(subject: widget.subjectId, schoolClass: widget.schoolClass, lesson: widget.lesson, section: widget.section);
+          final page = widget.board
+              ? await fetchBoardPage(
+                  subject: widget.subjectId,
+                  schoolClass: widget.schoolClass,
+                  section: widget.section,
+                )
+              : await fetchChapterlessLessonPage(
+                  subject: widget.subjectId,
+                  schoolClass: widget.schoolClass,
+                  lesson: widget.lesson,
+                  section: widget.section,
+                );
           if (!mounted) return;
-          setState(() { _loading = false; _mode = page.mode; _guideRows = page.rows; _guideTotal = page.total; _guideHasMore = page.hasMore; });
+          setState(() {
+            _loading = false;
+            _mode = page.mode;
+            _guideRows = page.rows;
+            _guideTotal = page.total;
+            _guideHasMore = page.hasMore;
+          });
         } else {
-          final page = await (widget.listService ?? guideFlowListService).fetchPage(
-              subject: widget.subjectId, schoolClass: widget.schoolClass,
-              chapter: widget.chapterNumber, type: widget.type,
-              lesson: widget.lesson, section: widget.section);
+          final page = await (widget.listService ?? guideFlowListService)
+              .fetchPage(
+                subject: widget.subjectId,
+                schoolClass: widget.schoolClass,
+                chapter: widget.chapterNumber,
+                type: widget.type,
+                lesson: widget.lesson,
+                section: widget.section,
+              );
           if (!mounted) return;
           setState(() {
             _loading = false;
@@ -129,13 +169,19 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
       } else {
         final bn = languageNotifier.value.languageCode == 'bn';
         final rows = await textbookChapterService.fetchChapter(
-            widget.subjectId, widget.schoolClass, widget.chapterNumber, bn);
+          widget.subjectId,
+          widget.schoolClass,
+          widget.chapterNumber,
+          bn,
+        );
         if (!mounted) return;
         final filtered = (rows ?? [])
-            .where((r) =>
-                searchFlowTextbookMatches(widget.type, r.questionType) &&
-                (widget.questionNumber == null ||
-                    r.problem == widget.questionNumber))
+            .where(
+              (r) =>
+                  searchFlowTextbookMatches(widget.type, r.questionType) &&
+                  (widget.questionNumber == null ||
+                      r.problem == widget.questionNumber),
+            )
             .toList();
         setState(() {
           _loading = false;
@@ -160,16 +206,39 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
       return;
     }
     if (widget.chapterless || widget.board) {
-      final page = widget.board ? await fetchBoardPage(subject: widget.subjectId, schoolClass: widget.schoolClass, section: widget.section, offset: _guideRows.length) : await fetchChapterlessLessonPage(subject: widget.subjectId, schoolClass: widget.schoolClass, lesson: widget.lesson, section: widget.section, offset: _guideRows.length);
+      final page = widget.board
+          ? await fetchBoardPage(
+              subject: widget.subjectId,
+              schoolClass: widget.schoolClass,
+              section: widget.section,
+              offset: _guideRows.length,
+            )
+          : await fetchChapterlessLessonPage(
+              subject: widget.subjectId,
+              schoolClass: widget.schoolClass,
+              lesson: widget.lesson,
+              section: widget.section,
+              offset: _guideRows.length,
+            );
       if (!mounted) return;
-      setState(() { _mode = page.mode; _guideRows = [..._guideRows, ...page.rows]; _guideTotal = page.total; _guideHasMore = page.hasMore; });
+      setState(() {
+        _mode = page.mode;
+        _guideRows = [..._guideRows, ...page.rows];
+        _guideTotal = page.total;
+        _guideHasMore = page.hasMore;
+      });
       return;
     }
     final page = await guideFlowListService.fetchPage(
-        subject: widget.subjectId, schoolClass: widget.schoolClass,
-        chapter: widget.chapterNumber, type: widget.type,
-        lesson: widget.lesson, section: widget.section,
-        offset: _guideRows.length, scanOffset: _scanOffset);
+      subject: widget.subjectId,
+      schoolClass: widget.schoolClass,
+      chapter: widget.chapterNumber,
+      type: widget.type,
+      lesson: widget.lesson,
+      section: widget.section,
+      offset: _guideRows.length,
+      scanOffset: _scanOffset,
+    );
     if (!mounted) return;
     setState(() {
       _mode = page.mode;
@@ -187,9 +256,26 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
       builder: (context, locale, _) {
         final bn = locale.languageCode == 'bn';
         final s = bn ? searchFlowStringsBn : searchFlowStringsEn;
-        final back = '/search-flow?subject=${widget.subjectId}';
+        final back =
+            widget.backTo ??
+            '/search-flow?subject=${widget.subjectId}'
+                '&class=${widget.schoolClass}'
+                '&source=${widget.source}'
+                '&chapter=${widget.chapterNumber}';
         // Answer openings live in answer_nav; returnTo carries all filters.
-        final returnTo = searchFlowListUrl(subjectId: widget.subjectId, schoolClass: widget.schoolClass, source: widget.source, chapterNumber: widget.chapterNumber, typeName: widget.type.name, lesson: widget.lesson, questionNumber: widget.questionNumber, section: widget.section, setId: widget.setId, chapterless: widget.chapterless, board: widget.board);
+        final returnTo = searchFlowListUrl(
+          subjectId: widget.subjectId,
+          schoolClass: widget.schoolClass,
+          source: widget.source,
+          chapterNumber: widget.chapterNumber,
+          typeName: widget.type.name,
+          lesson: widget.lesson,
+          questionNumber: widget.questionNumber,
+          section: widget.section,
+          setId: widget.setId,
+          chapterless: widget.chapterless,
+          board: widget.board,
+        );
         return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -201,50 +287,102 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
           body: _loading
               ? const GuideListLoadingShimmer()
               : _mode == GuideFlowMode.unavailable
-                  ? searchFlowMessage(context, s['unavailableTitle']!,
-                      s['unavailableBody']!, s, back)
-                  : _mode == GuideFlowMode.filterPending
-                      ? searchFlowMessage(context, s['filterPendingTitle']!,
-                          s['filterPendingBody']!, s, back)
-                      : _guide
-                          ? (widget.setId != null ? _allSetRows : _guideRows).isEmpty
-                              ? searchFlowMessage(context, s[widget.section != null ? 'emptyListSection' : 'emptyList']!, '', s, back)
-                              : SearchFlowGuideListView(
-                                  rows: widget.setId != null ? visibleSetRows(_allSetRows, _visible) : _guideRows,
-                                  total: widget.setId != null ? _allSetRows.length : _guideTotal,
-                                  hasMore: widget.setId != null ? visibleSetRows(_allSetRows, _visible).length < _allSetRows.length : _guideHasMore,
-                                  isPremium: _isPremium,
-                                  subjectId: widget.subjectId,
-                                  chapterNumber: widget.chapterNumber,
-                                  // Mixed-type lists: creative groups by stimulus, rest singletons.
-                                  // Board lists are single-section by route; route type renders them.
-                                  type: widget.setId != null || (widget.chapterless && widget.section == null) ? SearchFlowType.creative : widget.type,
-                                  bn: bn,
-                                  s: s,
-                                  gs: bn
-                                      ? guideBankStringsBn
-                                      : guideBankStringsEn,
-                                  onOpen: (i, q) => openSearchFlowGuideAnswer(context, isPremium: _isPremium, index: i, q: q, subjectId: widget.subjectId, chapterNumber: q.chapterNumber ?? widget.chapterNumber, schoolClass: widget.schoolClass, returnTo: returnTo),
-                                  onOpenGroup: (fi, parts, st) => openSearchFlowGuideGroupAnswer(context, isPremium: _isPremium, firstIndex: fi, parts: parts, stimulusText: st, subjectId: widget.subjectId, chapterNumber: widget.chapterNumber, schoolClass: widget.schoolClass, returnTo: returnTo),
-                                  onLoadMore: _loadMoreGuide,
-                                )
-                          : _bookRows.isEmpty
-                              ? searchFlowMessage(context, s['emptyList']!, '', s, back)
-                              : SearchFlowBookListView(
-                                  rows: _bookRows,
-                                  visible: _visible,
-                                  bn: bn,
-                                  s: s,
-                                  cs: bn
-                                      ? chapterQuestionsStringsBn
-                                      : chapterQuestionsStringsEn,
-                                  onOpen: (q) => openSearchFlowBookAnswer(context, q: q, subjectId: widget.subjectId, chapterNumber: widget.chapterNumber, schoolClass: widget.schoolClass),
-                                  onLoadMore: () =>
-                                      setState(() => _visible += 20),
-                                ),
+              ? searchFlowMessage(
+                  context,
+                  s['unavailableTitle']!,
+                  s['unavailableBody']!,
+                  s,
+                  back,
+                )
+              : _mode == GuideFlowMode.filterPending
+              ? searchFlowMessage(
+                  context,
+                  s['filterPendingTitle']!,
+                  s['filterPendingBody']!,
+                  s,
+                  back,
+                )
+              : _guide
+              ? (widget.setId != null ? _allSetRows : _guideRows).isEmpty
+                    ? searchFlowMessage(
+                        context,
+                        s[widget.section != null
+                            ? 'emptyListSection'
+                            : 'emptyList']!,
+                        '',
+                        s,
+                        back,
+                      )
+                    : SearchFlowGuideListView(
+                        rows: widget.setId != null
+                            ? visibleSetRows(_allSetRows, _visible)
+                            : _guideRows,
+                        total: widget.setId != null
+                            ? _allSetRows.length
+                            : _guideTotal,
+                        hasMore: widget.setId != null
+                            ? visibleSetRows(_allSetRows, _visible).length <
+                                  _allSetRows.length
+                            : _guideHasMore,
+                        isPremium: _isPremium,
+                        subjectId: widget.subjectId,
+                        chapterNumber: widget.chapterNumber,
+                        // Mixed-type lists: creative groups by stimulus, rest singletons.
+                        // Board lists are single-section by route; route type renders them.
+                        type:
+                            widget.setId != null ||
+                                (widget.chapterless && widget.section == null)
+                            ? SearchFlowType.creative
+                            : widget.type,
+                        bn: bn,
+                        s: s,
+                        gs: bn ? guideBankStringsBn : guideBankStringsEn,
+                        onOpen: (i, q) => openSearchFlowGuideAnswer(
+                          context,
+                          isPremium: _isPremium,
+                          index: i,
+                          q: q,
+                          subjectId: widget.subjectId,
+                          chapterNumber:
+                              q.chapterNumber ?? widget.chapterNumber,
+                          schoolClass: widget.schoolClass,
+                          returnTo: returnTo,
+                        ),
+                        onOpenGroup: (fi, parts, st) =>
+                            openSearchFlowGuideGroupAnswer(
+                              context,
+                              isPremium: _isPremium,
+                              firstIndex: fi,
+                              parts: parts,
+                              stimulusText: st,
+                              subjectId: widget.subjectId,
+                              chapterNumber: widget.chapterNumber,
+                              schoolClass: widget.schoolClass,
+                              returnTo: returnTo,
+                            ),
+                        onLoadMore: _loadMoreGuide,
+                      )
+              : _bookRows.isEmpty
+              ? searchFlowMessage(context, s['emptyList']!, '', s, back)
+              : SearchFlowBookListView(
+                  rows: _bookRows,
+                  visible: _visible,
+                  bn: bn,
+                  s: s,
+                  cs: bn
+                      ? chapterQuestionsStringsBn
+                      : chapterQuestionsStringsEn,
+                  onOpen: (q) => openSearchFlowBookAnswer(
+                    context,
+                    q: q,
+                    subjectId: widget.subjectId,
+                    chapterNumber: widget.chapterNumber,
+                    schoolClass: widget.schoolClass,
+                  ),
+                  onLoadMore: () => setState(() => _visible += 20),
+                ),
         );
       },
     );
   }
-
 }

@@ -30,6 +30,11 @@ class GuideAnswerScreen extends StatefulWidget {
 class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
   bool _loading = true;
   bool _unavailable = false;
+
+  /// A network/timeout failure is NOT "no answer exists": it must show
+  /// an error with retry. Before this flag, a timeout rendered an empty
+  /// page and an MCQ fell into the false "no key" note.
+  bool _failed = false;
   StructuredAttempt? _attempt;
   // On-demand explanation state: _explaining covers the window
   // of a REQUESTED run only; the section shows the button until
@@ -109,6 +114,7 @@ class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
+        _failed = true;
         _attempt = null;
       });
     }
@@ -180,7 +186,8 @@ class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
         final s = bn ? guideBankStringsBn : guideBankStringsEn;
         final ls = bn ? lessonStringsBn : lessonStringsEn;
         final q = GuideAnswerHolder.question;
-        return ThemedScaffold(calm: true,
+        return ThemedScaffold(
+          calm: true,
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
@@ -191,57 +198,79 @@ class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
             // preference as the reader switch, so turning it
             // on here also turns it on in the reader and
             // vice versa. Other subjects never see it.
-            actions: [if (GuideAnswerHolder.subjectId == 'english') const GuideTranslateSwitch()],
+            actions: [
+              if (GuideAnswerHolder.subjectId == 'english')
+                const GuideTranslateSwitch(),
+            ],
           ),
-          body: guideGroupBody(context, bn, s, ls) ??
+          body:
+              guideGroupBody(context, bn, s, ls) ??
               (_loading
-              ? Center(
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(width: 12),
-                    Text(s['loading']!),
-                  ]))
-              : (_unavailable || q == null)
-              ? GuideMessageState(
-                  title: s['answerUnavailable']!,
-                  buttonLabel: s['back']!,
-                  onPressed: () => goGuideBack(context),
-                )
-              : guideAnswerScreenBody(
-                  q: q,
-                  bn: bn,
-                  s: s,
-                  ls: ls,
-                  attempt: _attempt,
-                  answerKeyLetter: _answerKeyLetter,
-                  modeGOptions: _modeGOptions,
-                  fontSize: _fontSize,
-                  onFontSmaller: () => setState(
-                      () => _fontSize = (_fontSize - 1).clamp(12, 24)),
-                  onFontLarger: () => setState(
-                      () => _fontSize = (_fontSize + 1).clamp(12, 24)),
-                  verbatimKind: _verbatimKind,
-                  verbatimText: _verbatimText,
-                  guideExplanation: _guideExplanation,
-                  correctionNote: _correctionNote,
-                  guideError: _guideError,
-                  showExplanation: _showExplanation,
-                  explanationRequested: _explanationRequested,
-                  explaining: _explaining,
-                  stepsOnly: _stepsOnly,
-                  onExplainDetailed: () => setState(() {
-                    _showExplanation = true;
-                    _stepsOnly = false;
-                  }),
-                  onExplainSteps: () => setState(() {
-                    _showExplanation = true;
-                    _stepsOnly = true;
-                  }),
-                  onRequestExplanation: _requestExplanation,
-                  onAskAi: () => openGuideChat(context, q),
-                  subjectId: GuideAnswerHolder.subjectId,
-                  chapterNumber: GuideAnswerHolder.chapterNumber,
-                )),
+                  ? Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(width: 12),
+                          Text(s['loading']!),
+                        ],
+                      ),
+                    )
+                  : _failed
+                  ? GuideMessageState(
+                      title: s['answerLoadFailed']!,
+                      buttonLabel: s['retry']!,
+                      onPressed: () {
+                        setState(() {
+                          _loading = true;
+                          _failed = false;
+                        });
+                        _load();
+                      },
+                    )
+                  : (_unavailable || q == null)
+                  ? GuideMessageState(
+                      title: s['answerUnavailable']!,
+                      buttonLabel: s['back']!,
+                      onPressed: () => goGuideBack(context),
+                    )
+                  : guideAnswerScreenBody(
+                      q: q,
+                      bn: bn,
+                      s: s,
+                      ls: ls,
+                      attempt: _attempt,
+                      answerKeyLetter: _answerKeyLetter,
+                      modeGOptions: _modeGOptions,
+                      fontSize: _fontSize,
+                      onFontSmaller: () => setState(
+                        () => _fontSize = (_fontSize - 1).clamp(12, 24),
+                      ),
+                      onFontLarger: () => setState(
+                        () => _fontSize = (_fontSize + 1).clamp(12, 24),
+                      ),
+                      verbatimKind: _verbatimKind,
+                      verbatimText: _verbatimText,
+                      guideExplanation: _guideExplanation,
+                      correctionNote: _correctionNote,
+                      guideError: _guideError,
+                      showExplanation: _showExplanation,
+                      explanationRequested: _explanationRequested,
+                      explaining: _explaining,
+                      stepsOnly: _stepsOnly,
+                      onExplainDetailed: () => setState(() {
+                        _showExplanation = true;
+                        _stepsOnly = false;
+                      }),
+                      onExplainSteps: () => setState(() {
+                        _showExplanation = true;
+                        _stepsOnly = true;
+                      }),
+                      onRequestExplanation: _requestExplanation,
+                      onAskAi: () => openGuideChat(context, q),
+                      subjectId: GuideAnswerHolder.subjectId,
+                      chapterNumber: GuideAnswerHolder.chapterNumber,
+                    )),
         );
       },
     );

@@ -29,22 +29,41 @@ class _BookLookupDetailState extends State<BookLookupDetail> {
   @override
   void initState() {
     super.initState();
-    explanationService
-        .explain(
-          grounding: widget.grounding,
-          style: 'simple',
-          bangla: widget.bn,
-        )
-        .then((r) {
-          if (mounted) setState(() { _result = r; _loading = false; });
+    _run();
+  }
+
+  /// A failed call must end the "loading explanation" state with the
+  /// honest failed row, never spin forever (the old .then() had no
+  /// onError).
+  Future<void> _run() async {
+    try {
+      final r = await explanationService.explain(
+        grounding: widget.grounding,
+        style: 'simple',
+        bangla: widget.bn,
+      );
+      if (mounted) {
+        setState(() {
+          _result = r;
+          _loading = false;
         });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _result = null;
+          _loading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final ctx = widget.grounding.context!;
     final s = widget.s;
-    final chip = '${s['chapterLabel']!} ${ctx.chapterNumber} · '
+    final chip =
+        '${s['chapterLabel']!} ${ctx.chapterNumber} · '
         '${s['pageShort']!} ${ctx.page} · '
         '${ctx.problem > 0 ? '${s['questionShort']!} ${ctx.problem}' : s['unnumbered']!}';
     final result = _result;
@@ -54,16 +73,16 @@ class _BookLookupDetailState extends State<BookLookupDetail> {
         const Divider(height: 32),
         Chip(label: Text(chip)),
         const SizedBox(height: 8),
-        Text(s['verbatimLabel']!,
-            style: Theme.of(context).textTheme.headlineMedium),
+        Text(
+          s['verbatimLabel']!,
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
         const SizedBox(height: 6),
-        Text(ctx.questionText,
-            style: Theme.of(context).textTheme.bodyLarge),
+        Text(ctx.questionText, style: Theme.of(context).textTheme.bodyLarge),
         const SizedBox(height: 16),
         if (_loading && result == null)
           Text(s['explainLoading']!)
-        else if (result == null ||
-            result.outcome == ExplanationOutcome.failed)
+        else if (result == null || result.outcome == ExplanationOutcome.failed)
           Text(s['explainFailed']!)
         else ...[
           Chip(

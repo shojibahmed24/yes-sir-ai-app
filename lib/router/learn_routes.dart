@@ -126,6 +126,7 @@ final List<GoRoute> learnRoutes = [
         initialSubjectId: s.uri.queryParameters['subject'] ?? 'math',
         initialSchoolClass: int.tryParse(s.uri.queryParameters['class'] ?? ''),
         initialSource: s.uri.queryParameters['source'],
+        initialChapter: int.tryParse(s.uri.queryParameters['chapter'] ?? ''),
       ),
     ),
   ),
@@ -151,6 +152,7 @@ final List<GoRoute> learnRoutes = [
           setId: q['setId'],
           chapterless: q['chapterless'] == 'true',
           board: q['board'] == 'true',
+          backTo: q['returnTo'],
         ),
       );
     },

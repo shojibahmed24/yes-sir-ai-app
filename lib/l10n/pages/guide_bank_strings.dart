@@ -38,6 +38,8 @@ const Map<String, String> guideBankStringsBn = {
   'unkeyedExcludedSuffix': 'টি প্রশ্নের চাবি নেই — স্কোরিং থেকে বাদ',
   'answerUnavailable': 'এই গাইড প্রশ্নের উত্তর এখনো যুক্ত হয়নি',
   'answerFailed': 'ব্যাখ্যা তৈরি করা যায়নি',
+  'answerLoadFailed':
+      'প্রশ্নটি লোড করা যায়নি — ইন্টারনেট বা সার্ভার সাড়া দেয়নি',
   'explanationKeyMismatch':
       'এআই ব্যাখ্যাটি গাইডের উত্তরের সঙ্গে মেলেনি, তাই দেখানো হয়নি। উপরে গাইডের সঠিক উত্তর চিহ্নিত আছে।',
   'retry': 'আবার চেষ্টা করুন',
@@ -127,6 +129,8 @@ const Map<String, String> guideBankStringsEn = {
   'unkeyedExcludedSuffix': ' questions have no key — excluded from scoring',
   'answerUnavailable': 'This guide question is not connected yet',
   'answerFailed': 'Explanation could not be generated',
+  'answerLoadFailed':
+      'The question could not be loaded — the network or server did not respond',
   'explanationKeyMismatch':
       'The AI explanation did not match the guide answer, so it is withheld. The guide answer is marked above.',
   'retry': 'Try again',

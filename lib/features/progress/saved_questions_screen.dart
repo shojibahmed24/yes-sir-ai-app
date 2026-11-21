@@ -32,11 +32,15 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
 
   Future<void> _reload() async {
     final ids = await LocalStore.savedQuestions();
-    if (mounted)
+    if (mounted) {
       setState(() {
-        _ids = ids;
+        // Page bookmarks ('book:subject|page') are not saved
+        // questions; older builds wrote them into this list, so they
+        // are filtered out instead of showing dead rows.
+        _ids = ids.where((id) => !id.startsWith('book:')).toList();
         _loading = false;
       });
+    }
   }
 
   @override

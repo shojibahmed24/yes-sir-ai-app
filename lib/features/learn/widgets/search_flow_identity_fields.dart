@@ -4,6 +4,7 @@
 // the English host update behind the callbacks.
 import 'package:flutter/material.dart';
 
+import '../class_choices.dart';
 import '../search_flow_controller.dart';
 import 'search_flow_field.dart';
 
@@ -27,34 +28,48 @@ class SearchFlowIdentityFields extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const gap = SizedBox(height: 12);
-    final classItems = {6, 7, controller.schoolClass}.toList()..sort();
+    final classItems = classChoices(controller.schoolClass);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SearchFlowDropdownField<int>(
-          label: s['classLabel']!, icon: Icons.school,
+          label: s['classLabel']!,
+          icon: Icons.school,
           value: controller.schoolClass,
-          items: classItems.map((c) => SearchFlowDropdownItem(value: c, label: '$c')).toList(),
+          items: classItems
+              .map((c) => SearchFlowDropdownItem(value: c, label: '$c'))
+              .toList(),
           onChanged: (v) {
             if (v != null) onClass(v);
           },
         ),
         gap,
         SearchFlowDropdownField<String>(
-          label: s['subjectLabel']!, icon: Icons.book,
-          value: controller.subjects.any((x) => x.id == controller.subjectId) ? controller.subjectId : null,
+          label: s['subjectLabel']!,
+          icon: Icons.book,
+          value: controller.subjects.any((x) => x.id == controller.subjectId)
+              ? controller.subjectId
+              : null,
           hint: s['subjectLabel']!,
-          items: controller.subjects.map((x) => SearchFlowDropdownItem(value: x.id, label: x.name(bn))).toList(),
+          items: controller.subjects
+              .map(
+                (x) => SearchFlowDropdownItem(value: x.id, label: x.name(bn)),
+              )
+              .toList(),
           onChanged: (v) {
             if (v != null) onSubject(v);
           },
         ),
         gap,
         SearchFlowDropdownField<String>(
-          label: s['sourceLabel']!, icon: Icons.source,
+          label: s['sourceLabel']!,
+          icon: Icons.source,
           value: controller.source,
           items: [
-            SearchFlowDropdownItem(value: 'textbook', label: s['sourceTextbook']!),
+            SearchFlowDropdownItem(
+              value: 'textbook',
+              label: s['sourceTextbook']!,
+            ),
             SearchFlowDropdownItem(value: 'guide', label: s['sourceGuide']!),
           ],
           onChanged: (v) {

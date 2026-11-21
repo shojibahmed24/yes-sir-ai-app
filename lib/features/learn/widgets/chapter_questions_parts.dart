@@ -4,6 +4,7 @@
 // (page section headers + question rows, meta only, no answers).
 import 'package:flutter/material.dart';
 import '../../../core/services/textbook_chapter_service.dart';
+import '../class_choices.dart';
 import 'digits.dart';
 import 'textbook_filter.dart';
 
@@ -18,21 +19,27 @@ List<Widget> buildChapterQuestionRows({
   int? lastPage;
   for (final q in shown) {
     if (q.page != lastPage) {
-      rows.add(Padding(
-        padding: const EdgeInsets.only(top: 12, bottom: 4),
-        child: Text("${s['pageWord']!} ${numStr(q.page, bn)}",
-            style: Theme.of(context).textTheme.titleMedium),
-      ));
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          child: Text(
+            "${s['pageWord']!} ${numStr(q.page, bn)}",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+      );
       lastPage = q.page;
     }
-    rows.add(Card(
-      child: ListTile(
-        title: Text(q.questionText),
-        subtitle: Text(textbookRowMeta(q, s, bn)),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => onTap(q),
+    rows.add(
+      Card(
+        child: ListTile(
+          title: Text(q.questionText),
+          subtitle: Text(textbookRowMeta(q, s, bn)),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => onTap(q),
+        ),
       ),
-    ));
+    );
   }
   return rows;
 }
@@ -50,7 +57,7 @@ class ChapterClassSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = {6, 7, schoolClass}.toList()..sort();
+    final items = classChoices(schoolClass);
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -81,20 +88,18 @@ class ChapterMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w600)),
-              if (body.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(body),
-              ],
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
-        ),
-      );
+          if (body.isNotEmpty) ...[const SizedBox(height: 8), Text(body)],
+        ],
+      ),
+    ),
+  );
 }

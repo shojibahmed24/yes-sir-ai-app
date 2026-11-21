@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/profile_service.dart';
 import '../../../theme/animated_card.dart';
 import '../../../theme/app_theme.dart';
-import '../lesson_selection.dart';
 import 'mock_data.dart';
 
 /// Chapter row. Tapping sets the selection (this subject + chapter)
@@ -48,21 +47,15 @@ class ChapterCard extends StatelessWidget {
     return AnimatedCard(
       accent: accent,
       onTap: () async {
-        // Class stamp: saved profile class when available.
-        // Null = no class known here — Search re-stamps from
-        // the saved profile, never a silent 6 at creation.
+        // Real navigation: the search flow opens with this chapter
+        // pre-picked. The old path stamped page 45 / problem 5 (demo
+        // defaults) and opened the legacy /search stepper.
         final schoolClass = await profileService.loadSchoolClass();
         if (!context.mounted) return;
-        LessonSelectionHolder.set(
-          LessonSelection(
-            subject: subjectId,
-            chapter: chapterNumber,
-            page: 45,
-            problem: 5,
-            schoolClass: schoolClass,
-          ),
+        final cls = schoolClass == null ? '' : '&class=$schoolClass';
+        context.go(
+          '/search-flow?subject=$subjectId$cls&chapter=$chapterNumber',
         );
-        context.go('/search');
       },
       child: ListTile(
         leading: Icon(_icon, color: accent),

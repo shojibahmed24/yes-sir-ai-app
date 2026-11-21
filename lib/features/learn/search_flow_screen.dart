@@ -34,10 +34,16 @@ class SearchFlowScreen extends StatefulWidget {
     this.initialSubjectId = 'math',
     this.initialSchoolClass,
     this.initialSource,
+    this.initialChapter,
   });
   final String initialSubjectId;
   final int? initialSchoolClass;
   final String? initialSource;
+
+  /// Pre-picked chapter (from a chapter card or "continue"), so the
+  /// flow opens where the student actually is instead of restarting
+  /// at the picker's first step.
+  final int? initialChapter;
 
   @override
   State<SearchFlowScreen> createState() => _SearchFlowScreenState();
@@ -72,6 +78,7 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
       initialSubjectId: widget.initialSubjectId,
       initialSchoolClass: widget.initialSchoolClass,
       initialSource: widget.initialSource,
+      initialChapter: widget.initialChapter,
       onChanged: () {
         if (mounted) setState(() {});
       },

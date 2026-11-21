@@ -20,6 +20,7 @@ class SearchFlowController {
     required this.initialSchoolClass,
     required this.onChanged,
     this.initialSource,
+    this.initialChapter,
   });
   final String initialSubjectId;
   final int? initialSchoolClass;
@@ -28,6 +29,10 @@ class SearchFlowController {
   /// directly instead of the textbook source. Null = old behaviour
   /// (guide only when the subject's book is locked).
   final String? initialSource;
+
+  /// Optional pre-picked chapter (chapter card / continue): applied
+  /// after subject+source resolve, so the picker opens at that chapter.
+  final int? initialChapter;
   final VoidCallback onChanged;
 
   int schoolClass = 6;
@@ -92,6 +97,11 @@ class SearchFlowController {
     applySubject(subjectId);
     final wanted = initialSource;
     if (wanted != null && wanted != source) changeSource(wanted);
+    final chapter0 = initialChapter;
+    if (chapter0 != null && chapter0 > 0) {
+      chapter = chapter0;
+      _notify();
+    }
   }
 
   void applySubject(String id) {

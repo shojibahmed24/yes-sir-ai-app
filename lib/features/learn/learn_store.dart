@@ -33,6 +33,7 @@ class LearnStore {
   static const _today = 'area2_today';
   static const _chapters = 'area2_chapters';
   static const _saved = 'area2_saved_ids';
+  static const _bookmarks = 'ys_book_bookmarks';
   static const _books = 'area2_recent_books';
   static const _searches = 'area2_recent_searches';
   static const _lastLesson = 'area2_last_lesson';
@@ -152,7 +153,9 @@ class LearnStore {
       lessonsOpened: (p.getStringList(_lessons) ?? const []).length,
       lessonsToday: todayCount,
       chaptersOpened: (p.getStringList(_chapters) ?? const []).length,
-      savedCount: (p.getStringList(_saved) ?? const []).length,
+      savedCount: (p.getStringList(_saved) ?? const [])
+          .where(_isQuestionId)
+          .length,
       recentBooks: p.getStringList(_books) ?? const [],
       recentSearches: p.getStringList(_searches) ?? const [],
       lastLessonKey: p.getString(_lastLesson),
@@ -231,9 +234,34 @@ class LearnStore {
     return false;
   }
 
+  /// Saved-question ids only. Page bookmarks used to be written into
+  /// the same list ('book:subject|page'), which made Saved show
+  /// untappable rows and inflated the Home saved count; those ids are
+  /// filtered out here (and kept in their own store below).
+  static bool _isQuestionId(String id) => !id.startsWith('book:');
+
   static Future<List<String>> savedIds() async {
     final p = await SharedPreferences.getInstance();
-    return p.getStringList(_saved) ?? const [];
+    return (p.getStringList(_saved) ?? const []).where(_isQuestionId).toList();
+  }
+
+  /// Book page bookmarks, separate from saved questions.
+  static Future<bool> isBookBookmarked(String id) async {
+    final p = await SharedPreferences.getInstance();
+    return (p.getStringList(_bookmarks) ?? const []).contains(id);
+  }
+
+  static Future<bool> toggleBookBookmark(String id) async {
+    final p = await SharedPreferences.getInstance();
+    final list = p.getStringList(_bookmarks) ?? [];
+    final nowSaved = !list.contains(id);
+    if (nowSaved) {
+      list.add(id);
+    } else {
+      list.remove(id);
+    }
+    await p.setStringList(_bookmarks, list);
+    return nowSaved;
   }
 
   static Future<int> chaptersOpenedFor(String subject) async {

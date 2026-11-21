@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/explanation_service.dart';
 import '../../core/services/profile_service.dart';
+import 'class_choices.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/search_strings.dart';
 import 'learn_store.dart';
@@ -117,7 +118,7 @@ class _SearchScreenState extends State<SearchScreen> {
       builder: (context, locale, _) {
         final bn = locale.languageCode == 'bn';
         final s = bn ? searchStringsBn : searchStringsEn;
-        final classItems = {6, 7, _schoolClass}.toList()..sort();
+        final classItems = classChoices(_schoolClass);
         return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(

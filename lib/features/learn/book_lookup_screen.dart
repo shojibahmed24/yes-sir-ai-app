@@ -16,6 +16,7 @@ import '../../core/models/backend_models.dart';
 import '../../core/services/book_lookup_service.dart';
 import '../../core/services/books_service.dart';
 import '../../core/services/explanation_service.dart';
+import '../../core/services/resolve_school_class.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/book_lookup_strings.dart';
 import 'widgets/book_lookup_detail.dart';
@@ -30,9 +31,10 @@ class BookLookupScreen extends StatefulWidget {
 }
 
 class _Catalog {
+  final int schoolClass;
   final List<SubjectInfo> subjects;
   final List<BookInfo> books;
-  const _Catalog(this.subjects, this.books);
+  const _Catalog(this.schoolClass, this.subjects, this.books);
 }
 
 class _BookLookupScreenState extends State<BookLookupScreen> {
@@ -48,9 +50,12 @@ class _BookLookupScreenState extends State<BookLookupScreen> {
   Grounding? _selected;
 
   static Future<_Catalog> _load(bool bn) async {
-    final subjects = await booksService.subjectsAsync(6, bn);
-    final books = await booksService.classBooksAsync(6, bn);
-    return _Catalog(subjects, books);
+    // Profile class, never a hardcoded 6: a class-9 student was
+    // browsing the class-6 catalogue.
+    final cls = await resolveSchoolClass();
+    final subjects = await booksService.subjectsAsync(cls, bn);
+    final books = await booksService.classBooksAsync(cls, bn);
+    return _Catalog(cls, subjects, books);
   }
 
   @override
@@ -125,7 +130,7 @@ class _BookLookupScreenState extends State<BookLookupScreen> {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/search'),
+              onPressed: () => context.go('/home'),
             ),
             title: Text(s['title']!),
           ),
@@ -153,8 +158,8 @@ class _BookLookupScreenState extends State<BookLookupScreen> {
                 return true;
               }
 
-              final subject = _subject != null &&
-                      offered.any((x) => x.id == _subject)
+              final subject =
+                  _subject != null && offered.any((x) => x.id == _subject)
                   ? _subject!
                   : firstUnlocked();
               final locked = subject == null || isLocked(subject);
@@ -164,23 +169,31 @@ class _BookLookupScreenState extends State<BookLookupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(s['subtitle']!,
-                        style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      s['subtitle']!,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     const SizedBox(height: 16),
-                    Text(s['subjectLabel']!,
-                        style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      s['subjectLabel']!,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     DropdownButton<String>(
                       value: subject,
                       isExpanded: true,
                       hint: Text(s['selectSubject']!),
                       items: offered
-                          .map((x) => DropdownMenuItem(
-                                value: x.id,
-                                enabled: !x.locked,
-                                child: Text(x.name(bn),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis),
-                              ))
+                          .map(
+                            (x) => DropdownMenuItem(
+                              value: x.id,
+                              enabled: !x.locked,
+                              child: Text(
+                                x.name(bn),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (v) => setState(() {
                         _subject = v;
@@ -202,7 +215,11 @@ class _BookLookupScreenState extends State<BookLookupScreen> {
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton(
-                      onPressed: (subject == null || locked || _pageBusy)
+                      onPressed:
+                          (subject == null ||
+                              locked ||
+                              _pageBusy ||
+                              int.tryParse(_pageCtrl.text.trim()) == null)
                           ? null
                           : () => _listPage(cat, subject, bn),
                       child: Text(_pageBusy ? s['listing']! : s['listButton']!),
@@ -213,7 +230,11 @@ class _BookLookupScreenState extends State<BookLookupScreen> {
                         result: page,
                         s: s,
                         onTap: (q) => setState(
-                            () => _selected = q.toGrounding(subject!, 6)),
+                          () => _selected = q.toGrounding(
+                            subject!,
+                            cat.schoolClass,
+                          ),
+                        ),
                       ),
                     ],
                     const Divider(height: 32),
@@ -222,7 +243,8 @@ class _BookLookupScreenState extends State<BookLookupScreen> {
                       s: s,
                       busy: _textBusy,
                       state: _textState,
-                      enabled: subject != null &&
+                      enabled:
+                          subject != null &&
                           !locked &&
                           _textCtrl.text.trim().length >= 3,
                       onSearch: () => _searchText(subject!, bn),

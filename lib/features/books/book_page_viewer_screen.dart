@@ -16,7 +16,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yes_sir_ai/core/services/learn_service.dart';
-import 'package:yes_sir_ai/core/services/local_store.dart';
 import 'package:yes_sir_ai/core/services/profile_service.dart';
 import 'package:yes_sir_ai/core/services/supabase_client.dart';
 import 'package:yes_sir_ai/features/learn/learn_store.dart';
@@ -60,21 +59,30 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
       _page = p < 1 ? 1 : p;
       BookSelectionHolder.page = _page;
     });
-    LearnStore.isSaved('book:$_subject|$_page').then((v) {
+    LearnStore.isBookBookmarked('book:$_subject|$_page').then((v) {
       if (mounted) setState(() => _bookmarked = v);
     });
   }
 
   Future<void> _toggleBookmark(Map<String, String> s) async {
     final id = 'book:$_subject|$_page';
-    final nowSaved = await LearnStore.toggleSaved(id);
-    if (nowSaved) await LocalStore.saveQuestion(id);
+    // Page bookmarks live in their own store: they are not saved
+    // questions and must never appear in the Saved list.
+    final nowSaved = await LearnStore.toggleBookBookmark(id);
     if (!mounted) return;
     setState(() => _bookmarked = nowSaved);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(nowSaved ? s['bookmarked']! : s['bookmarkRemoved']!)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(nowSaved ? s['bookmarked']! : s['bookmarkRemoved']!),
+      ),
+    );
   }
 
-  Future<void> _viewExplanation(BuildContext context, bool bn, Map<String, String> s) async {
+  Future<void> _viewExplanation(
+    BuildContext context,
+    bool bn,
+    Map<String, String> s,
+  ) async {
     // Class stamp: saved profile class when available; null = no
     // class known — downstream resolves from it, never a silent 6.
     final schoolClass = await profileService.loadSchoolClass();
@@ -100,7 +108,14 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
     if (key != null) {
       final p = key.split('|');
       LessonSelectionHolder.set(
-        LessonSelection(subject: p[0], schoolClass: schoolClass, chapter: int.parse(p[1]), page: int.parse(p[2]), problem: int.parse(p[3]), bookId: BookSelectionHolder.bookId),
+        LessonSelection(
+          subject: p[0],
+          schoolClass: schoolClass,
+          chapter: int.parse(p[1]),
+          page: int.parse(p[2]),
+          problem: int.parse(p[3]),
+          bookId: BookSelectionHolder.bookId,
+        ),
       );
       context.go('/lesson');
       return;
@@ -128,20 +143,48 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
         final s = bn ? bookPageViewerStringsBn : bookPageViewerStringsEn;
         final subjectName = subjectNameFor(_subject, bn);
         // Configured: the DEMO index must not answer for real books.
-        final grounded = supabaseOrNull != null ? null : learnService.resolveForPage(_subject, _page);
+        final grounded = supabaseOrNull != null
+            ? null
+            : learnService.resolveForPage(_subject, _page);
         final pageLabel = s['pageLabel']!.replaceAll('{n}', numStr(_page, bn));
-        return ThemedScaffold(calm: true,
+        return ThemedScaffold(
+          calm: true,
           appBar: AppBar(
-            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/books')),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/books'),
+            ),
             title: Text(s['title']!),
-            actions: [IconButton(icon: Icon(_bookmarked ? Icons.bookmark : Icons.bookmark_border), onPressed: () => _toggleBookmark(s))],
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _bookmarked ? Icons.bookmark : Icons.bookmark_border,
+                ),
+                onPressed: () => _toggleBookmark(s),
+              ),
+            ],
           ),
           body: ListView(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              16 + MediaQuery.of(context).padding.bottom,
+            ),
             children: [
-              Row(children: [Text(pageLabel, style: Theme.of(context).textTheme.headlineMedium)]),
+              Row(
+                children: [
+                  Text(
+                    pageLabel,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
-              Text('$subjectName · ${s['class6Label']!}', style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                '$subjectName · ${s['class6Label']!}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -149,24 +192,43 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(grounded == null ? s['noIndexedQuestion']! : grounded.question, style: Theme.of(context).textTheme.bodyLarge),
+                      Text(
+                        grounded == null
+                            ? s['noIndexedQuestion']!
+                            : grounded.question,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                       const SizedBox(height: 12),
-                      Text(grounded == null ? s['pagePlaceholder']! : s['aiReady']!, style: Theme.of(context).textTheme.bodySmall),
+                      Text(
+                        grounded == null
+                            ? s['pagePlaceholder']!
+                            : s['aiReady']!,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: () => _viewExplanation(context, bn, s), child: Text(s['viewSolution']!)),
+              ElevatedButton(
+                onPressed: () => _viewExplanation(context, bn, s),
+                child: Text(s['viewSolution']!),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(onPressed: _page > 1 ? () => _setPage(_page - 1) : null, child: Text(s['prev']!)),
+                    child: OutlinedButton(
+                      onPressed: _page > 1 ? () => _setPage(_page - 1) : null,
+                      child: Text(s['prev']!),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: OutlinedButton(onPressed: () => _setPage(_page + 1), child: Text(s['next']!)),
+                    child: OutlinedButton(
+                      onPressed: () => _setPage(_page + 1),
+                      child: Text(s['next']!),
+                    ),
                   ),
                 ],
               ),
@@ -179,7 +241,9 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         hintText: s['jumpLabel'],
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
@@ -188,7 +252,9 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
                     onPressed: () {
                       final v = int.tryParse(_jumpController.text.trim());
                       if (v == null || v < 1) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s['invalidPage']!)));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(s['invalidPage']!)),
+                        );
                         return;
                       }
                       _jumpController.clear();
@@ -199,7 +265,10 @@ class _BookPageViewerScreenState extends State<BookPageViewerScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              TextButton(onPressed: () => _toggleBookmark(s), child: Text(s['bookmark']!)),
+              TextButton(
+                onPressed: () => _toggleBookmark(s),
+                child: Text(s['bookmark']!),
+              ),
             ],
           ),
         );
