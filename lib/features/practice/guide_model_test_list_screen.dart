@@ -10,6 +10,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/models/guide_bank_model.dart';
+import '../../core/models/backend_models.dart';
+import '../../core/services/books_service.dart';
 import '../../core/services/app_config.dart';
 import '../../core/services/billing_service.dart';
 import '../../core/services/guide_quiz_service.dart';
@@ -89,6 +91,15 @@ class GuideModelTestListScreen extends StatefulWidget {
 
 class _GuideModelTestListScreenState extends State<GuideModelTestListScreen> {
   String? _startingSetId;
+
+  /// Model-test subject (A5): the screen used to inherit whatever the
+  /// practice screen last selected, so only maths ever appeared.
+  String _subject = PracticeSession.selectedSubject;
+
+  Future<List<SubjectInfo>> _subjects(bool bangla) async {
+    final cls = await resolveSchoolClass();
+    return booksService.subjectsAsync(cls, bangla);
+  }
 
   Future<void> _start(
     BuildContext context,
@@ -179,7 +190,7 @@ class _GuideModelTestListScreenState extends State<GuideModelTestListScreen> {
       builder: (context, locale, _) {
         final bn = locale.languageCode == 'bn';
         final s = bn ? guideBankStringsBn : guideBankStringsEn;
-        final subject = PracticeSession.selectedSubject;
+        final subject = _subject;
         return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -188,6 +199,35 @@ class _GuideModelTestListScreenState extends State<GuideModelTestListScreen> {
             ),
             title: Text(
               '${s['modelTestsTitle']!} · ${subjectNameFor(subject, bn)}',
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(52),
+              child: FutureBuilder<List<SubjectInfo>>(
+                future: _subjects(bn),
+                builder: (context, snap) {
+                  final list = snap.data ?? const <SubjectInfo>[];
+                  if (list.isEmpty) return const SizedBox.shrink();
+                  return SizedBox(
+                    height: 52,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: list.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (context, i) => Center(
+                        child: ChoiceChip(
+                          label: Text(list[i].name(bn)),
+                          selected: list[i].id == _subject,
+                          onSelected: (_) {
+                            setState(() => _subject = list[i].id);
+                            PracticeSession.selectedSubject = list[i].id;
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           body: FutureBuilder<List<dynamic>>(
