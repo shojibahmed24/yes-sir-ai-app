@@ -112,6 +112,22 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
+                Card(
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.workspace_premium,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    title: Text(s['planTitle']!),
+                    subtitle: Text(s['planSub']!),
+                    trailing: Chip(
+                      label: Text(
+                        _isPremium ? s['planPremium']! : s['planFree']!,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 if (_isPremium)
                   // UI palette (গ): premium-active card uses the
                   // gold → purple premium gradient with white text.

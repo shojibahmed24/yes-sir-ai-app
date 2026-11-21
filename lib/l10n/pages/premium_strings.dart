@@ -5,6 +5,11 @@
 const Map<String, String> premiumStringsBn = {
   'paywallTitle': 'প্রিমিয়াম',
   'paywallSub': 'তোমার পরীক্ষার পূর্ণাঙ্গ প্রস্তুতি আরও সহজ করো।',
+  'planTitle': 'লঞ্চ প্ল্যান',
+  'planSub':
+      'গাইড, AI ব্যাখ্যা, প্র্যাকটিস ও মডেল টেস্ট — সব ফ্রি। শুধু ভয়েস টিউটর প্রিমিয়ামে।',
+  'planFree': 'ফ্রি',
+  'planPremium': 'প্রিমিয়াম',
   'voiceFeat':
       'ভয়েস টিউটর (প্রিমিয়াম-অনলি) — মুখে প্রশ্ন করো, উত্তর শোনো; প্রতি সাবস্ক্রিপশন পিরিয়ডে সর্বোচ্চ ৩০ মিনিট',
   'practiceFeat': 'প্র্যাকটিস ও কুইজ — অনুশীলন প্রশ্ন করো, ফলাফল দেখো',
@@ -60,6 +65,11 @@ const Map<String, String> premiumStringsBn = {
 const Map<String, String> premiumStringsEn = {
   'paywallTitle': 'Premium',
   'paywallSub': 'Make your full exam preparation even easier.',
+  'planTitle': 'Launch plan',
+  'planSub':
+      'Guides, AI explanations, practice and model tests — all free. Only voice tutor is premium.',
+  'planFree': 'Free',
+  'planPremium': 'Premium',
   'voiceFeat':
       'Voice tutor (premium-only) — ask aloud, listen to the answer; up to 30 minutes per subscription period',
   'practiceFeat':
