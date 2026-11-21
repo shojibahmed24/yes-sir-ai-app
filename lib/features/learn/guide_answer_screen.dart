@@ -203,6 +203,31 @@ class _GuideAnswerScreenState extends State<GuideAnswerScreen> {
                 const GuideTranslateSwitch(),
             ],
           ),
+          // S6.2: the explanation action stays reachable after a long
+          // scroll (single verbatim answer + AI section can be tall).
+          bottomNavigationBar:
+              !_loading &&
+                  !_failed &&
+                  !_unavailable &&
+                  q != null &&
+                  !_explanationRequested
+              ? SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+                    child: SizedBox(
+                      height: 48,
+                      child: FilledButton.icon(
+                        onPressed: _explaining
+                            ? null
+                            : () => _requestExplanation(),
+                        icon: const Icon(Icons.auto_awesome, size: 18),
+                        label: Text(s['viewExplanation']!),
+                      ),
+                    ),
+                  ),
+                )
+              : null,
           body:
               guideGroupBody(context, bn, s, ls) ??
               (_loading
