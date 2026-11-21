@@ -9,6 +9,7 @@ import 'package:yes_sir_ai/features/progress/widgets/progress_widgets.dart';
 import 'package:yes_sir_ai/l10n/language_provider.dart';
 import 'package:yes_sir_ai/l10n/pages/progress_strings.dart';
 import 'package:yes_sir_ai/features/progress/widgets/progress_hero.dart';
+import 'package:yes_sir_ai/features/progress/widgets/progress_extra.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class ProgressScreen extends StatelessWidget {
@@ -176,6 +177,23 @@ class ProgressScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  ProgressScoreCard(
+                    bn: bangla,
+                    score: sum.averageScore,
+                    runs: sum.totalAttempts,
+                    answered: sum.totalAnswered,
+                    title: s['overallScore']!,
+                    runsLabel: s['runs']!,
+                    questionsLabel: s['questions']!,
+                  ),
+                  const SizedBox(height: 12),
+                  ProgressSubjectBreakdown(
+                    bn: bangla,
+                    attempts: sum.attempts,
+                    title: s['bySubject']!,
+                    emptyLabel: s['noDataSub']!,
                   ),
                   const SizedBox(height: 12),
                   Text(

@@ -23,6 +23,8 @@ const Map<String, String> progressStringsBn = {
   'taskModel': 'আজ একটি মডেল টেস্ট শেষ করো',
   'taskGoal': 'আজকের লক্ষ্যের প্রশ্নগুলো শেষ করো',
   'questions': 'টি প্রশ্ন',
+  'overallScore': 'সামগ্রিক স্কোর',
+  'bySubject': 'বিষয়ভিত্তিক ফলাফল',
   'startPractice': 'প্র্যাকটিস শুরু করো',
 };
 const Map<String, String> progressStringsEn = {
@@ -50,6 +52,8 @@ const Map<String, String> progressStringsEn = {
   'taskModel': 'Finish a model test today',
   'taskGoal': 'Finish today’s goal questions',
   'questions': 'questions',
+  'overallScore': 'Overall score',
+  'bySubject': 'Results by subject',
   'startPractice': 'Start Practice',
 };
 
