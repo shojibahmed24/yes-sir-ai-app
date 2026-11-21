@@ -195,13 +195,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                           onOpenBook: (e) {
                             final parts = e.split('|');
-                            if (parts.isNotEmpty) {
-                              BookSelectionHolder.set(
-                                parts[0],
-                                'class6-${parts[0]}-${bn ? 'bn' : 'en'}',
-                                1,
-                              );
+                            // The recent entry carries the REAL
+                            // books_public id as its 4th part; the old
+                            // fabricated 'class6-…' id opened the wrong
+                            // (or no) book. No id = open the library,
+                            // never invent one.
+                            final id = parts.length > 3 ? parts[3] : '';
+                            if (id.isEmpty) {
+                              context.go('/books');
+                              return;
                             }
+                            BookSelectionHolder.set(parts[0], id, 1);
                             context.go('/books/viewer');
                           },
                           onSearch: () => context.go('/search-flow'),
