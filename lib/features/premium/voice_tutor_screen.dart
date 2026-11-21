@@ -14,12 +14,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/ai_voice_service.dart';
+import '../../core/services/app_config.dart';
 import '../../core/services/billing_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/premium_strings.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import 'widgets/voice_hero.dart';
+import 'widgets/voice_minutes_card.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class VoiceTutorScreen extends StatefulWidget {
@@ -201,6 +203,13 @@ class _VoiceTutorScreenState extends State<VoiceTutorScreen> {
                   note: _inCall
                       ? (_isDemo ? s['demoPracticeNote']! : s['liveNote']!)
                       : (_isDemoTestGate ? s['demoTestGateNote']! : ''),
+                ),
+                const SizedBox(height: Sp.md),
+                VoiceMinutesCard(
+                  remaining: _remaining,
+                  cap: AppConfig.voiceCapMinutesPerPeriod,
+                  label: s['remainingLabel']!,
+                  unit: s['minutesUnit']!,
                 ),
                 const SizedBox(height: Sp.xxl),
                 if (!exhausted)
