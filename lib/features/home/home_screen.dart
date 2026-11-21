@@ -345,19 +345,46 @@ class _HomeScreenState extends State<HomeScreen> {
                           heroTopic: heroTopic,
                           recentBooks: sum?.recentBooks ?? const [],
                           onOpenLesson: () {
-                            if (last != null) {
-                              LessonSelectionHolder.set(last);
-                              context.go('/lesson');
+                            if (last == null) return;
+                            // B14: a guide entry (page 0) opens the
+                            // new search flow at that chapter; a real
+                            // textbook entry keeps the lesson screen.
+                            if (last.page <= 0) {
+                              final cls = last.schoolClass;
+                              context.go(
+                                '/search-flow?subject=${last.subject}'
+                                '&chapter=${last.chapter}'
+                                '${cls == null ? '' : '&class=$cls'}',
+                              );
+                              return;
                             }
+                            LessonSelectionHolder.set(last);
+                            context.go('/lesson');
                           },
                           onOpenBook: (e) {
                             final parts = e.split('|');
+                            // A guide entry (B14) carries the target as
+                            // '<guide:class:subject:chapter>'.
+                            final target = parts.length > 3 ? parts[3] : '';
+                            if (target.startsWith('<guide:')) {
+                              final t = target
+                                  .replaceAll('<guide:', '')
+                                  .replaceAll('>', '')
+                                  .split(':');
+                              if (t.length == 3) {
+                                context.go(
+                                  '/search-flow?subject=${t[1]}'
+                                  '&class=${t[0]}&chapter=${t[2]}',
+                                );
+                                return;
+                              }
+                            }
                             // The recent entry carries the REAL
                             // books_public id as its 4th part; the old
                             // fabricated 'class6-…' id opened the wrong
                             // (or no) book. No id = open the library,
                             // never invent one.
-                            final id = parts.length > 3 ? parts[3] : '';
+                            final id = target;
                             if (id.isEmpty) {
                               context.go('/books');
                               return;

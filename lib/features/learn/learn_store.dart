@@ -42,6 +42,38 @@ class LearnStore {
   /// Recently opened guide questions: 'subject|chapter|id|snippet'.
   static const _recentQuestions = 'area2_recent_questions';
 
+  /// A guide question/lesson the student opened (B14). Home's
+  /// "last studied" and "recent books" read this: the old
+  /// recordLesson only ran for textbook lessons, so every guide
+  /// question left both sections empty.
+  static Future<void> recordGuideStudy({
+    required String subject,
+    required int chapter,
+    required String chapterTitleBn,
+    required String chapterTitleEn,
+    String? lesson,
+    required int schoolClass,
+  }) async {
+    final p = await SharedPreferences.getInstance();
+    // Same shape the hero understands ('subject|chapter|page|problem');
+    // page 0 marks a guide item (no textbook page), so Home opens the
+    // search flow instead of a textbook lesson.
+    await p.setString(_lastLesson, '$subject|$chapter|0|0');
+    final titleBn = (lesson == null || lesson.isEmpty)
+        ? chapterTitleBn
+        : '$chapterTitleBn · $lesson';
+    final titleEn = (lesson == null || lesson.isEmpty)
+        ? chapterTitleEn
+        : '$chapterTitleEn · $lesson';
+    // 4th part: the guide target instead of a books_public id.
+    final entry =
+        '$subject|$titleBn|$titleEn|<guide:$schoolClass:$subject:$chapter>';
+    final list = p.getStringList(_books) ?? [];
+    list.removeWhere((e) => e == entry);
+    list.insert(0, entry);
+    await p.setStringList(_books, list.take(5).toList());
+  }
+
   static Future<void> addRecentQuestion(String entry) async {
     final p = await SharedPreferences.getInstance();
     final list = p.getStringList(_recentQuestions) ?? [];

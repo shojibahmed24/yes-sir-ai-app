@@ -19,6 +19,7 @@ import '../../core/services/textbook_chapter_service.dart';
 import 'guide_answer_holder.dart';
 import 'lesson_selection.dart';
 import 'learn_store.dart';
+import 'search_flow_types.dart';
 
 String searchFlowListUrl({
   required String subjectId,
@@ -96,7 +97,28 @@ Future<void> openSearchFlowGuideAnswer(
       '${snippet.length > 80 ? snippet.substring(0, 80) : snippet}',
     ),
   );
+  // B14: Home's "last studied" / "recent books" now follow the new
+  // guide flow too, not only the old textbook screens.
+  final ch = q.chapterNumber ?? chapterNumber;
+  unawaited(
+    LearnStore.recordGuideStudy(
+      subject: subjectId,
+      chapter: ch,
+      chapterTitleBn: _chapterTitle(subjectId, schoolClass, ch, true),
+      chapterTitleEn: _chapterTitle(subjectId, schoolClass, ch, false),
+      lesson: q.lesson,
+      schoolClass: schoolClass,
+    ),
+  );
   context.go('/guide-answer');
+}
+
+/// Chapter title for the recent lists: the verified title when one
+/// exists, else the honest "Chapter N" (never an invented name).
+String _chapterTitle(String subject, int schoolClass, int chapter, bool bn) {
+  final t = verifiedChapterTitle(subject, schoolClass, chapter);
+  final label = bn ? 'অধ্যায়' : 'Chapter';
+  return t == null || t.isEmpty ? '$label $chapter' : '$label $chapter — $t';
 }
 
 /// Fix A: creative group open — the exact Step 6 contract
@@ -117,6 +139,20 @@ void openSearchFlowGuideGroupAnswer(
     context.go('/premium');
     return;
   }
+  // B14: a creative group open also counts as studying this lesson.
+  final ch = parts.isEmpty
+      ? chapterNumber
+      : (parts.first.chapterNumber ?? chapterNumber);
+  unawaited(
+    LearnStore.recordGuideStudy(
+      subject: subjectId,
+      chapter: ch,
+      chapterTitleBn: _chapterTitle(subjectId, schoolClass, ch, true),
+      chapterTitleEn: _chapterTitle(subjectId, schoolClass, ch, false),
+      lesson: parts.isEmpty ? null : parts.first.lesson,
+      schoolClass: schoolClass,
+    ),
+  );
   context.go(
     '/guide-answer',
     extra: {
