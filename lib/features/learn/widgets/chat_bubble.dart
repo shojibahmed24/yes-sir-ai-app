@@ -51,7 +51,8 @@ class ChatBubble extends StatelessWidget {
             // (300 + padding > screen). 80% of the screen width
             // keeps the bubble inside on every width.
             constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.8),
+              maxWidth: MediaQuery.of(context).size.width * 0.8,
+            ),
             margin: const EdgeInsets.symmetric(vertical: 6),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -74,7 +75,11 @@ class ChatBubble extends StatelessWidget {
                       color: onSurface,
                     ),
                   )
-                : SolutionBlocks(text: text, fontSize: fontSize),
+                // SelectionArea: long-press copies an AI answer (no
+                // clipboard button needed, and formatting is kept).
+                : SelectionArea(
+                    child: SolutionBlocks(text: text, fontSize: fontSize),
+                  ),
           ),
           if (!isUser && onSave != null)
             TextButton.icon(
@@ -86,10 +91,12 @@ class ChatBubble extends StatelessWidget {
               // M4: no hardcoded fallback — the chat screen passes
               // saveLabel; this locale-aware fallback only covers
               // callers that do not (e.g. tests).
-              label: Text(saveLabel ??
-                  (Localizations.localeOf(context).languageCode == 'bn'
-                      ? chatStringsBn['saveQ']!
-                      : chatStringsEn['saveQ']!)),
+              label: Text(
+                saveLabel ??
+                    (Localizations.localeOf(context).languageCode == 'bn'
+                        ? chatStringsBn['saveQ']!
+                        : chatStringsEn['saveQ']!),
+              ),
             ),
         ],
       ),

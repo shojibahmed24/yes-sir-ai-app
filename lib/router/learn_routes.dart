@@ -10,7 +10,6 @@ import '../features/home/subjects_screen.dart';
 import '../features/subject_detail/subject_detail_screen.dart';
 import '../features/today/today_screen.dart';
 import '../features/learn/chapters_screen.dart';
-import '../features/learn/search_screen.dart';
 import '../features/learn/chapter_questions_screen.dart';
 import '../features/learn/lesson_selection.dart';
 import '../features/learn/book_lookup_screen.dart';
@@ -203,13 +202,11 @@ final List<GoRoute> learnRoutes = [
       );
     },
   ),
-  // shows it instead of discarding it (see SearchScreen).
+  // Legacy stepper: old shared links land on the new flow instead.
   GoRoute(
     path: '/search',
-    builder: (c, s) => BackScope(
-      parent: '/home',
-      child: SearchScreen(initialQuery: s.uri.queryParameters['q'] ?? ''),
-    ),
+    redirect: (c, s) =>
+        '/search-flow?subject=${s.uri.queryParameters['subject'] ?? 'math'}',
   ),
   // Second step: textbook chapter list. schoolClass/bannerPage
   // come from ChapterListHolder (set by Search); a direct route

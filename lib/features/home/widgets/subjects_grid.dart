@@ -85,6 +85,34 @@ class SubjectsGrid extends StatelessWidget {
     final s = bn ? subjectsStringsBn : subjectsStringsEn;
     final gs = bn ? guideBankStringsBn : guideBankStringsEn;
     final nav = bn ? homeStringsBn : homeStringsEn;
+    // Classes 1–5 have no books or guides yet: say so instead of
+    // listing every subject as "not added" (owner decision).
+    if (schoolClass <= 5) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s['classComingSoon']!,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    s['classComingSoonBody']!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     if (subjects.isEmpty) {
       return HomeEmptyState(
         message: emptyMessage ?? nav['noSubjects']!,

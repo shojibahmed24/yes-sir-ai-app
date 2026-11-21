@@ -23,6 +23,9 @@ const Map<String, String> subjectsStringsBn = {
   'groupBook': 'বই আছে',
   'groupLocked': 'এখনো যোগ হয়নি',
   'sharedBook': 'ক্লাস ৯-এর শেয়ার্ড বই',
+  'classComingSoon': 'ক্লাস ১–৫ শীঘ্রই আসছে',
+  'classComingSoonBody':
+      'এই ক্লাসগুলোর বই ও গাইড এখনো যোগ করা হয়নি। ততদিন ৬–১০ শ্রেণির বিষয়গুলো ব্যবহার করা যায়।',
   'advice': 'আজকের পরামর্শ',
   'adviceText': 'গণিত ৩য় অধ্যায়ের সূত্রগুলো একবার রিভিশন দাও, চমৎকার হবে!',
   'booksSupplied': 'টি বিষয়ের বই দেওয়া আছে',
@@ -52,6 +55,9 @@ const Map<String, String> subjectsStringsEn = {
   'groupBook': 'Book available',
   'groupLocked': 'Not added yet',
   'sharedBook': 'Shared Class 9 book',
+  'classComingSoon': 'Classes 1–5 are coming soon',
+  'classComingSoonBody':
+      'Books and guides for these classes are not added yet. Classes 6–10 are ready to use meanwhile.',
   'advice': 'Today\'s advice',
   'adviceText': 'Revise the Maths Chapter 3 formulas once — you will do great!',
   'booksSupplied': 'subjects have a supplied book',

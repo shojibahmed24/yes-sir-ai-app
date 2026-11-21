@@ -35,6 +35,11 @@ class _ChatScreenState extends State<ChatScreen> {
   /// off-screen below the fold; every send and reply jumps to the end.
   final _scroll = ScrollController();
 
+  /// Retry: the last question is kept so a failed AI call can be
+  /// re-sent without retyping; the banner clears on the next success.
+  String _lastQuestion = '';
+  bool _lastFailed = false;
+
   void _scrollToEnd() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
@@ -84,9 +89,11 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty || _thinking) return;
     _controller.clear();
+    _lastQuestion = text;
     setState(() {
       _messages.add(ChatMsg(text, true));
       _thinking = true;
+      _lastFailed = false;
     });
     _scrollToEnd();
     // Dispatch: guide selections resolve via Mode G (never the
@@ -102,6 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final honest = honestGuideChatReply(resolved, s);
     String reply;
     String? saveId;
+    var failed = false;
     if (!grounding.found) {
       reply = resolved.isGuide
           ? s['guideNotFound']!
@@ -128,6 +136,7 @@ class _ChatScreenState extends State<ChatScreen> {
           marksOverride: parseUserMarks(text),
         );
         reply = chatReplyFromPlainResult(res, s);
+        failed = res.outcome == ExplanationOutcome.failed;
       }
       saveId = 'chat:${_sel.key}:$_replyCount';
     }
@@ -135,6 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _thinking = false;
       _replyCount++;
+      _lastFailed = failed;
       _messages.add(ChatMsg(reply, false, saveId));
     });
     _scrollToEnd();
@@ -220,6 +230,31 @@ class _ChatScreenState extends State<ChatScreen> {
                       Text(
                         s['tip']!,
                         style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    if (_lastFailed)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                s['retryFailed']!,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _thinking
+                                  ? null
+                                  : () {
+                                      _controller.text = _lastQuestion;
+                                      _send(bn, s);
+                                    },
+                              child: Text(s['retry']!),
+                            ),
+                          ],
+                        ),
                       ),
                   ],
                 ),
