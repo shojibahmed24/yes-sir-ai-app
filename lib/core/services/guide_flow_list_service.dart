@@ -31,8 +31,8 @@ export 'guide_flow_models.dart';
 
 class GuideFlowListService {
   GuideFlowListService({GuideFlowPost? post})
-      : _post = post ?? edgePost,
-        _customPost = post != null;
+    : _post = post ?? edgePost,
+      _customPost = post != null;
   final GuideFlowPost _post;
   final bool _customPost;
   final GuideFlowPageCache _pageCache = GuideFlowPageCache();
@@ -58,37 +58,61 @@ class GuideFlowListService {
     int offset = 0,
     int scanOffset = 0,
   }) async {
-    final identity =
-        [subject, schoolClass, chapter, type.name, lesson ?? '', section ?? '']
-            .join('|');
+    final identity = [
+      subject,
+      schoolClass,
+      chapter,
+      type.name,
+      lesson ?? '',
+      section ?? '',
+    ].join('|');
     if (offset > 0) {
       final cached = _pageCache.take('$identity@$offset');
       if (cached != null) {
         prefetchGuideFlowPage(
-            fetch: (body, {endpoint}) => _list(body),
-            cache: _pageCache,
-            identity: identity,
-            body: cached.nextBody,
-            pageSize: pageSize);
+          fetch: (body, {endpoint}) => _list(body),
+          cache: _pageCache,
+          identity: identity,
+          body: cached.nextBody,
+          pageSize: pageSize,
+        );
         return cached.page;
       }
     }
     final key = '$identity@$offset@$scanOffset';
     final existing = _inFlight.existing(key);
     if (existing != null) return existing;
-    return _inFlight.track(
-        key,
-        _fetchPageInner(
-            identity: identity,
-            subject: subject,
-            schoolClass: schoolClass,
-            chapter: chapter,
-            type: type,
-            lesson: lesson,
-            section: section,
-            offset: offset,
-            scanOffset: scanOffset));
+    // A13: first page per list is reused for 3 minutes. Custom-post
+    // instances (tests/injection) skip the cache so a fake failure can
+    // never be masked by an earlier page.
+    if (!_customPost && offset == 0) {
+      final hit = _firstPage[identity];
+      if (hit != null &&
+          DateTime.now().difference(hit.$1) < const Duration(minutes: 3)) {
+        return hit.$2;
+      }
+    }
+    final page = await _inFlight.track(
+      key,
+      _fetchPageInner(
+        identity: identity,
+        subject: subject,
+        schoolClass: schoolClass,
+        chapter: chapter,
+        type: type,
+        lesson: lesson,
+        section: section,
+        offset: offset,
+        scanOffset: scanOffset,
+      ),
+    );
+    if (!_customPost && offset == 0) {
+      _firstPage[identity] = (DateTime.now(), page);
+    }
+    return page;
   }
+
+  final Map<String, (DateTime, GuideFlowPage)> _firstPage = {};
 
   Future<GuideFlowPage> _fetchPageInner({
     required String identity,
@@ -106,23 +130,25 @@ class GuideFlowListService {
       // the direct page first; the client scan is the fallback
       // for old servers (no section echo) and unreachable ones.
       final direct = await fetchDirectSectionPage(
-          fetch: (body, {endpoint}) => _list(body),
-          subject: subject,
-          schoolClass: schoolClass,
-          chapter: chapter,
-          section: section,
-          lesson: lesson,
-          offset: offset,
-          pageSize: pageSize);
+        fetch: (body, {endpoint}) => _list(body),
+        subject: subject,
+        schoolClass: schoolClass,
+        chapter: chapter,
+        section: section,
+        lesson: lesson,
+        offset: offset,
+        pageSize: pageSize,
+      );
       if (direct != null) return direct;
       return guideFlowSectionPage(
-          fetch: (body, {endpoint}) => _list(body),
-          subject: subject,
-          schoolClass: schoolClass,
-          chapter: chapter,
-          section: section,
-          lesson: lesson,
-          scanOffset: scanOffset);
+        fetch: (body, {endpoint}) => _list(body),
+        subject: subject,
+        schoolClass: schoolClass,
+        chapter: chapter,
+        section: section,
+        lesson: lesson,
+        scanOffset: scanOffset,
+      );
     }
     final typeSection = searchFlowGuideSection(type);
     if (type == SearchFlowType.creative) {
@@ -134,12 +160,13 @@ class GuideFlowListService {
       // Paging continues via scanOffset (the screen tracks
       // nextScanOffset); no server prefetch applies here.
       return guideFlowCreativePatternPage(
-          fetch: (body, {endpoint}) => _list(body),
-          subject: subject,
-          schoolClass: schoolClass,
-          chapter: chapter,
-          lesson: lesson,
-          scanOffset: scanOffset);
+        fetch: (body, {endpoint}) => _list(body),
+        subject: subject,
+        schoolClass: schoolClass,
+        chapter: chapter,
+        lesson: lesson,
+        scanOffset: scanOffset,
+      );
     }
     // Phase 3: slim rows for list screens, except creative
     // (group opens need the full stimulus text in the rows).
@@ -156,53 +183,76 @@ class GuideFlowListService {
     };
     final res = await _list(body);
     if (res == null) {
-      return const GuideFlowPage(rows: [], total: null, hasMore: false,
-          mode: GuideFlowMode.unavailable, nextScanOffset: 0);
+      return const GuideFlowPage(
+        rows: [],
+        total: null,
+        hasMore: false,
+        mode: GuideFlowMode.unavailable,
+        nextScanOffset: 0,
+      );
     }
     if (res['found'] != true) {
       return GuideFlowPage(
-          rows: [], total: null, hasMore: false,
-          mode: res['reason'] == 'pilot-columns-missing'
-              ? GuideFlowMode.filterPending
-              : GuideFlowMode.unavailable,
-          nextScanOffset: 0);
+        rows: [],
+        total: null,
+        hasMore: false,
+        mode: res['reason'] == 'pilot-columns-missing'
+            ? GuideFlowMode.filterPending
+            : GuideFlowMode.unavailable,
+        nextScanOffset: 0,
+      );
     }
     final filtered = lesson != null || typeSection.isNotEmpty;
     if (filtered &&
         (!res.containsKey('lesson') || !res.containsKey('section'))) {
       return guideFlowClientPage(
-          fetch: (body, {endpoint}) => _list(body),
-          subject: subject, schoolClass: schoolClass,
-          chapter: chapter, type: type, lesson: lesson,
-          scanOffset: scanOffset);
+        fetch: (body, {endpoint}) => _list(body),
+        subject: subject,
+        schoolClass: schoolClass,
+        chapter: chapter,
+        type: type,
+        lesson: lesson,
+        scanOffset: scanOffset,
+      );
     }
     final rows = guideFlowRows(res);
     final total = (res['total'] as num?)?.toInt();
-    final hasMore =
-        total != null ? offset + rows.length < total : rows.length >= pageSize;
-    final page = GuideFlowPage(rows: rows, total: total, hasMore: hasMore,
-        mode: GuideFlowMode.serverFiltered, nextScanOffset: 0);
+    final hasMore = total != null
+        ? offset + rows.length < total
+        : rows.length >= pageSize;
+    final page = GuideFlowPage(
+      rows: rows,
+      total: total,
+      hasMore: hasMore,
+      mode: GuideFlowMode.serverFiltered,
+      nextScanOffset: 0,
+    );
     // D1 (Phase-5): server total 0 can mean NULL-section
     // rows (class 7/8), not an empty chapter — fall back to
     // the client scan (see guide_flow_client_scan).
     final fallback = await guideFlowTypeFallbackPage(
-        fetch: (body, {endpoint}) => _list(body),
-        subject: subject, schoolClass: schoolClass,
-        chapter: chapter, type: type, lesson: lesson,
-        total: total, typeSection: typeSection,
-        scanOffset: scanOffset);
+      fetch: (body, {endpoint}) => _list(body),
+      subject: subject,
+      schoolClass: schoolClass,
+      chapter: chapter,
+      type: type,
+      lesson: lesson,
+      total: total,
+      typeSection: typeSection,
+      scanOffset: scanOffset,
+    );
     if (fallback != null) return fallback;
     if (hasMore) {
       prefetchGuideFlowPage(
-          fetch: (b, {endpoint}) => _list(b),
-          cache: _pageCache,
-          identity: identity,
-          body: {...body, 'offset': offset + rows.length},
-          pageSize: pageSize);
+        fetch: (b, {endpoint}) => _list(b),
+        cache: _pageCache,
+        identity: identity,
+        body: {...body, 'offset': offset + rows.length},
+        pageSize: pageSize,
+      );
     }
     return page;
   }
-
 }
 
 final guideFlowListService = GuideFlowListService();
