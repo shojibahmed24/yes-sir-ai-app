@@ -123,3 +123,15 @@
 ## ৭. নোট: এই ওয়ার্কস্পেসে টেস্ট রান
 
 `flutter test` একবারে পুরো স্যুট চালালে মাঝে মাঝে একটি ফাইল “loading” অবস্থায় আটকে যায় (Windows + OneDrive `build/test_cache` লক)। সমাধান: `C:\Users\rajsh\AppData\Local\Temp\opencode\ysa-db\run-chunks.ps1` — ১২ ফাইল করে fresh cache-এ চালায়। CI-তে (F1) `--concurrency` সীমিত রাখা বা Linux রানার ব্যবহার করা ভালো।
+
+---
+
+## ৮. নতুন বিল্ড (সকালের জন্য)
+
+- **zip:** `C:\Users\rajsh\Downloads\yes-sir-ai-app-2026-11-22.zip` (৮৬৮ এন্ট্রি, ২.৬ MB)
+- আছে: সব নতুন কোড + `supabase/functions` + keystore + `key.properties` + `dart_defines.json` + দুই ডক
+- নেই: `.git`, `build`, `.dart_tool`
+- বিল্ড: `flutter build apk --release --dart-define-from-file=dart_defines.json`
+- ⚠️ zip-এ keystore + পাসওয়ার্ড আছে — শেয়ার করবেন না।
+- **সার্ভার:** guide-bank v33 আগেই ডিপ্লয় করা (এই রাতের UI পরিবর্তনে নতুন ডিপ্লয় লাগে না)। Access token revoke করে দিয়েছেন ধরে নিচ্ছি।
+
