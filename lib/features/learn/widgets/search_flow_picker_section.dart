@@ -55,9 +55,58 @@ class SearchFlowPickerSection extends StatelessWidget {
     final banglaSecond = isBanglaSecondMode(c.subjectId, c.source);
     final setMode = extras.setId != null;
     const gap = SizedBox(height: 12);
+    // 3-step indicator (S6.1): identity is always chosen before this
+    // widget renders, so only chapter and type can be pending.
+    final step = c.type != null
+        ? 3
+        : c.chapter != null
+        ? 2
+        : 1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            for (var i = 1; i <= 3; i++) ...[
+              if (i > 1)
+                Expanded(
+                  child: Container(
+                    height: 2,
+                    color: step >= i
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+              Container(
+                width: 22,
+                height: 22,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: step >= i
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                  border: Border.all(
+                    color: step >= i
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+                child: Text(
+                  '$i',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: step >= i
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
         // THE picker: one widget for every subject.
         if (englishGuideMode && english.controller == null)
           SearchFlowLoadingBars(
@@ -91,8 +140,7 @@ class SearchFlowPickerSection extends StatelessWidget {
               english: english,
             ),
           ),
-        // Board questions are SUBJECT-wide, not chapter-scoped: one
-        // entry at the root only. Showing it inside every chapter made
+        // Board questions are SUBJECT-wide, not chapter-scoped: one        // entry at the root only. Showing it inside every chapter made
         // the same 984-question set look chapter-specific.
         if (c.source == 'guide' &&
             c.chapter == null &&
