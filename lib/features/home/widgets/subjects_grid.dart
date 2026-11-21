@@ -1,7 +1,9 @@
 // Subject cards for SubjectsScreen, split out to keep the screen
-// under the 250-line cap. One card style app-wide: the subject's
-// own colour/glyph, an honest source badge (book / guide / both)
-// from server flags, and the guide card underneath when the
+// under the 250-line cap. Subjects are grouped by what the class
+// actually has (book + guide / guide only / book only / none yet),
+// so a student sees the usable ones first instead of one long list.
+// One card style app-wide: subject colour/glyph, an honest source
+// badge from server flags, and the guide card underneath when the
 // subject really has guide content.
 import 'package:flutter/material.dart';
 import '../../../core/models/backend_models.dart';
@@ -20,6 +22,42 @@ bool subjectMatches(SubjectInfo s, String query) {
   return s.nameBn.toLowerCase().contains(q) ||
       s.nameEn.toLowerCase().contains(q) ||
       s.id.toLowerCase().contains(q);
+}
+
+/// One display group: a heading plus the subjects under it.
+class SubjectGroup {
+  const SubjectGroup({required this.title, required this.subjects});
+  final String title;
+  final List<SubjectInfo> subjects;
+}
+
+/// Pure grouping, in the order a student needs it: everything they
+/// can use right now first, not-yet-available subjects last. Empty
+/// groups are dropped, so no heading ever sits over nothing.
+List<SubjectGroup> groupSubjects(List<SubjectInfo> all, Map<String, String> s) {
+  final both = <SubjectInfo>[];
+  final guide = <SubjectInfo>[];
+  final book = <SubjectInfo>[];
+  final locked = <SubjectInfo>[];
+  for (final x in all) {
+    if (x.locked && x.hasGuide) {
+      guide.add(x);
+    } else if (x.locked) {
+      locked.add(x);
+    } else if (x.hasGuide) {
+      both.add(x);
+    } else {
+      book.add(x);
+    }
+  }
+  return [
+    if (both.isNotEmpty) SubjectGroup(title: s['groupBoth']!, subjects: both),
+    if (guide.isNotEmpty)
+      SubjectGroup(title: s['groupGuide']!, subjects: guide),
+    if (book.isNotEmpty) SubjectGroup(title: s['groupBook']!, subjects: book),
+    if (locked.isNotEmpty)
+      SubjectGroup(title: s['groupLocked']!, subjects: locked),
+  ];
 }
 
 class SubjectsGrid extends StatelessWidget {
@@ -55,6 +93,7 @@ class SubjectsGrid extends StatelessWidget {
       );
     }
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (subjects.every((x) => x.locked && !x.hasGuide))
           Padding(
@@ -64,39 +103,54 @@ class SubjectsGrid extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-        ...subjects.map((subj) {
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: SubjectCard(
-                  name: subj.name(bn),
-                  chapters: subj.chapterCount,
-                  done: LearnStore.openedChapterCount(
-                    opened,
-                    schoolClass,
-                    subj.id,
-                  ),
-                  locked: subj.locked,
-                  guideOnly: subj.locked && subj.hasGuide,
-                  guideLabel: s['guideAvailable']!,
-                  hasGuide: subj.hasGuide,
-                  badgeBook: s['badgeBook']!,
-                  badgeGuide: s['badgeGuide']!,
-                  badgeBoth: s['badgeBoth']!,
-                  subjectId: subj.id,
-                  chaptersLabel: s['chapters']!,
-                  lockedLabel: '${s['locked']!} — ${s['lockedHint']!}',
-                ),
+        for (final group in groupSubjects(subjects, s)) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8, top: 4),
+            child: Text(
+              '${group.title} · ${group.subjects.length}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              // Renders nothing for guide-less subjects.
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: SubjectGuideCard(subjectId: subj.id, bn: bn, s: gs),
-              ),
-            ],
-          );
-        }),
+            ),
+          ),
+          for (final subj in group.subjects) _card(context, subj, s, gs),
+        ],
+      ],
+    );
+  }
+
+  Widget _card(
+    BuildContext context,
+    SubjectInfo subj,
+    Map<String, String> s,
+    Map<String, String> gs,
+  ) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: SubjectCard(
+            name: subj.name(bn),
+            chapters: subj.chapterCount,
+            done: LearnStore.openedChapterCount(opened, schoolClass, subj.id),
+            locked: subj.locked,
+            guideOnly: subj.locked && subj.hasGuide,
+            guideLabel: s['guideAvailable']!,
+            hasGuide: subj.hasGuide,
+            badgeBook: s['badgeBook']!,
+            badgeGuide: s['badgeGuide']!,
+            badgeBoth: s['badgeBoth']!,
+            sharedClass: schoolClass == 10 ? s['sharedBook'] : null,
+            subjectId: subj.id,
+            chaptersLabel: s['chapters']!,
+            lockedLabel: '${s['locked']!} — ${s['lockedHint']!}',
+          ),
+        ),
+        // Renders nothing for guide-less subjects.
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SubjectGuideCard(subjectId: subj.id, bn: bn, s: gs),
+        ),
       ],
     );
   }

@@ -42,6 +42,12 @@ class SearchFlowController {
   String? lesson;
   SearchFlowType? type;
 
+  /// Guide question totals per chapter (guide source only), so the
+  /// picker can show "৩ অধ্যায় · ৫৭৬ প্রশ্ন" instead of a bare
+  /// number. Empty = unknown (textbook source, or restored from the
+  /// tuple cache, which stores titles only).
+  Map<int, int> chapterTotals = const {};
+
   /// English guide section pick (Paper-I only). Null = none
   /// picked; reset on subject/source change, never stale.
   String? section;
@@ -142,9 +148,25 @@ class SearchFlowController {
         ? pickerCacheKindGuideChapters
         : pickerCacheKindTextbookChapters;
     final key = pickerCacheKey(cls, subj, bn ? 'bn' : 'en', kind);
+    final totalsKey = pickerCacheKey(
+      cls,
+      subj,
+      bn ? 'bn' : 'en',
+      'guide-chapter-totals',
+    );
     chaptersLoading = true;
     _notify();
     var showedCache = false;
+    if (src == 'guide') {
+      final cachedTotals = decodeChapterTotals(
+        await pickerCacheService.read(totalsKey),
+      );
+      if (gen == _chaptersGeneration && cachedTotals != null) {
+        chapterTotals = cachedTotals;
+      }
+    } else {
+      chapterTotals = const {};
+    }
     final cached = await pickerCacheService.read(key);
     if (gen == _chaptersGeneration && cached != null) {
       final decoded = decodeChapterTuples(cached);
@@ -155,6 +177,7 @@ class SearchFlowController {
         _notify();
       }
     }
+    final freshTotals = <int, int>{};
     final out = await pickerCacheService
         .dedupe(
           'fetch:$key',
@@ -163,10 +186,18 @@ class SearchFlowController {
             subject: subj,
             schoolClass: cls,
             bangla: bn,
+            totalsOut: freshTotals,
           ),
         )
         .catchError((_) => null);
     if (gen != _chaptersGeneration) return;
+    if (freshTotals.isNotEmpty) {
+      chapterTotals = freshTotals;
+      await pickerCacheService.write(
+        totalsKey,
+        encodeChapterTotals(freshTotals),
+      );
+    }
     if (out == null) {
       if (showedCache) {
         chaptersLoading = false;

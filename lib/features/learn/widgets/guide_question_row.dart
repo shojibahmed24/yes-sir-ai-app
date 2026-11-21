@@ -20,6 +20,7 @@ class GuideQuestionRow extends StatelessWidget {
     required this.chapterNumber,
     required this.onTap,
     this.boardLabel,
+    this.numberLabel,
   });
   final GuideBankQuestion question;
   final bool locked;
@@ -31,6 +32,10 @@ class GuideQuestionRow extends StatelessWidget {
   /// Board/year label parsed from the row's setId; null for
   /// non-board rows. Never invented when the id has no board shape.
   final String? boardLabel;
+
+  /// Position in the current list ('#১২'), so a student can follow a
+  /// number back to the printed guide. Null = not shown.
+  final String? numberLabel;
 
   String _typeLabel() {
     switch (question.questionType) {
@@ -75,6 +80,7 @@ class GuideQuestionRow extends StatelessWidget {
           runSpacing: 4,
           children: [
             Chip(label: Text(_typeLabel())),
+            if (numberLabel != null) Chip(label: Text(numberLabel!)),
             if (boardLabel != null) Chip(label: Text(boardLabel!)),
             if (question.marks != null)
               Chip(label: Text('${question.marks} ${s['marksWord']!}')),

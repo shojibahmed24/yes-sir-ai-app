@@ -12,9 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/search_flow_strings.dart';
-import 'bangla_first_entry_card.dart';
-import 'global_picker_english.dart';
-import 'global_picker_tree.dart';
 import 'guide_answer_holder.dart';
 import 'lesson_selection.dart';
 import 'search_flow_bangla_papers.dart';
@@ -24,13 +21,11 @@ import 'search_flow_jump.dart';
 import 'search_flow_list_query.dart';
 import 'search_flow_picker_host.dart';
 import 'search_flow_types.dart';
-import 'widgets/global_picker.dart';
 import 'widgets/search_flow_actions.dart';
-import 'widgets/search_flow_board_tile.dart';
-import 'widgets/search_flow_field.dart';
-import 'widgets/search_flow_type_field.dart';
 import 'widgets/search_flow_field_states.dart';
 import 'widgets/search_flow_identity_fields.dart';
+import 'widgets/search_flow_picker_section.dart';
+import 'widgets/search_flow_summary.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
 
 class SearchFlowScreen extends StatefulWidget {
@@ -62,6 +57,13 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
       if (mounted) setState(() {});
     },
   );
+
+  /// One place to refresh everything that depends on class/subject/
+  /// source, so the three identity pickers can never drift apart.
+  void _afterChange() {
+    _extras.refreshGuide(_c.effectiveSubjectId, _c.effectiveClass);
+    _ensureEnglish();
+  }
 
   @override
   void initState() {
@@ -151,11 +153,14 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
         final banglaFirst = isBanglaFirstMode(_c.subjectId, _c.source);
         final banglaSecond = isBanglaSecondMode(_c.subjectId, _c.source);
         final setMode = _extras.setId != null;
-        final needType = setMode || banglaFirst || banglaSecond
-            ? false
-            : paper2Mode
-            ? _extras.paper2Section == null
-            : _c.type == null;
+        final needType = searchFlowNeedsType(
+          setMode: setMode,
+          banglaFirst: banglaFirst,
+          banglaSecond: banglaSecond,
+          paper2Mode: paper2Mode,
+          paper2SectionPicked: _extras.paper2Section != null,
+          typePicked: _c.type != null,
+        );
         final canSubmit =
             (setMode ||
                 banglaFirst ||
@@ -163,18 +168,16 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                 paper2Mode ||
                 _c.chapter != null) &&
             !needType;
-        final String? actionHint = setMode || banglaFirst || banglaSecond
-            ? null
-            : paper2Mode
-            ? (_extras.paper2Section == null ? s['actionHintSection'] : null)
-            : _c.chapter == null && needType
-            ? s['actionHintBoth']
-            : _c.chapter == null
-            ? s['actionHintChapter']
-            : needType
-            ? s['actionHintType']
-            : null;
-        const gap = SizedBox(height: 12);
+        final actionHint = searchFlowActionHint(
+          setMode: setMode,
+          banglaFirst: banglaFirst,
+          banglaSecond: banglaSecond,
+          paper2Mode: paper2Mode,
+          paper2SectionPicked: _extras.paper2Section != null,
+          chapterPicked: _c.chapter != null,
+          needType: needType,
+          s: s,
+        );
         return ThemedScaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -203,129 +206,33 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                         s: s,
                         bn: bn,
                         onClass: (v) => _c.changeClass(v, bn).then((_) {
-                          if (mounted) {
-                            _extras.refreshGuide(
-                              _c.effectiveSubjectId,
-                              _c.effectiveClass,
-                            );
-                            _ensureEnglish();
-                          }
+                          if (mounted) _afterChange();
                         }),
                         onSubject: (v) {
                           _c.applySubject(v);
-                          _extras.refreshGuide(
-                            _c.effectiveSubjectId,
-                            _c.effectiveClass,
-                          );
-                          _ensureEnglish();
+                          _afterChange();
                         },
                         onSource: (v) {
                           _c.changeSource(v);
-                          _extras.refreshGuide(
-                            _c.effectiveSubjectId,
-                            _c.effectiveClass,
-                          );
-                          _ensureEnglish();
+                          _afterChange();
                         },
                       ),
                       const SizedBox(height: 20),
                       SearchFlowGroupLabel(s['questionGroup']!),
                       const SizedBox(height: 12),
-                      // THE picker: one widget for every subject.
-                      // Subject-wise items load below it; English
-                      // guide navigates to its list/reader routes
-                      // from here instead of a separate screen.
-                      if (englishGuideMode && _englishHost.controller == null)
-                        SearchFlowLoadingBars(
-                          label: s['pickerLoading']!,
-                          semanticsLabel: s['pickerLoading']!,
-                        )
-                      else
-                        GlobalPicker(
-                          treeKey:
-                              '${_c.subjectId}|${_c.source}|${_c.schoolClass}',
-                          tree: englishGuideMode
-                              ? buildEnglishPickerTree(
-                                  c: _englishHost.controller!,
-                                  schoolClass: _c.schoolClass,
-                                  s: s,
-                                  bn: bn,
-                                )
-                              : buildGlobalPickerTree(
-                                  c: _c,
-                                  extras: _extras,
-                                  s: s,
-                                  bn: bn,
-                                ),
-                          s: s,
-                          selectedId: globalPickerSelectedId(_c, _extras),
-                          onPick: (pick) => applyGlobalPickerPick(
-                            context: context,
-                            c: _c,
-                            extras: _extras,
-                            pick: pick,
-                            onChanged: () => setState(() {}),
-                          ),
-                          onBranch: (node) => onGlobalPickerBranch(
-                            node: node,
-                            c: _c,
-                            extras: _extras,
-                            english: _englishHost,
-                          ),
-                        ),
-                      // Board tile (migration 018): guide source only.
-                      if (_c.source == 'guide')
-                        SearchFlowBoardTile(
-                          subjectId: _c.effectiveSubjectId,
-                          schoolClass: _c.effectiveClass,
-                          s: s,
-                          bn: bn,
-                        ),
-                      // Bangla 1st Paper entry card: the only in-app way into /bangla-first.
-                      if (banglaFirst) const BanglaFirstEntryCard(),
-                      if (!englishGuideMode) ...[
-                        gap,
-                        SearchFlowTextField(
-                          label: s['questionNumberLabel']!,
-                          icon: Icons.numbers,
-                          controller: _c.numberCtrl,
-                          hint: s['questionNumberHint']!,
-                          keyboardType: TextInputType.number,
-                          onChanged: (_) {
-                            if (_jumpMessage != null) {
-                              setState(() => _jumpMessage = null);
-                            }
-                          },
-                          onSubmitted: () => _jump(s, bn),
-                        ),
-                      ],
-                      if (!englishGuideMode &&
-                          !banglaFirst &&
-                          !banglaSecond &&
-                          !setMode &&
-                          !paper2Mode) ...[
-                        gap,
-                        SearchFlowTypeField(
-                          value: _c.type,
-                          s: s,
-                          bn: bn,
-                          chapter: _c.chapter,
-                          guide: _c.source == 'guide',
-                          lesson: _c.lesson,
-                          subject: _c.effectiveSubjectId,
-                          schoolClass: _c.effectiveClass,
-                          onChanged: (v) => setState(() => _c.type = v),
-                        ),
-                      ],
-                      if (_jumpMessage != null) ...[
-                        const SizedBox(height: 12),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(_jumpMessage!),
-                          ),
-                        ),
-                      ],
+                      SearchFlowSummary(c: _c, bn: bn, s: s),
+                      SearchFlowPickerSection(
+                        c: _c,
+                        extras: _extras,
+                        english: _englishHost,
+                        s: s,
+                        bn: bn,
+                        jumpMessage: _jumpMessage,
+                        onChanged: () => setState(() {}),
+                        onJump: () => _jump(s, bn),
+                        onNumberCleared: () =>
+                            setState(() => _jumpMessage = null),
+                      ),
                     ],
                   ),
                 ),

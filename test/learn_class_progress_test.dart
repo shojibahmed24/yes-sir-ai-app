@@ -52,6 +52,15 @@ void main() {
     expect(noClass.chapterKey, 'math|3');
   });
 
+  test('chapterOpened is per class and per chapter', () {
+    const keys = ['6|math|2', '9|math|3', 'math|4'];
+    expect(LearnStore.chapterOpened(keys, 9, 'math', 3), isTrue);
+    expect(LearnStore.chapterOpened(keys, 9, 'math', 2), isFalse);
+    expect(LearnStore.chapterOpened(keys, 6, 'math', 2), isTrue);
+    expect(LearnStore.chapterOpened(keys, 9, 'math', 4), isTrue); // legacy
+    expect(LearnStore.chapterOpened(keys, 9, 'science', 3), isFalse);
+  });
+
   test('groupOpenedChapters accepts class-stamped keys', () {
     final groups = groupOpenedChapters([
       '9|math|3',

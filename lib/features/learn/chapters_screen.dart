@@ -177,8 +177,11 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                     ...demo.asMap().entries.map((e) {
                       final n = e.key + 1;
                       final c = e.value;
-                      final isOpened = opened.contains(
-                        '${widget.subjectId}|$n',
+                      final isOpened = LearnStore.chapterOpened(
+                        opened,
+                        _schoolClass,
+                        widget.subjectId,
+                        n,
                       );
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -209,8 +212,11 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
                         ),
                       ),
                     ...entry.value.map((c) {
-                      final isOpened = opened.contains(
-                        '${widget.subjectId}|${c.number}',
+                      final isOpened = LearnStore.chapterOpened(
+                        opened,
+                        _schoolClass,
+                        widget.subjectId,
+                        c.number,
                       );
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),

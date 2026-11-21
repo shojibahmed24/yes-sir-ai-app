@@ -18,6 +18,11 @@ const Map<String, String> subjectsStringsBn = {
   'noMatch': 'এই নামে কোনো বিষয় পাওয়া যায়নি — নামের অংশ লিখে দেখো',
   'emptyClassNote':
       'এই শ্রেণির বই বা গাইড এখনো যোগ হয়নি। শ্রেণি ৬–১০ থেকে পড়া শুরু করা যায়।',
+  'groupBoth': 'বই + গাইড',
+  'groupGuide': 'গাইড দিয়ে পড়া যায়',
+  'groupBook': 'বই আছে',
+  'groupLocked': 'এখনো যোগ হয়নি',
+  'sharedBook': 'ক্লাস ৯-এর শেয়ার্ড বই',
   'advice': 'আজকের পরামর্শ',
   'adviceText': 'গণিত ৩য় অধ্যায়ের সূত্রগুলো একবার রিভিশন দাও, চমৎকার হবে!',
   'booksSupplied': 'টি বিষয়ের বই দেওয়া আছে',
@@ -42,6 +47,11 @@ const Map<String, String> subjectsStringsEn = {
   'noMatch': 'No subject matches that name — try part of the name',
   'emptyClassNote':
       'No books or guides are available for this class yet. Classes 6–10 are ready to study.',
+  'groupBoth': 'Book + Guide',
+  'groupGuide': 'Study with the guide',
+  'groupBook': 'Book available',
+  'groupLocked': 'Not added yet',
+  'sharedBook': 'Shared Class 9 book',
   'advice': 'Today\'s advice',
   'adviceText': 'Revise the Maths Chapter 3 formulas once — you will do great!',
   'booksSupplied': 'subjects have a supplied book',

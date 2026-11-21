@@ -110,6 +110,7 @@ class SearchFlowGuideListView extends StatelessWidget {
       subjectId: subjectId,
       chapterNumber: chapterNumber,
       boardLabel: boardLabel,
+      numberLabel: '#${numStr(first.$1 + 1, bn)}',
       onTap: open,
     );
   }

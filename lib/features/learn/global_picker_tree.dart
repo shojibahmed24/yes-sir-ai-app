@@ -119,6 +119,9 @@ GlobalPickerTree buildGlobalPickerTree({
         GlobalPickerNode(
           id: 'chapter:${ch.$1}',
           title: searchFlowChapterLabel(ch.$1, ch.$2, bn, s),
+          subtitle: guide && (c.chapterTotals[ch.$1] ?? 0) > 0
+              ? '${numStr(c.chapterTotals[ch.$1]!, bn)} ${s['questionsWord']!}'
+              : null,
           kind: GlobalPickerNodeKind.chapter,
           hasChildren: guide,
           pick: GlobalPickerPick.chapter(ch.$1),

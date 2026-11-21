@@ -213,6 +213,24 @@ class LearnStore {
     return count;
   }
 
+  /// One chapter's opened state, same class rules as the count above.
+  static bool chapterOpened(
+    List<String> keys,
+    int schoolClass,
+    String subject,
+    int chapter,
+  ) {
+    for (final key in keys) {
+      final parsed = parseChapterKey(key);
+      if (parsed == null || parsed.$2 != subject || parsed.$3 != chapter) {
+        continue;
+      }
+      if (parsed.$1 != null && parsed.$1 != schoolClass) continue;
+      return true;
+    }
+    return false;
+  }
+
   static Future<List<String>> savedIds() async {
     final p = await SharedPreferences.getInstance();
     return p.getStringList(_saved) ?? const [];

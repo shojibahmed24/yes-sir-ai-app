@@ -25,6 +25,7 @@ class SubjectCard extends StatelessWidget {
     this.badgeBook = '',
     this.badgeGuide = '',
     this.badgeBoth = '',
+    this.sharedClass,
   });
   final String subjectId;
   final String name;
@@ -40,6 +41,10 @@ class SubjectCard extends StatelessWidget {
   final String badgeBook;
   final String badgeGuide;
   final String badgeBoth;
+
+  /// Class 10 reads the class-9 book/guide; the card says so instead
+  /// of letting the student think these are class-10 books.
+  final String? sharedClass;
 
   /// True for a subject with NO supplied textbook but a real guide: it
   /// stays usable and opens the guide search flow (guide-only launch).
@@ -136,6 +141,13 @@ class SubjectCard extends StatelessWidget {
             // "Book not supplied yet" is information, not an error:
             // muted ink, never the red error colour.
             if (inert) Text(lockedLabel, style: TextStyle(color: muted)),
+            if (sharedClass != null)
+              Text(
+                sharedClass!,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: muted),
+              ),
             if (!inert && !guideOnly) ...[
               const SizedBox(height: Sp.sm),
               ClipRRect(
