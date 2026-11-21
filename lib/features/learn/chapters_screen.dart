@@ -243,7 +243,7 @@ class _ChaptersScreenState extends State<ChaptersScreen> {
             },
           ),
           bottomNavigationBar: HomeBottomNav(
-            current: 0,
+            current: 1,
             labels: [
               nav['home']!,
               nav['subjectsTab']!,

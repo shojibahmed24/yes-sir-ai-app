@@ -69,25 +69,6 @@ class HomeLowerSections extends StatelessWidget {
           ),
         const SizedBox(height: HomeDesign.tightGap),
         Text(
-          s['recommendations']!,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        if (lastLesson == null)
-          HomeEmptyState(
-            message: s['noDataYet']!,
-            actionLabel: s['findQuestions']!,
-            onAction: onSearch,
-          )
-        else
-          Card(
-            child: ListTile(
-              title: Text(heroTopic),
-              subtitle: Text(heroSubject),
-              onTap: onOpenLesson,
-            ),
-          ),
-        const SizedBox(height: HomeDesign.tightGap),
-        Text(
           s['recentBooks']!,
           style: Theme.of(context).textTheme.headlineMedium,
         ),

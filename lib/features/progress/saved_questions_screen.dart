@@ -57,7 +57,8 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
             appBar: AppBar(
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.go('/profile'),
+                onPressed: () =>
+                    context.canPop() ? context.pop() : context.go('/home'),
               ),
               title: Text(s['title']!),
             ),
@@ -69,7 +70,8 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
             appBar: AppBar(
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.go('/profile'),
+                onPressed: () =>
+                    context.canPop() ? context.pop() : context.go('/home'),
               ),
               title: Text(s['title']!),
             ),
@@ -100,7 +102,8 @@ class _SavedQuestionsScreenState extends State<SavedQuestionsScreen> {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/profile'),
+              onPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/home'),
             ),
             title: Text(s['title']!),
           ),
@@ -234,7 +237,7 @@ class _SavedCard extends StatelessWidget {
                 PracticeSession.quizItems = practiceService.quizFor(subject);
                 context.go('/quiz');
               },
-              child: Text(s['practice']!),
+              child: Text(s['practiceSubject']!),
             ),
           TextButton(
             onPressed: () async {

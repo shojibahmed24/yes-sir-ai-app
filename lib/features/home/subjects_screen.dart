@@ -99,7 +99,12 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                 icon: const Icon(Icons.refresh),
                 tooltip: nav['refreshSubjects'],
                 onPressed: () {
-                  booksService.invalidateSubjectsCache(_schoolClass ?? 6, bn);
+                  // Refresh the class the student is LOOKING at, not
+                  // the saved profile class (the old call left the
+                  // picked class stale).
+                  final cls = _selectedClass ?? _schoolClass;
+                  if (cls != null)
+                    booksService.invalidateSubjectsCache(cls, bn);
                   setState(() => _future = null);
                 },
               ),
@@ -190,7 +195,13 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                             s['advice']!,
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
-                          Text(s['adviceText']!),
+                          Text(
+                            // Real counts for the class on screen; the
+                            // old fixed "Maths chapter 3" line was shown
+                            // to every class and subject.
+                            '${numStr(supplied, bn)} ${s['booksSupplied']!} · '
+                            '${numStr(subjects.length, bn)} ${s['allSubjects']!}',
+                          ),
                         ],
                       ),
                     ),
@@ -200,7 +211,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             },
           ),
           bottomNavigationBar: HomeBottomNav(
-            current: 0,
+            current: 1,
             labels: [
               nav['home']!,
               nav['subjectsTab']!,

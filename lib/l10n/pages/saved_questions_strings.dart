@@ -2,10 +2,12 @@
 const Map<String, String> savedQuestionsStringsBn = {
   'title': 'সংরক্ষিত প্রশ্ন',
   'deviceOnly': 'শুধু এই ডিভাইসে সংরক্ষিত — অন্য ডিভাইসে দেখা যাবে না।',
-  'syncedNote': 'সাইন-ইন থাকলে সংরক্ষণ ক্লাউডেও লেখার চেষ্টা হয়; লোকাল কপিই সবসময় থাকে।',
+  'syncedNote':
+      'সাইন-ইন থাকলে সংরক্ষণ ক্লাউডেও লেখার চেষ্টা হয়; লোকাল কপিই সবসময় থাকে।',
   'savedSuffix': 'টি সেভ করা — পরীক্ষার রিভিশনের জন্য',
   'viewSolution': 'সমাধান দেখো',
   'practice': 'প্র্যাকটিস করো',
+  'practiceSubject': 'এই বিষয়ে প্র্যাকটিস',
   'empty': 'এখনো কিছু সংরক্ষণ করা হয়নি',
   'emptySub': 'কুইজ বা লেসন থেকে প্রশ্ন সংরক্ষণ করলে সেগুলো এখানে দেখাবে।',
   'unsave': 'সরিয়ে দাও',
@@ -13,17 +15,20 @@ const Map<String, String> savedQuestionsStringsBn = {
   'solution': 'সমাধান',
   'unknownMeta': 'লেসন / চ্যাট থেকে সংরক্ষিত',
   'unknownSubjectTitle': 'বিষয় জানা যায়নি',
-  'unknownSubjectBody': 'এই সংরক্ষিত প্রশ্নের বিষয় সংরক্ষণ করা হয়নি, তাই ভুল বিষয়ের কুইজে পাঠানো হবে না। প্রশ্নটি এখান থেকে সমাধান দেখে নাও।',
+  'unknownSubjectBody':
+      'এই সংরক্ষিত প্রশ্নের বিষয় সংরক্ষণ করা হয়নি, তাই ভুল বিষয়ের কুইজে পাঠানো হবে না। প্রশ্নটি এখান থেকে সমাধান দেখে নাও।',
   'close': 'বন্ধ করো',
   'startPractice': 'প্র্যাকটিস শুরু করো',
 };
 const Map<String, String> savedQuestionsStringsEn = {
   'title': 'Saved Questions',
   'deviceOnly': 'Saved on this device only — not visible on other devices.',
-  'syncedNote': 'When signed in, saves are also attempted in the cloud; the local copy is always kept.',
+  'syncedNote':
+      'When signed in, saves are also attempted in the cloud; the local copy is always kept.',
   'savedSuffix': 'saved — for exam revision',
   'viewSolution': 'View Solution',
   'practice': 'Practice',
+  'practiceSubject': 'Practice this subject',
   'empty': 'Nothing saved yet',
   'emptySub': 'Questions saved from a quiz or lesson will appear here.',
   'unsave': 'Remove',
@@ -31,7 +36,8 @@ const Map<String, String> savedQuestionsStringsEn = {
   'solution': 'Solution',
   'unknownMeta': 'Saved from lesson / chat',
   'unknownSubjectTitle': 'Subject unknown',
-  'unknownSubjectBody': 'This saved question was stored without a subject, so it will not be sent to a possibly wrong subject quiz. View its solution here instead.',
+  'unknownSubjectBody':
+      'This saved question was stored without a subject, so it will not be sent to a possibly wrong subject quiz. View its solution here instead.',
   'close': 'Close',
   'startPractice': 'Start Practice',
 };

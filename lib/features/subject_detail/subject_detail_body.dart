@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import '../home/home_design.dart';
 import '../learn/widgets/digits.dart';
+import '../practice/practice_store.dart';
 import 'subject_detail_strings.dart';
 
 /// Verified snapshot the detail screen renders: subject id, display
@@ -153,7 +154,14 @@ class SubjectDetailBody extends StatelessWidget {
           icon: Icons.fitness_center,
           title: s['openPractice']!,
           accent: accent,
-          onTap: onOpenPractice ?? () => context.go('/practice'),
+          onTap:
+              onOpenPractice ??
+              () {
+                // Keep the subject: the practice screen used to open
+                // with no subject at all.
+                PracticeSession.selectedSubject = info.subjectId;
+                context.go('/practice');
+              },
         ),
       ],
     );

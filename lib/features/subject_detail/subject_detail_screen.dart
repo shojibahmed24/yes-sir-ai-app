@@ -27,6 +27,7 @@ class SubjectDetailScreen extends StatefulWidget {
 class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
   Future<SubjectDetailInfo?>? _future;
   bool? _futureBn;
+  String? _loadedName;
 
   Future<SubjectDetailInfo?> _load(bool bn) async {
     final cls = await resolveSchoolClass();
@@ -63,7 +64,7 @@ class _SubjectDetailScreenState extends State<SubjectDetailScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.go('/home/subjects'),
             ),
-            title: Text(s['title'] ?? ''),
+            title: Text(_loadedName ?? s['title'] ?? ''),
           ),
           body: FutureBuilder<SubjectDetailInfo?>(
             future: _future,
