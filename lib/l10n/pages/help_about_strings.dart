@@ -12,9 +12,10 @@ const Map<String, String> helpStringsBn = {
   'q4': 'ক্লাস কীভাবে বদলাবো?',
   'a4': 'শুধু সেটিংস থেকে ক্লাস বদলানো যায়, অন্য কোথাও থেকে নয়।',
   'contact': 'সাপোর্ট তথ্য দেখো',
-  'contactTitle': 'সাপোর্ট তথ্য',
+  'contactTitle': 'সাপোর্ট',
   'contactBody':
-      'এই অ্যাপ থেকে বাইরে কোনো মেসেজ পাঠানো হয় না। সাহায্যের জন্য উপরের প্রশ্নোত্তর দেখো, অথবা সেটিংস থেকে ভাষা/ক্লাস ঠিক করো। অ্যাপ: Yes Sir AI, প্যাকেজ: com.yessirai.app।',
+      'সমস্যা হলে ইমেইল করো — বিষয়ের বাক্সে অ্যাপের নাম আর ক্লাস লিখো। অ্যাকাউন্ট ও ডেটা মুছতে চাইলে নিচের লিংক দেখো।',
+  'deleteDataLink': 'ডেটা মুছে ফেলার নিয়ম দেখো',
   'close': 'বন্ধ করো',
 };
 const Map<String, String> helpStringsEn = {
@@ -31,9 +32,10 @@ const Map<String, String> helpStringsEn = {
   'q4': 'How do I change class?',
   'a4': 'Class can only be changed from Settings, nowhere else.',
   'contact': 'View support info',
-  'contactTitle': 'Support info',
+  'contactTitle': 'Support',
   'contactBody':
-      'No message is sent outside this app. For help, read the questions above, or fix language/class from Settings. App: Yes Sir AI, package: com.yessirai.app.',
+      'Email us with the app name and your class in the subject line. See the link below for account and data deletion.',
+  'deleteDataLink': 'How data deletion works',
   'close': 'Close',
 };
 const Map<String, String> aboutStringsBn = {
@@ -51,7 +53,8 @@ const Map<String, String> aboutStringsBn = {
   'termsBody':
       'পূর্ণ শর্তাবলী ও প্রাইভেসি টেক্সট এখনো এই অ্যাপে যুক্ত হয়নি। ততদিন: তোমার পড়ার ডেটা তোমার অ্যাকাউন্টেই থাকে, ভয়েস শুধু প্রিমিয়ামে (৩০ মিনিট/মাস), আর পেমেন্ট শুধু Google Play দিয়ে।',
   'close': 'বন্ধ করো',
-  'terms': 'শর্তাবলী ও প্রাইভেসি (ডেমো — পূর্ণ টেক্সট পরে যুক্ত হবে)',
+  'terms': 'শর্তাবলী ও প্রাইভেসি',
+  'deleteData': 'অ্যাকাউন্ট মুছে ফেলার নিয়ম',
 };
 const Map<String, String> aboutStringsEn = {
   'title': 'About Yes Sir AI',
@@ -68,5 +71,6 @@ const Map<String, String> aboutStringsEn = {
   'termsBody':
       'The full terms and privacy text is not added to this app yet. Until then: your study data stays in your account, voice is premium-only (30 minutes/month), and payment is Google Play only.',
   'close': 'Close',
-  'terms': 'Terms and privacy (demo — full text to be added later)',
+  'terms': 'Terms and privacy',
+  'deleteData': 'How account deletion works',
 };

@@ -6,6 +6,8 @@
 // app data yet and inventing one would be fake.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/services/contact_info.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/help_about_strings.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
@@ -37,33 +39,66 @@ class HelpFaqScreen extends StatelessWidget {
         title: Text(s['title']!),
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + MediaQuery.of(context).padding.bottom,
+        ),
         children: [
           for (final f in faqs)
             Card(
-                child: ExpansionTile(
-                    title: Text(f.$1),
-                    children: [
-                      Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(f.$2))
-                    ])),
+              child: ExpansionTile(
+                title: Text(f.$1),
+                children: [
+                  Padding(padding: const EdgeInsets.all(16), child: Text(f.$2)),
+                ],
+              ),
+            ),
           const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: Text(s['contactTitle']!),
-                content: Text(s['contactBody']!),
-                actions: [
+          // Real support contact (Play listing requirement): the old
+          // dialog only repeated the package name.
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s['contactTitle']!,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () => launchUrl(
+                      Uri.parse(
+                        'mailto:$supportEmail?subject=Yes%20Sir%20AI%20support',
+                      ),
+                    ),
+                    child: Text(
+                      supportEmail,
+                      style: const TextStyle(
+                        color: Color(0xFF2A4BD7),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    s['contactBody']!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 4),
                   TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text(s['close']!),
+                    onPressed: () => launchUrl(
+                      Uri.parse(accountDeletionUrl),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: Text(s['deleteDataLink']!),
                   ),
                 ],
               ),
             ),
-            child: Text(s['contact']!),
           ),
         ],
       ),

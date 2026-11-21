@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/services/contact_info.dart';
 
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/help_about_strings.dart';
@@ -89,18 +90,16 @@ class _AboutScreenState extends State<AboutScreen> {
             spacing: 8,
             children: [
               TextButton(
-                onPressed: () => _open(
-                  context,
-                  'https://shojibahmed24.github.io/yes-sir-ai-app/privacy-policy.html',
-                ),
+                onPressed: () => _open(context, privacyPolicyUrl),
                 child: Text(s['privacy']!),
               ),
               TextButton(
-                onPressed: () => _open(
-                  context,
-                  'https://shojibahmed24.github.io/yes-sir-ai-app/terms.html',
-                ),
+                onPressed: () => _open(context, termsUrl),
                 child: Text(s['terms']!),
+              ),
+              TextButton(
+                onPressed: () => _open(context, accountDeletionUrl),
+                child: Text(s['deleteData']!),
               ),
             ],
           ),
