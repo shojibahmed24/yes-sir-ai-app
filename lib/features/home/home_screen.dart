@@ -94,6 +94,31 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
+  /// A8: the plan is not the same three rows every day. The quiz row is
+  /// always first (streak), then the day's focus rotates (revision /
+  /// goal / saved), and the weekly test appears on the weekend.
+  List<(String, bool, String)> _planRows(
+    Map<String, String> s,
+    HomeData? data,
+  ) {
+    final weekday = DateTime.now().weekday;
+    final quizDone = (data?.summary.lessonsToday ?? 0) > 0;
+    final weakDone = data?.progress.weakItems.isEmpty ?? true;
+    final goalDone = (data?.progress.goalProgress ?? 0) >= 1;
+    final savedCount = data?.savedCount ?? 0;
+    return [
+      (s['planQuiz']!, quizDone, '/practice'),
+      if (weekday.isEven)
+        (s['planRevision']!, weakDone, '/practice')
+      else
+        (s['dailyGoal']!, goalDone, '/today'),
+      if (weekday >= DateTime.saturday)
+        (s['planTest']!, false, '/guide-model-tests')
+      else
+        (s['planRevision']!, weakDone || savedCount == 0, '/saved'),
+    ];
+  }
+
   int _nextMilestone(int streak) {
     for (final m in const [3, 7, 30, 100]) {
       if (streak < m) return m;
@@ -233,19 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: HomeDesign.blockGap),
                         HomeTodayPlan(
                           title: s['todayPlan']!,
-                          rows: [
-                            (
-                              s['planQuiz']!,
-                              (data?.summary.lessonsToday ?? 0) > 0,
-                              '/practice',
-                            ),
-                            (
-                              s['planRevision']!,
-                              data?.progress.weakItems.isEmpty ?? true,
-                              '/practice',
-                            ),
-                            (s['planTest']!, false, '/guide-model-tests'),
-                          ],
+                          rows: _planRows(s, data),
                         ),
                         const SizedBox(height: HomeDesign.sectionGap),
                         HomeWeekActivity(
