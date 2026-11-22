@@ -39,6 +39,14 @@ const Map<String, String> guideBankStringsBn = {
   'unkeyedExcludedSuffix': 'টি প্রশ্নের চাবি নেই — স্কোরিং থেকে বাদ',
   'answerUnavailable': 'এই গাইড প্রশ্নের উত্তর এখনো যুক্ত হয়নি',
   'answerFailed': 'ব্যাখ্যা তৈরি করা যায়নি',
+  'aiFailNetwork':
+      'ইন্টারনেট সংযোগ পাওয়া যাচ্ছে না — একটু পরে আবার চেষ্টা করো।',
+  'aiFailNotConfigured':
+      'সার্ভারে AI কী সেট করা নেই, তাই ব্যাখ্যা তৈরি হচ্ছে না।',
+  'aiFailEmpty': 'AI কোনো উত্তর দেয়নি — আবার চেষ্টা করো।',
+  'aiFailParse': 'AI-এর উত্তর ঠিকভাবে পড়া গেল না — আবার চেষ্টা করো।',
+  'aiFailNoGrounding':
+      'এই প্রশ্নের জন্য গাইডের নির্ভরযোগ্য লেখা পাওয়া যায়নি।',
   'answerLoadFailed':
       'প্রশ্নটি লোড করা যায়নি — ইন্টারনেট বা সার্ভার সাড়া দেয়নি',
   'explanationKeyMismatch':
@@ -72,8 +80,8 @@ const Map<String, String> guideBankStringsBn = {
       'উপরের উত্তরটি গাইডের চাবি থেকে নেওয়া। গাইডে এই প্রশ্নের লিখিত সমাধান ছাপা নেই, তাই নিচের ব্যাখ্যাটি AI লিখেছে — এটি গাইডের লিখিত সমাধান নয়।',
   'verbatimErrorNote':
       'গাইডে ছাপা উত্তর ভুল প্রমাণিত, সংশোধন এখনো তৈরি হয়নি — নিচে এআই ব্যাখ্যা দেখুন',
-  'explainDetailed': 'সারাংশসহ দেখাও',
-  'explainSteps': 'শুধু ধাপ দেখাও',
+  'explainDetailed': 'সারাংশসহ বুঝিয়ে বল',
+  'explainSteps': 'ধাপে ধাপে বুঝিয়ে বল',
   // Step 6 (creative grouped view + ask-AI restore): stimulus
   // header title + the button that opens grounded chat.
   'stimulusTitle': 'উদ্দীপক',
@@ -131,6 +139,11 @@ const Map<String, String> guideBankStringsEn = {
   'unkeyedExcludedSuffix': ' questions have no key — excluded from scoring',
   'answerUnavailable': 'This guide question is not connected yet',
   'answerFailed': 'Explanation could not be generated',
+  'aiFailNetwork': 'No internet connection — please try again.',
+  'aiFailNotConfigured': 'The AI key is not configured on the server.',
+  'aiFailEmpty': 'The AI returned nothing — please try again.',
+  'aiFailParse': 'The AI reply could not be read — please try again.',
+  'aiFailNoGrounding': 'No reliable guide text was found for this question.',
   'answerLoadFailed':
       'The question could not be loaded — the network or server did not respond',
   'explanationKeyMismatch':
@@ -155,8 +168,8 @@ const Map<String, String> guideBankStringsEn = {
       'The answer above comes from the guide key. The guide has no printed written solution for this question, so the explanation below was written by AI — it is not the guide\'s text.',
   'verbatimErrorNote':
       'The printed guide answer was proven wrong and no correction is ready yet — see the AI explanation below',
-  'explainDetailed': 'Show with summary',
-  'explainSteps': 'Show steps only',
+  'explainDetailed': 'Explain with a summary',
+  'explainSteps': 'Explain step by step',
   'stimulusTitle': 'Stimulus',
   'passageSource': 'Passage source',
   'askAi': 'Ask AI',

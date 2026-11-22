@@ -40,8 +40,9 @@ class BanglaFirstCreativeGroupScreen extends StatefulWidget {
 
 class _BanglaFirstCreativeGroupScreenState
     extends State<BanglaFirstCreativeGroupScreen> {
-  late final List<GuideBankQuestion> _parts =
-      orderedCreativeParts(widget.parts);
+  late final List<GuideBankQuestion> _parts = orderedCreativeParts(
+    widget.parts,
+  );
   final _states = <String, CreativePartState>{};
   int _selected = 0;
   double _fontSize = 16;
@@ -171,24 +172,33 @@ class _BanglaFirstCreativeGroupScreenState
                   bn: bn,
                   onSurface: onSurface,
                   onSelect: _select,
-                  onPrev: _selected > 0
-                      ? () => _select(_selected - 1)
-                      : null,
+                  onPrev: _selected > 0 ? () => _select(_selected - 1) : null,
                   onNext: _selected < _parts.length - 1
                       ? () => _select(_selected + 1)
                       : null,
-                  onFontSmaller: () => setState(
-                      () => _fontSize = (_fontSize - 1).clamp(12, 24)),
-                  onFontLarger: () => setState(
-                      () => _fontSize = (_fontSize + 1).clamp(12, 24)),
-                  onExplainDetailed: (st) => setState(() {
-                    st.showExplanation = true;
-                    st.stepsOnly = false;
-                  }),
-                  onExplainSteps: (st) => setState(() {
-                    st.showExplanation = true;
-                    st.stepsOnly = true;
-                  }),
+                  onFontSmaller: () =>
+                      setState(() => _fontSize = (_fontSize - 1).clamp(12, 24)),
+                  onFontLarger: () =>
+                      setState(() => _fontSize = (_fontSize + 1).clamp(12, 24)),
+                  // C8: the two buttons generate the explanation too.
+                  onExplainDetailed: (st) {
+                    setState(() {
+                      st.showExplanation = true;
+                      st.stepsOnly = false;
+                    });
+                    if (!st.explanationRequested) {
+                      _requestPartExplanation(_parts[_selected]);
+                    }
+                  },
+                  onExplainSteps: (st) {
+                    setState(() {
+                      st.showExplanation = true;
+                      st.stepsOnly = true;
+                    });
+                    if (!st.explanationRequested) {
+                      _requestPartExplanation(_parts[_selected]);
+                    }
+                  },
                   onRequestExplanation: _requestPartExplanation,
                   onAskAi: (q) => openGuideChat(context, q),
                 ),

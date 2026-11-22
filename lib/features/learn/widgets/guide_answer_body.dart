@@ -129,6 +129,12 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
   Widget build(BuildContext context) {
     final onVariant = Theme.of(context).colorScheme.onSurfaceVariant;
     final fontSize = widget.fontSize;
+    // The card above carries the two generate buttons only when the
+    // guide's own answer is shown (C8).
+    final _hasVerbatimCard =
+        (widget.verbatimKind == 'guide' ||
+            widget.verbatimKind == 'corrected') &&
+        widget.verbatimText.isNotEmpty;
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -213,6 +219,9 @@ class _GuideAnswerBodyState extends State<GuideAnswerBody> {
             s: widget.s,
             ls: widget.ls,
             stepsOnly: widget.stepsOnly,
+            // The verbatim card above already has the two generate
+            // buttons (C8); without verbatim the AI card does not.
+            showRequestButton: !_hasVerbatimCard,
             explanation: widget.explanation,
           ),
         GuideAnswerFooter(

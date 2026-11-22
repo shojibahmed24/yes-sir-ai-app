@@ -55,8 +55,10 @@ class GuideCreativeAnswerView extends StatefulWidget {
 
 class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
   late final List<GuideBankQuestion> _parts = orderForDisplay(widget.parts);
-  late final List<int?> _marks =
-      creativePartMarks(_parts, marksParts: groupMarksParts(_parts));
+  late final List<int?> _marks = creativePartMarks(
+    _parts,
+    marksParts: groupMarksParts(_parts),
+  );
   final _states = <String, CreativePartState>{};
   int _selected = 0;
   double _fontSize = 16;
@@ -73,14 +75,15 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
     final st = _stateOf(part);
     if (st.loading || st.loaded) return;
     st.loading = true;
-    final loader = widget.loader ??
+    final loader =
+        widget.loader ??
         (p, bn, onStage1) => defaultCreativePartLoader(
-              part: p,
-              subjectId: widget.subjectId,
-              schoolClass: widget.schoolClass,
-              bn: bn,
-              onStage1: onStage1,
-            );
+          part: p,
+          subjectId: widget.subjectId,
+          schoolClass: widget.schoolClass,
+          bn: bn,
+          onStage1: onStage1,
+        );
     try {
       final result = await loader(part, widget.bn, (stage1) {
         if (!mounted) return;
@@ -140,10 +143,7 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
       st.explanationRequested = true;
       st.explaining = true;
     });
-    final attempt = await runCreativePartExplanation(
-      st.grounding!,
-      widget.bn,
-    );
+    final attempt = await runCreativePartExplanation(st.grounding!, widget.bn);
     if (!mounted) return;
     setState(() {
       st.explaining = false;
@@ -191,12 +191,18 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
             children: [
               for (var i = 0; i < _parts.length; i++)
                 ChoiceChip(
-                  label: Text(_marks[i] == null
-                      ? creativePartLabel(i)
-                      : '${creativePartLabel(i)} · '
-                          '${numStr(_marks[i]!, widget.bn)}'),
+                  label: Text(
+                    _marks[i] == null
+                        ? creativePartLabel(i)
+                        : '${creativePartLabel(i)} · '
+                              '${numStr(_marks[i]!, widget.bn)}',
+                  ),
                   selected: i == _selected,
-                  onSelected: (_) { if (i == _selected) return; setState(() => _selected = i); _loadPart(_parts[i]); },
+                  onSelected: (_) {
+                    if (i == _selected) return;
+                    setState(() => _selected = i);
+                    _loadPart(_parts[i]);
+                  },
                 ),
             ],
           ),
@@ -217,16 +223,37 @@ class _GuideCreativeAnswerViewState extends State<GuideCreativeAnswerView> {
                     widget.ls['sourceAiExplanation']!,
                   ],
                   fontSize: _fontSize,
-                  onFontSmaller: () => setState(() => _fontSize = (_fontSize - 1).clamp(12, 24)),
-                  onFontLarger: () => setState(() => _fontSize = (_fontSize + 1).clamp(12, 24)),
+                  onFontSmaller: () =>
+                      setState(() => _fontSize = (_fontSize - 1).clamp(12, 24)),
+                  onFontLarger: () =>
+                      setState(() => _fontSize = (_fontSize + 1).clamp(12, 24)),
                   verbatimKind: st.verbatimKind,
                   verbatimText: st.verbatimText,
                   correctionNote: st.correctionNote,
                   guideError: st.guideError,
                   showExplanation: st.showExplanation,
                   stepsOnly: st.stepsOnly,
-                  onExplainDetailed: () => setState(() { st.showExplanation = true; st.stepsOnly = false; }),
-                  onExplainSteps: () => setState(() { st.showExplanation = true; st.stepsOnly = true; }),
+                  // C8: both buttons must GENERATE the explanation,
+                  // not only flip a local flag (the section showed
+                  // "not created yet" forever).
+                  onExplainDetailed: () {
+                    setState(() {
+                      st.showExplanation = true;
+                      st.stepsOnly = false;
+                    });
+                    if (!st.explanationRequested) {
+                      _requestPartExplanation(selected);
+                    }
+                  },
+                  onExplainSteps: () {
+                    setState(() {
+                      st.showExplanation = true;
+                      st.stepsOnly = true;
+                    });
+                    if (!st.explanationRequested) {
+                      _requestPartExplanation(selected);
+                    }
+                  },
                   explanation: ExplanationSectionInput(
                     requested: st.explanationRequested,
                     pending: st.explaining,

@@ -50,6 +50,7 @@ class GuideExplanationSection extends StatelessWidget {
     required this.ls,
     required this.stepsOnly,
     required this.explanation,
+    this.showRequestButton = true,
   });
   final StructuredAttempt? attempt;
   final GuideBankQuestion question;
@@ -60,6 +61,11 @@ class GuideExplanationSection extends StatelessWidget {
   final bool stepsOnly;
   final ExplanationSectionInput explanation;
 
+  /// False when the answer card above already offers the two
+  /// generate buttons (C8): a second "view explanation" button would
+  /// be the duplicate the student complained about.
+  final bool showRequestButton;
+
   @override
   Widget build(BuildContext context) {
     final failed =
@@ -67,7 +73,8 @@ class GuideExplanationSection extends StatelessWidget {
     // Garbled prose fallback must never reach the student: a
     // failed attempt whose raw text carries mixed-script or
     // foreign-script garbage shows the failed row instead.
-    final proseFallback = attempt != null &&
+    final proseFallback =
+        attempt != null &&
             attempt!.status == StructuredStatus.failed &&
             attempt!.rawText.isNotEmpty &&
             !explanationHasScriptGarbage(attempt!.rawText)
@@ -77,6 +84,9 @@ class GuideExplanationSection extends StatelessWidget {
       return Text(s['explanationUnavailableOptions']!);
     }
     if (!explanation.requested) {
+      // No duplicate button when the card above already has the
+      // "summary / step by step" pair (C8).
+      if (!showRequestButton) return const SizedBox.shrink();
       return OutlinedButton(
         onPressed: explanation.onRequest,
         child: Text(s['viewExplanation']!),
@@ -143,10 +153,31 @@ class GuideExplanationSection extends StatelessWidget {
         aiModel: attempt!.aiModel,
       );
     }
+    // C9: never a bare "failed" — say WHY when the service knows.
     return GuideMessageState(
       title: s['answerFailed']!,
+      body: _failureReasonText(attempt?.failureReason),
       buttonLabel: s['retry']!,
       onPressed: explanation.onRetry,
     );
+  }
+
+  /// Localized, student-facing reason for a failed explanation (C9).
+  /// Unknown reasons stay empty: never a guess.
+  String _failureReasonText(String? reason) {
+    switch (reason) {
+      case 'network':
+        return ls['aiFailNetwork'] ?? '';
+      case 'not-configured':
+        return ls['aiFailNotConfigured'] ?? '';
+      case 'empty':
+        return ls['aiFailEmpty'] ?? '';
+      case 'parse':
+        return ls['aiFailParse'] ?? '';
+      case 'no-grounding':
+        return ls['aiFailNoGrounding'] ?? '';
+      default:
+        return '';
+    }
   }
 }

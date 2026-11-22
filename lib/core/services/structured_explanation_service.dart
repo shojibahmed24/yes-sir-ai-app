@@ -73,8 +73,12 @@ class StructuredExplanationService {
       );
     }
     var attempt = await _tryOnce(
-      ctx: ctx, style: style, bangla: bangla, budget: budget,
-      userQuestion: userQuestion, strict: false,
+      ctx: ctx,
+      style: style,
+      bangla: bangla,
+      budget: budget,
+      userQuestion: userQuestion,
+      strict: false,
     );
     // A garbled ok (mixed-script or foreign-script words) is
     // failed, so the trimmed retry below runs instead of
@@ -94,22 +98,37 @@ class StructuredExplanationService {
         guidance: budget.guidance,
       );
       attempt = await _tryOnce(
-        ctx: ctx, style: style, bangla: bangla, budget: trimmedBudget,
-        userQuestion: userQuestion, strict: true, trimmed: true,
+        ctx: ctx,
+        style: style,
+        bangla: bangla,
+        budget: trimmedBudget,
+        userQuestion: userQuestion,
+        strict: true,
+        trimmed: true,
       );
     } else if (attempt.status == StructuredStatus.keyMismatch) {
       final retry = await _tryOnce(
-        ctx: ctx, style: style, bangla: bangla, budget: budget,
-        userQuestion: userQuestion, strict: true,
+        ctx: ctx,
+        style: style,
+        bangla: bangla,
+        budget: budget,
+        userQuestion: userQuestion,
+        strict: true,
       );
       if (retry.status == StructuredStatus.ok) attempt = retry;
     } else if (attempt.solution != null &&
-        (summaryEqualsFinal(attempt.solution!.summary,
-                attempt.solution!.finalAnswer) ||
+        (summaryEqualsFinal(
+              attempt.solution!.summary,
+              attempt.solution!.finalAnswer,
+            ) ||
             stepsFarOffBudget(attempt.solution!.steps.length, budget))) {
       final retry = await _tryOnce(
-        ctx: ctx, style: style, bangla: bangla, budget: budget,
-        userQuestion: userQuestion, strict: true,
+        ctx: ctx,
+        style: style,
+        bangla: bangla,
+        budget: budget,
+        userQuestion: userQuestion,
+        strict: true,
       );
       // A still-duplicate retry is kept, not discarded: the
       // renderer hides the duplicate summary card instead.
@@ -139,14 +158,31 @@ class StructuredExplanationService {
     String? userQuestion,
     bool trimmed = false,
   }) async {
-    final gen = await openRouterClient.chatRaw(
-      systemPrompt: structuredSystemPrompt(bangla, budget, strict),
-      userPrompt: structuredUserPrompt(ctx, style, userQuestion,
-          trimmed: trimmed),
-    );
+    final GenResult gen;
+    try {
+      gen = await openRouterClient.chatRaw(
+        systemPrompt: structuredSystemPrompt(bangla, budget, strict),
+        userPrompt: structuredUserPrompt(
+          ctx,
+          style,
+          userQuestion,
+          trimmed: trimmed,
+        ),
+      );
+    } catch (_) {
+      // Transport failure (offline / timeout / 5xx): the reason is
+      // shown to the student instead of a silent generic failure.
+      return const StructuredAttempt(
+        status: StructuredStatus.failed,
+        failureReason: 'network',
+      );
+    }
     final raw = gen.text;
     if (raw == null || raw.isEmpty) {
-      return const StructuredAttempt(status: StructuredStatus.failed);
+      return const StructuredAttempt(
+        status: StructuredStatus.failed,
+        failureReason: 'empty',
+      );
     }
     // Fences are stripped BEFORE any fallback use, so raw JSON /
     // fences never reach the user. Unparseable prose still falls
@@ -160,8 +196,7 @@ class StructuredExplanationService {
     try {
       decoded = jsonDecode(cleaned);
     } catch (_) {
-      final looksJson =
-          cleaned.startsWith('{') || cleaned.startsWith('[');
+      final looksJson = cleaned.startsWith('{') || cleaned.startsWith('[');
       return StructuredAttempt(
         status: StructuredStatus.failed,
         rawText: looksJson ? salvageTruncatedJsonText(cleaned) : cleaned,
@@ -173,7 +208,7 @@ class StructuredExplanationService {
     // lenient partial parse, which keeps the valid steps.
     final solution =
         parseStructuredSolution(decoded) ??
-            parsePartialStructuredSolution(decoded);
+        parsePartialStructuredSolution(decoded);
     if (solution == null) {
       return const StructuredAttempt(status: StructuredStatus.failed);
     }
@@ -219,7 +254,10 @@ class StructuredExplanationService {
   }
 
   GroundedContext? _guideContextFrom(
-    Map<String, dynamic> res, String subject, int schoolClass) {
+    Map<String, dynamic> res,
+    String subject,
+    int schoolClass,
+  ) {
     final questionText = res['questionText'];
     if (questionText is! String || questionText.isEmpty) return null;
     final marks = (res['marks'] as num?)?.toInt();
@@ -265,7 +303,6 @@ class StructuredExplanationService {
       marks: marks,
     );
   }
-
 }
 
 final structuredExplanationService = StructuredExplanationService();

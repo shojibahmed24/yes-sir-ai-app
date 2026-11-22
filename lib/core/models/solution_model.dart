@@ -99,17 +99,19 @@ StructuredSolution? parseStructuredSolution(dynamic data) {
     final text = _asString(raw['text']);
     if (n == null || text.isEmpty) return null;
     final formula = _asString(raw['formulaLatex']);
-    steps.add(SolutionStep(
-      n: n,
-      title: _asString(raw['title']),
-      text: text,
-      formulaLatex: formula.isEmpty ? null : formula,
-      table: _parseTable(raw['table']),
-      sectionLabel: _asString(raw['sectionLabel']).isEmpty
-          ? null
-          : _asString(raw['sectionLabel']),
-      sectionMarks: _asInt(raw['sectionMarks']),
-    ));
+    steps.add(
+      SolutionStep(
+        n: n,
+        title: _asString(raw['title']),
+        text: text,
+        formulaLatex: formula.isEmpty ? null : formula,
+        table: _parseTable(raw['table']),
+        sectionLabel: _asString(raw['sectionLabel']).isEmpty
+            ? null
+            : _asString(raw['sectionLabel']),
+        sectionMarks: _asInt(raw['sectionMarks']),
+      ),
+    );
   }
   if (steps.isEmpty) return null;
   final correctOption = _asString(data['correctOption']);
@@ -142,12 +144,14 @@ StructuredSolution? parseStructuredSolution(dynamic data) {
 /// string gate stays — those rows carry no option to map.
 /// Unresolvable on either side is a mismatch.
 bool solutionMatchesKey(
-    StructuredSolution solution, String storedKey, List<String> options) {
+  StructuredSolution solution,
+  String storedKey,
+  List<String> options,
+) {
   if (options.isEmpty) {
     final claimed = solution.correctOption;
     if (claimed == null) return false;
-    return claimed.trim().toLowerCase() ==
-        storedKey.trim().toLowerCase();
+    return claimed.trim().toLowerCase() == storedKey.trim().toLowerCase();
   }
   final stored = _claimOptionIndex(storedKey, options);
   if (stored == null) return false;
@@ -196,12 +200,11 @@ int? _bareLabelIndex(String token) {
 /// label, so mid-sentence labels are never scanned.
 int? _leadingLabelIndex(String claim) {
   var t = claim.trim();
-  t = t.replaceFirst(
-      RegExp(r'^option\s+', caseSensitive: false), '');
+  t = t.replaceFirst(RegExp(r'^option\s+', caseSensitive: false), '');
   final m = RegExp(
-          r'^[\(\[]?\s*([ক-ঙ]|iv|v|iii|ii|i|[a-e]|[1-9])\s*(?:[.\)\:\-–—]|\()',
-          caseSensitive: false)
-      .firstMatch(t);
+    r'^[\(\[]?\s*([ক-ঙ]|iv|v|iii|ii|i|[a-e]|[1-9])\s*(?:[.\)\:\-–—]|\()',
+    caseSensitive: false,
+  ).firstMatch(t);
   if (m == null) return null;
   return _bareLabelIndex(m.group(1)!);
 }
@@ -217,16 +220,20 @@ int? _claimOptionIndex(String claim, List<String> options) {
   var idx = _bareLabelIndex(text);
   if (idx != null && idx < options.length) return idx;
   // 'Option ii' — strip the word, then the remainder is a label.
-  final unprefixed =
-      text.replaceFirst(RegExp(r'^option\s+', caseSensitive: false), '');
+  final unprefixed = text.replaceFirst(
+    RegExp(r'^option\s+', caseSensitive: false),
+    '',
+  );
   if (unprefixed != text) {
     idx = _bareLabelIndex(unprefixed);
     if (idx != null && idx < options.length) return idx;
   }
   idx = _leadingLabelIndex(text);
   if (idx != null && idx < options.length) return idx;
-  final paren = RegExp(r'\(\s*(iv|v|iii|ii|i)\s*\)', caseSensitive: false)
-      .firstMatch(lower);
+  final paren = RegExp(
+    r'\(\s*(iv|v|iii|ii|i)\s*\)',
+    caseSensitive: false,
+  ).firstMatch(lower);
   if (paren != null) {
     idx = _bareLabelIndex(paren.group(1)!);
     if (idx != null && idx < options.length) return idx;
@@ -277,6 +284,12 @@ class StructuredAttempt {
   final String rawText;
   final String storedKey;
 
+  /// Why a failed attempt failed (C9): 'not-configured' (server has
+  /// no AI key), 'network', 'empty' (AI returned nothing), 'parse'
+  /// (reply was unusable) or null (unknown). The UI maps this to a
+  /// short localized reason so the student knows what happened.
+  final String? failureReason;
+
   /// Attribution from the Edge response (see GenResult):
   /// 'openrouter' | 'gemini' | 'unknown'. Set whenever the
   /// attempt carries AI text (ok solution or prose fallback);
@@ -288,6 +301,7 @@ class StructuredAttempt {
     this.solution,
     this.rawText = '',
     this.storedKey = '',
+    this.failureReason,
     this.aiProvider = 'unknown',
     this.aiModel,
   });
