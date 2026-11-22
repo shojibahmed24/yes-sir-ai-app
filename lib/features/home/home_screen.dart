@@ -156,17 +156,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   final data = snap.data;
                   final sum = data?.summary;
                   final last = _parseKey(sum?.lastLessonKey, data?.schoolClass);
-                  final heroSubject = last == null
-                      ? s['noLessonYet']!
-                      : '${subjectNameFor(last.subject, bn)} · '
-                            '${bn ? 'অধ্যায়' : 'Chapter'} '
-                            '${numStr(last.chapter, bn)} · '
-                            '${bn ? 'পৃষ্ঠা' : 'Page'} '
-                            '${numStr(last.page, bn)}';
-                  final heroTopic = last == null
-                      ? s['startFromSearch']!
-                      : '${bn ? 'প্রশ্ন' : 'Question'} '
-                            '${numStr(last.problem, bn)}';
+                  // C10: the structured record wins — real chapter/lesson
+                  // titles only, never "অধ্যায় ৯৭ · পৃষ্ঠা ০ · প্রশ্ন ০".
+                  final study = data?.lastStudy;
+                  final heroSubject = study != null
+                      ? '${subjectNameFor(study.subject, bn)} · '
+                            '${study.chapterTitle(bn)}'
+                      : (last == null
+                            ? s['noLessonYet']!
+                            : '${subjectNameFor(last.subject, bn)} · '
+                                  '${bn ? 'অধ্যায়' : 'Chapter'} '
+                                  '${numStr(last.chapter, bn)} · '
+                                  '${bn ? 'পৃষ্ঠা' : 'Page'} '
+                                  '${numStr(last.page, bn)}');
+                  final heroTopic = study != null
+                      ? ((study.lesson ?? '').isNotEmpty
+                            ? study.lesson!
+                            : study.questionSnippet.isNotEmpty
+                            ? study.questionSnippet
+                            : s['practiceAgain']!)
+                      : (last == null
+                            ? s['startFromSearch']!
+                            : '${bn ? 'প্রশ্ন' : 'Question'} '
+                                  '${numStr(last.problem, bn)}');
                   return SingleChildScrollView(
                     padding: const EdgeInsets.all(HomeDesign.screenPadding),
                     // One staggered entrance for the first blocks
@@ -224,7 +236,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           // (subject/class prefilled when known),
                           // never the old /lesson or /search
                           // screens that dead-end class 9.
-                          onContinue: () => context.go(homeContinueRoute(last)),
+                          // C10: continue opens the study itself (the
+                          // exact chapter/lesson), not a bare picker.
+                          onContinue: () {
+                            if (study != null) {
+                              final cls =
+                                  study.schoolClass ?? data?.schoolClass;
+                              final lesson = study.lesson;
+                              context.go(
+                                '/search-flow?subject=${study.subject}'
+                                '&chapter=${study.chapter}'
+                                '${lesson == null ? '' : '&lesson=${Uri.encodeComponent(lesson)}'}'
+                                '${cls == null ? '' : '&class=$cls'}',
+                              );
+                              return;
+                            }
+                            context.go(homeContinueRoute(last));
+                          },
                         ),
                         const SizedBox(height: HomeDesign.blockGap),
                         // Batch 2, item 3: saved = LocalStore (the

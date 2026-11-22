@@ -4,8 +4,11 @@
 // save-toggles). Saved-question ids are ALSO written to LocalStore
 // so the Saved screen (another area) can read them.
 // NOTE: no bKash here — deliberately absent, Play Billing only.
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/saved_sync_service.dart';
+import 'last_study.dart';
 
 class LearnSummary {
   const LearnSummary({
@@ -39,6 +42,9 @@ class LearnStore {
   static const _lastLesson = 'area2_last_lesson';
   static const _photoNotes = 'area2_photo_notes';
 
+  /// Structured last-study record (C10).
+  static const _lastStudyV2 = 'ys_last_study_v2';
+
   /// Recently opened guide questions: 'subject|chapter|id|snippet'.
   static const _recentQuestions = 'area2_recent_questions';
 
@@ -53,12 +59,30 @@ class LearnStore {
     required String chapterTitleEn,
     String? lesson,
     required int schoolClass,
+    String? questionId,
+    String questionSnippet = '',
   }) async {
     final p = await SharedPreferences.getInstance();
     // Same shape the hero understands ('subject|chapter|page|problem');
     // page 0 marks a guide item (no textbook page), so Home opens the
     // search flow instead of a textbook lesson.
     await p.setString(_lastLesson, '$subject|$chapter|0|0');
+    // C10: a structured record the hero can render without any fake
+    // page/problem numbers.
+    final record = LastStudy(
+      subject: subject,
+      chapter: chapter,
+      chapterTitleBn: chapterTitleBn,
+      chapterTitleEn: chapterTitleEn,
+      lesson: (lesson == null || lesson.isEmpty) ? null : lesson,
+      questionId: questionId,
+      questionSnippet: questionSnippet,
+      schoolClass: schoolClass,
+    );
+    await p.setString(_lastStudyV2, jsonEncode(record.toJson()));
+    // C11: today's lessons + opened chapters follow the guide flow
+    // too (they used to be textbook-only, so both stayed 0).
+    await _recordGuideProgress(p, subject, chapter, lesson);
     final titleBn = (lesson == null || lesson.isEmpty)
         ? chapterTitleBn
         : '$chapterTitleBn · $lesson';
@@ -72,6 +96,45 @@ class LearnStore {
     list.removeWhere((e) => e == entry);
     list.insert(0, entry);
     await p.setStringList(_books, list.take(5).toList());
+  }
+
+  /// Today's lessons + opened chapters, day-deduped (C11).
+  static Future<void> _recordGuideProgress(
+    SharedPreferences p,
+    String subject,
+    int chapter,
+    String? lesson,
+  ) async {
+    final today = _todayStr();
+    if (p.getString(_today) != today) {
+      await p.setString(_today, today);
+      await p.setStringList(_lessonsTodayIds, []);
+      await p.setInt(_lessonsToday, 0);
+    }
+    final lessonKey = '$subject|$chapter|${lesson ?? ''}';
+    final todayIds = p.getStringList(_lessonsTodayIds) ?? [];
+    if (!todayIds.contains(lessonKey)) {
+      todayIds.add(lessonKey);
+      await p.setStringList(_lessonsTodayIds, todayIds);
+      await p.setInt(_lessonsToday, todayIds.length);
+    }
+    final lessons = p.getStringList(_lessons) ?? [];
+    if (!lessons.contains(lessonKey)) {
+      lessons.add(lessonKey);
+      await p.setStringList(_lessons, lessons);
+    }
+    final chapterKey = '$subject|$chapter';
+    final chapters = p.getStringList(_chapters) ?? [];
+    if (!chapters.contains(chapterKey)) {
+      chapters.add(chapterKey);
+      await p.setStringList(_chapters, chapters);
+    }
+  }
+
+  /// The structured last-study record (C10), null when none yet.
+  static Future<LastStudy?> lastStudy() async {
+    final p = await SharedPreferences.getInstance();
+    return LastStudy.decode(p.getString(_lastStudyV2));
   }
 
   static Future<void> addRecentQuestion(String entry) async {

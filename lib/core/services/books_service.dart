@@ -188,7 +188,16 @@ class BooksService {
         );
       }).toList();
       _sortSubjects(out);
-      final enriched = await withBulkGuideFlags(out, schoolClass);
+      // C12: the server can return the same subject under two ids
+      // (e.g. two "কর্ম ও জীবন্মুখী শিক্ষা" rows). Show it once.
+      final unique = <SubjectInfo>[];
+      final seenIds = <String>{};
+      final seenNames = <String>{};
+      for (final s in out) {
+        final name = s.nameBn.trim().toLowerCase();
+        if (seenIds.add(s.id) && seenNames.add(name)) unique.add(s);
+      }
+      final enriched = await withBulkGuideFlags(unique, schoolClass);
       if (enriched.complete) {
         _subjectsCache.set(key, enriched.subjects);
         _lastGoodSync[key] = enriched.subjects;

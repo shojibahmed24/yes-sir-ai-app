@@ -19,6 +19,7 @@
 import '../../core/services/local_store.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/services/progress_service.dart';
+import '../learn/last_study.dart';
 import '../learn/learn_store.dart';
 
 class HomeData {
@@ -29,6 +30,7 @@ class HomeData {
     required this.progress,
     required this.opened,
     required this.recentQuestions,
+    required this.lastStudy,
   });
   final LearnSummary summary;
   final int savedCount;
@@ -42,6 +44,10 @@ class HomeData {
 
   /// Last opened guide questions ('subject|chapter|id|snippet').
   final List<String> recentQuestions;
+
+  /// Structured last-study record (C10): the hero renders only real
+  /// fields and can reopen the exact question.
+  final LastStudy? lastStudy;
 }
 
 Future<HomeData> loadHomeData() async {
@@ -52,6 +58,7 @@ Future<HomeData> loadHomeData() async {
     progressService.summary(),
     LearnStore.chaptersList(),
     LearnStore.recentQuestions(),
+    LearnStore.lastStudy(),
   ]);
   final saved = results[1] as List<String>;
   return HomeData(
@@ -61,5 +68,6 @@ Future<HomeData> loadHomeData() async {
     progress: results[3] as ProgressSummary,
     opened: results[4] as List<String>,
     recentQuestions: results[5] as List<String>,
+    lastStudy: results[6] as LastStudy?,
   );
 }

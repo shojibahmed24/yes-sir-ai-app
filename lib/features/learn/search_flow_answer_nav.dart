@@ -108,6 +108,9 @@ Future<void> openSearchFlowGuideAnswer(
       chapterTitleEn: _chapterTitle(subjectId, schoolClass, ch, false),
       lesson: q.lesson,
       schoolClass: schoolClass,
+      // C10: enough to reopen this exact question from Home.
+      questionId: q.id,
+      questionSnippet: snippet.length > 80 ? snippet.substring(0, 80) : snippet,
     ),
   );
   context.go('/guide-answer');
