@@ -63,10 +63,7 @@ void main() {
     await t.pumpAndSettle();
     await t.tap(find.text('কুইজ শুরু করো'));
     await t.pumpAndSettle();
-    // No server in tests -> guide empty -> dialog first.
-    expect(find.text('ব্যাংক-সেট দিয়ে শুরু করো'), findsOneWidget);
-    await t.tap(find.text('ব্যাংক-সেট দিয়ে শুরু করো'));
-    await t.pumpAndSettle();
+    // No server in tests -> the SAME subject's bank fills the set.
     expect(find.textContaining('QUIZ 5 items daily'), findsOneWidget);
   });
 
@@ -117,10 +114,7 @@ void main() {
     expect(find.textContaining('গাইড MCQ'), findsOneWidget);
     await t.tap(find.text('শুরু করো').first);
     await t.pumpAndSettle();
-    // No server in tests -> guide empty -> dialog first.
-    expect(find.text('ব্যাংক-সেট দিয়ে শুরু করো'), findsOneWidget);
-    await t.tap(find.text('ব্যাংক-সেট দিয়ে শুরু করো'));
-    await t.pumpAndSettle();
+    // No server in tests -> the SAME subject's bank fills the set.
     expect(find.textContaining('QUIZ 5 items daily'), findsOneWidget);
   });
 }

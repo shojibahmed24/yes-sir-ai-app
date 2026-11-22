@@ -10,30 +10,46 @@ import 'package:yes_sir_ai/core/services/question_generation.dart';
 import 'package:yes_sir_ai/features/practice/practice_store.dart';
 
 QuizItem _item(String id) => QuizItem(
-    id: id, questionBn: id, questionEn: id,
-    options: const ['a', 'b', 'c', 'd'], correctIndex: 0);
+  id: id,
+  questionBn: id,
+  questionEn: id,
+  options: const ['a', 'b', 'c', 'd'],
+  correctIndex: 0,
+);
 
 List<QuizItem> _pool() => [
-      _item('a1'), _item('a2'), _item('b1'), _item('b2'),
-      _item('c1'), _item('c2'),
-    ];
+  _item('a1'),
+  _item('a2'),
+  _item('b1'),
+  _item('b2'),
+  _item('c1'),
+  _item('c2'),
+];
 
 void main() {
   test('selector is deterministic for the same seed', () {
     final one = questionGeneration.selectQuestions(
-        pool: _pool(), count: 4, seedKey: 'daily-6-math-2026-10-28',
-        chapterOf: (q) => q.id[0]);
+      pool: _pool(),
+      count: 4,
+      seedKey: 'daily-6-math-2026-10-28',
+      chapterOf: (q) => q.id[0],
+    );
     final two = questionGeneration.selectQuestions(
-        pool: _pool(), count: 4, seedKey: 'daily-6-math-2026-10-28',
-        chapterOf: (q) => q.id[0]);
-    expect(one.map((q) => q.id).toList(),
-        two.map((q) => q.id).toList());
+      pool: _pool(),
+      count: 4,
+      seedKey: 'daily-6-math-2026-10-28',
+      chapterOf: (q) => q.id[0],
+    );
+    expect(one.map((q) => q.id).toList(), two.map((q) => q.id).toList());
   });
 
   test('selector covers every chapter before repeating one', () {
     final set = questionGeneration.selectQuestions(
-        pool: _pool(), count: 4, seedKey: 'seed-x',
-        chapterOf: (q) => q.id[0]);
+      pool: _pool(),
+      count: 4,
+      seedKey: 'seed-x',
+      chapterOf: (q) => q.id[0],
+    );
     expect(set.length, 4);
     expect(set.map((q) => q.id).toSet().length, 4); // no repeats
     expect(set.map((q) => q.id[0]).toSet(), {'a', 'b', 'c'});
@@ -42,8 +58,11 @@ void main() {
   test('selector caps at the pool size and dedupes ids', () {
     final pool = [..._pool(), _item('a1')]; // duplicate id
     final set = questionGeneration.selectQuestions(
-        pool: pool, count: 99, seedKey: 'seed-y',
-        chapterOf: (q) => q.id[0]);
+      pool: pool,
+      count: 99,
+      seedKey: 'seed-y',
+      chapterOf: (q) => q.id[0],
+    );
     expect(set.length, 6);
     expect(set.map((q) => q.id).toSet().length, 6);
   });
@@ -52,8 +71,7 @@ void main() {
     final one = practiceService.dailyQuizFor('math', seedKey: 'd1');
     final two = practiceService.dailyQuizFor('math', seedKey: 'd1');
     expect(one.length, 5);
-    expect(one.map((q) => q.id).toList(),
-        two.map((q) => q.id).toList());
+    expect(one.map((q) => q.id).toList(), two.map((q) => q.id).toList());
   });
 
   test('model tests keep fixed counts and english stays locked', () {
@@ -65,30 +83,52 @@ void main() {
     expect(en.items, isEmpty);
   });
 
-  test('generateDailyQuiz with no guide returns an empty guide set',
-      () async {
+  test('generateDailyQuiz with no guide fills from the subject bank', () async {
     SharedPreferences.setMockInitialValues({});
     final gen = await practiceService.generateDailyQuiz(
-        subject: 'math', schoolClass: 6, bangla: true);
-    // No server in tests -> guide empty -> the SCREEN asks
-    // about a bank set; the service never substitutes silently.
-    expect(gen.items, isEmpty);
+      subject: 'math',
+      schoolClass: 6,
+      bangla: true,
+    );
+    // Round 3 quiz plan: no guide rows -> the SAME subject's bank
+    // fills the set (5 math items); the quiz is never empty and no
+    // other subject's questions appear.
+    expect(gen.items.length, 5);
+    expect(gen.items.every((q) => q.id.startsWith('m')), isTrue);
     expect(gen.source, QuestionSource.guide);
-    expect(gen.guideShortfall, 20);
+    expect(gen.guideShortfall, 15);
     expect(gen.bookQuestionsIndexed, 0); // no server in tests
   });
 
   test('weak revision is newest-first wrong answers, deduped', () async {
     SharedPreferences.setMockInitialValues({});
     PracticeSession.lastAttempt = null;
-    await PracticeStore.saveAttempt(Attempt(kind: 'quiz',
-        testId: 'quiz-math', subject: 'math', chapter: 'math',
-        correct: 1, total: 2, seconds: 60, date: '2026-10-27',
-        answers: {'mq1': 0, 'mq2': 2})); // mq1 wrong, mq2 right
-    await PracticeStore.saveAttempt(Attempt(kind: 'quiz',
-        testId: 'quiz-math', subject: 'math', chapter: 'math',
-        correct: 0, total: 2, seconds: 60, date: '2026-10-28',
-        answers: {'mq3': 0, 'mq1': 0})); // mq3 + mq1 wrong again
+    await PracticeStore.saveAttempt(
+      Attempt(
+        kind: 'quiz',
+        testId: 'quiz-math',
+        subject: 'math',
+        chapter: 'math',
+        correct: 1,
+        total: 2,
+        seconds: 60,
+        date: '2026-10-27',
+        answers: {'mq1': 0, 'mq2': 2},
+      ),
+    ); // mq1 wrong, mq2 right
+    await PracticeStore.saveAttempt(
+      Attempt(
+        kind: 'quiz',
+        testId: 'quiz-math',
+        subject: 'math',
+        chapter: 'math',
+        correct: 0,
+        total: 2,
+        seconds: 60,
+        date: '2026-10-28',
+        answers: {'mq3': 0, 'mq1': 0},
+      ),
+    ); // mq3 + mq1 wrong again
     final weak = await practiceService.weakRevisionItems();
     expect(weak.map((q) => q.id).toList(), ['mq3', 'mq1']);
     final sum = await progressService.summary();
@@ -98,10 +138,19 @@ void main() {
   test('weak revision is empty with no wrong answers', () async {
     SharedPreferences.setMockInitialValues({});
     PracticeSession.lastAttempt = null;
-    await PracticeStore.saveAttempt(Attempt(kind: 'quiz',
-        testId: 'quiz-math', subject: 'math', chapter: 'math',
-        correct: 1, total: 1, seconds: 30, date: '2026-10-28',
-        answers: {'mq2': 2})); // correct only
+    await PracticeStore.saveAttempt(
+      Attempt(
+        kind: 'quiz',
+        testId: 'quiz-math',
+        subject: 'math',
+        chapter: 'math',
+        correct: 1,
+        total: 1,
+        seconds: 30,
+        date: '2026-10-28',
+        answers: {'mq2': 2},
+      ),
+    ); // correct only
     expect(await practiceService.weakRevisionItems(), isEmpty);
   });
 }

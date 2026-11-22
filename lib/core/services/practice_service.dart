@@ -15,6 +15,7 @@ import 'question_bank.dart';
 import 'question_generation.dart';
 import 'supabase_client.dart';
 import '../../features/practice/practice_store.dart';
+import '../../features/practice/quiz_sources.dart';
 
 class PracticeService {
   // Banks live in practice_banks.dart (stable ids; saved/weak logic keys on them).
@@ -147,12 +148,27 @@ class PracticeService {
     } catch (_) {
       guideItems = [];
     }
+    // Quiz registry: a short guide set is topped up from the SAME
+    // subject's bank (never another subject's), so every subject's
+    // MCQs are reachable from its own quiz. Dedupe by id.
+    final pool = await buildSubjectQuizPool(
+      subject: subject,
+      count: GuideQuizService.quizLimit,
+      seedKey: seedKey,
+      guideFetcher: () async => guideItems,
+      bankFetcher: () => dailyQuizFor(
+        subject,
+        seedKey: seedKey,
+        count: GuideQuizService.quizLimit,
+      ),
+      guideTimeout: const Duration(seconds: 1),
+    );
     return GeneratedSet(
-      items: guideItems,
+      items: pool.items,
       source: QuestionSource.guide,
       seedKey: seedKey,
       bookQuestionsIndexed: book?.length ?? 0,
-      guideShortfall: GuideQuizService.quizLimit - guideItems.length,
+      guideShortfall: GuideQuizService.quizLimit - pool.items.length,
     );
   }
 
@@ -175,12 +191,27 @@ class PracticeService {
     } catch (_) {
       guideItems = [];
     }
+    // Same subject-scoped registry as the daily quiz: guide first,
+    // the subject's own bank fills any shortfall.
+    final seedKey = 'practice-$subject-${PracticeSession.today()}';
+    final pool = await buildSubjectQuizPool(
+      subject: subject,
+      count: GuideQuizService.quizLimit,
+      seedKey: seedKey,
+      guideFetcher: () async => guideItems,
+      bankFetcher: () => dailyQuizFor(
+        subject,
+        seedKey: seedKey,
+        count: GuideQuizService.quizLimit,
+      ),
+      guideTimeout: const Duration(seconds: 1),
+    );
     return GeneratedSet(
-      items: guideItems,
+      items: pool.items,
       source: QuestionSource.guide,
-      seedKey: 'practice-$subject-${PracticeSession.today()}',
+      seedKey: seedKey,
       bookQuestionsIndexed: 0,
-      guideShortfall: GuideQuizService.quizLimit - guideItems.length,
+      guideShortfall: GuideQuizService.quizLimit - pool.items.length,
     );
   }
 
