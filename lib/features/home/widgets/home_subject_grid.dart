@@ -144,6 +144,12 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
   /// guide state (unknown ≠ no guide): locked tiles stay visible.
   bool _flagsComplete = true;
 
+  /// First paint shows this many tiles (C4): the rest are appended on
+  /// the next frame, so the grid appears immediately instead of
+  /// building every card in one heavy pass.
+  static const _firstPaintTiles = 6;
+  int _shown = _firstPaintTiles;
+
   @override
   void initState() {
     super.initState();
@@ -250,6 +256,15 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
       flagsComplete: _flagsComplete,
     );
     if (visible.isEmpty) return Text(widget.noSubjectsLabel);
+    // C4: paint 6 tiles now, append the rest next frame.
+    if (_shown < visible.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _shown < visible.length) {
+          setState(() => _shown = visible.length);
+        }
+      });
+    }
+    final shown = visible.take(_shown).toList();
     // Batch 2, item 2: the old GridView fixed every tile height
     // via childAspectRatio 1.3, so a 2-3 line Bangla name at
     // headlineMedium pushed the chapter-count line outside the
@@ -260,7 +275,7 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
     // UI palette (গ): grid rows stagger in (first 6 only).
     return StaggeredList(
       children: [
-        for (var r = 0; r < visible.length; r += 2) ...[
+        for (var r = 0; r < shown.length; r += 2) ...[
           if (r > 0) const SizedBox(height: HomeDesign.cardGap),
           IntrinsicHeight(
             child: Row(
@@ -269,38 +284,38 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
                 Expanded(
                   child: HomeSubjectTile(
                     name: paperSubjectName(
-                      visible[r].id,
-                      visible[r].name(widget.bn),
+                      shown[r].id,
+                      shown[r].name(widget.bn),
                       widget.bn,
                       widget.schoolClass,
                     ),
                     chaptersLabel: _tileLabel(
-                      visible[r],
+                      shown[r],
                       widget.bn,
                       widget.schoolClass,
                       widget.opened,
                     ),
-                    subjectId: visible[r].id,
+                    subjectId: shown[r].id,
                     schoolClass: widget.schoolClass,
                   ),
                 ),
                 const SizedBox(width: HomeDesign.cardGap),
-                if (r + 1 < visible.length)
+                if (r + 1 < shown.length)
                   Expanded(
                     child: HomeSubjectTile(
                       name: paperSubjectName(
-                        visible[r + 1].id,
-                        visible[r + 1].name(widget.bn),
+                        shown[r + 1].id,
+                        shown[r + 1].name(widget.bn),
                         widget.bn,
                         widget.schoolClass,
                       ),
                       chaptersLabel: _tileLabel(
-                        visible[r + 1],
+                        shown[r + 1],
                         widget.bn,
                         widget.schoolClass,
                         widget.opened,
                       ),
-                      subjectId: visible[r + 1].id,
+                      subjectId: shown[r + 1].id,
                       schoolClass: widget.schoolClass,
                     ),
                   )
