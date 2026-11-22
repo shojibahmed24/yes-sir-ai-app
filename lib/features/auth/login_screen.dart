@@ -119,26 +119,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _signInGoogle() async {
     final s = isBangla ? loginStringsBn : loginStringsEn;
+    if (_busy) return;
+    setState(() => _busy = true);
     final res = await authService.signInWithGoogle();
     if (!mounted) return;
-    if (res.ok || res.googleCancelled) {
-      // Native sign-in already created the session (the signedIn
-      // listener navigates) — or the student closed the picker.
+    if (res.ok) {
+      // Native sign-in: the session exists already. Restore the
+      // profile BEFORE navigating so Home has the name, photo and
+      // class on its first frame (C3) — never a settings round-trip.
+      await profileRestoreService.ensureGoogleProfile();
+      await profileRestoreService.restoreAfterSignIn();
+      if (!mounted) return;
+      setState(() => _busy = false);
+      context.go('/home');
       return;
     }
-    if (res.googleLaunched) {
-      // Browser launched, NOT signed in: stay here for signedIn.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(s['googleWaiting']!),
-          duration: const Duration(minutes: 5),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(s[signInErrorStringKey(res)]!)));
+    setState(() => _busy = false);
+    if (res.googleCancelled || res.googleLaunched) {
+      // Cancelled: stay silent. A launched browser (legacy fallback)
+      // needs no marketing message either (C2) — the auth listener
+      // navigates when the session arrives.
+      return;
     }
+    _showError(s[signInErrorStringKey(res)] ?? '');
+  }
+
+  void _showError(String message) {
+    setState(() => _error = message);
   }
 
   @override

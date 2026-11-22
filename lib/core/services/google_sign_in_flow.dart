@@ -10,11 +10,12 @@ import 'google_native_sign_in.dart';
 
 /// Runs Google sign-in for [client].
 ///
-/// 1. Native account picker (no browser, no supabase.co text on the
-///    Google screen). Success = a real session, so ok:true.
-/// 2. Only when the native path is unavailable (missing Android
-///    client / SHA-1 / plugin) do we launch the browser OAuth flow,
-///    which still works because Supabase holds the client secret.
+/// ONE step only (C1): the native account picker creates the session
+/// directly. There is no automatic browser fallback any more — the
+/// browser flow exposed "vvyiwyzredqoulufqgmg.supabase.co" on the
+/// Google screen, and a student who just picked an account must not
+/// be sent to a second login page. A configuration problem (missing
+/// Android OAuth client / SHA-1) reports itself instead.
 Future<AuthResult> performGoogleSignIn({
   required SupabaseClient? client,
   GoogleNativeSignIn? native,
@@ -41,6 +42,14 @@ Future<AuthResult> performGoogleSignIn({
         mode: AuthMode.supabase,
         googleCancelled: true,
       );
+    case GoogleNativeStatus.unavailable:
+      // Plugin missing or the Android OAuth client is not set up:
+      // say so and keep email login. Never open a browser (C1).
+      return const AuthResult(
+        ok: false,
+        mode: AuthMode.supabase,
+        googleNotConfigured: true,
+      );
     case GoogleNativeStatus.failed:
       return AuthResult(
         ok: false,
@@ -48,33 +57,5 @@ Future<AuthResult> performGoogleSignIn({
         mode: AuthMode.supabase,
         errorKind: classifySignInError(attempt.error ?? ''),
       );
-    case GoogleNativeStatus.unavailable:
-      break;
-  }
-  try {
-    final launched = await client.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: AppConfig.googleOAuthRedirectTo,
-    );
-    return AuthResult(
-      ok: false,
-      mode: AuthMode.supabase,
-      googleLaunched: launched,
-      errorKind: launched ? AuthErrorKind.none : AuthErrorKind.unknown,
-    );
-  } on AuthException catch (e) {
-    return AuthResult(
-      ok: false,
-      error: e.message,
-      mode: AuthMode.supabase,
-      errorKind: classifySignInError(e),
-    );
-  } catch (e) {
-    return AuthResult(
-      ok: false,
-      error: e.toString(),
-      mode: AuthMode.supabase,
-      errorKind: classifySignInError(e),
-    );
   }
 }

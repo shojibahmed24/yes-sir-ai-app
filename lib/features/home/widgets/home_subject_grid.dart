@@ -281,6 +281,7 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
                       widget.opened,
                     ),
                     subjectId: visible[r].id,
+                    schoolClass: widget.schoolClass,
                   ),
                 ),
                 const SizedBox(width: HomeDesign.cardGap),
@@ -300,6 +301,7 @@ class _HomeSubjectGridState extends State<HomeSubjectGrid> {
                         widget.opened,
                       ),
                       subjectId: visible[r + 1].id,
+                      schoolClass: widget.schoolClass,
                     ),
                   )
                 else

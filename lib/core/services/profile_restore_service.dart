@@ -10,6 +10,7 @@ import 'local_store.dart';
 import 'profile_picture_service.dart';
 import 'profile_service.dart';
 import 'profile_source.dart';
+import 'school_class_cache.dart';
 import 'supabase_client.dart';
 
 /// Server side of a restore, behind an interface so tests can use
@@ -45,8 +46,7 @@ class SupabaseProfileRestoreBackend implements ProfileRestoreBackend {
     final client = supabaseOrNull;
     final uid = client?.auth.currentUser?.id;
     if (client == null || uid == null) return null;
-    final rows =
-        await client.from('profiles').select().eq('id', uid).limit(1);
+    final rows = await client.from('profiles').select().eq('id', uid).limit(1);
     if (rows.isEmpty) return null;
     return Map<String, dynamic>.from(rows.first as Map);
   }
@@ -137,7 +137,7 @@ class ProfileRestoreResult {
 class ProfileRestoreService {
   final ProfileRestoreBackend _backend;
   ProfileRestoreService({ProfileRestoreBackend? backend})
-      : _backend = backend ?? SupabaseProfileRestoreBackend();
+    : _backend = backend ?? SupabaseProfileRestoreBackend();
 
   /// Restores server data into local storage after sign-in.
   /// Never throws. DEMO users (null / 'demo-user' id) skip silently.
@@ -156,6 +156,14 @@ class ProfileRestoreService {
     var backfilled = false;
     var savedCount = 0;
     var progressCached = false;
+    // Keeps the class cache in step with the restored profile (C3/C5):
+    // a returning account never has to pick its class again.
+    void syncSchoolClass(Map<String, dynamic> p) {
+      final raw = p['school_class'] ?? p['schoolClass'];
+      final cls = raw is int ? raw : int.tryParse('$raw');
+      if (cls != null && cls > 0) SchoolClassCache.set(cls);
+    }
+
     // Phase 1: profile — server row wins, else backfill local up.
     try {
       final serverRow = await _backend.fetchProfileRow();
@@ -165,6 +173,7 @@ class ProfileRestoreService {
         merged['id'] = uid;
         await LocalStore.saveProfile(jsonEncode(merged));
         profileNotifier.value = Map<String, dynamic>.of(merged);
+        syncSchoolClass(merged);
         restored = true;
       } else if (local != null && local.isNotEmpty) {
         // Heals the never-retried "online sync pending" case: a
@@ -177,10 +186,14 @@ class ProfileRestoreService {
         };
         backfilled = await _backend.upsertProfileRow(remote);
         profileNotifier.value = Map<String, dynamic>.of(local);
+        syncSchoolClass(local);
       }
     } catch (_) {}
     // Phase 1b: retry a local-only photo upload (best-effort).
-    try { await profilePictureService.retryUploadIfLocalOnly(); } catch (_) {}
+    try {
+      await profilePictureService.retryUploadIfLocalOnly();
+    } catch (_) {}
+
     // Phase 2: saved questions — union, never wipe local saves.
     try {
       final serverIds = await _backend.fetchSavedQuestionIds();

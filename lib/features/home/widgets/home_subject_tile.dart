@@ -11,7 +11,12 @@ import '../home_design.dart';
 /// guide-only branch (/guide-chapters) is gone: guide-only tiles
 /// land on the search screen too, which defaults their source to
 /// guide because the textbook is locked.
-String homeSubjectRoute(String subjectId) => '/search-flow?subject=$subjectId';
+/// Home subject tile route (C5): the class travels with the subject,
+/// so the picker never guesses (and never flashes Class 6).
+String homeSubjectRoute(String subjectId, {int? schoolClass}) {
+  final cls = schoolClass == null ? '' : '&class=$schoolClass';
+  return '/search-flow?subject=$subjectId$cls';
+}
 
 /// One subject tile on Home. Tapping goes to the new search
 /// flow with this subject preselected (guide-only or not: the
@@ -24,10 +29,14 @@ class HomeSubjectTile extends StatelessWidget {
     required this.name,
     required this.chaptersLabel,
     this.subjectId = 'math',
+    this.schoolClass,
   });
   final String name;
   final String chaptersLabel;
   final String subjectId;
+
+  /// Profile class, passed to the picker so its first frame is right.
+  final int? schoolClass;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +45,8 @@ class HomeSubjectTile extends StatelessWidget {
     return AnimatedCard(
       accent: accent,
       radius: HomeDesign.cardRadius,
-      onTap: () => context.go(homeSubjectRoute(subjectId)),
+      onTap: () =>
+          context.go(homeSubjectRoute(subjectId, schoolClass: schoolClass)),
       child: Padding(
         padding: const EdgeInsets.all(Sp.lg),
         child: Column(

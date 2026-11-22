@@ -100,6 +100,8 @@ class SearchFlowController {
         await profileService.loadSchoolClass().catchError((_) => null);
     if (saved != null) SchoolClassCache.set(saved);
     final cls = initialSchoolClass ?? saved ?? 6;
+    // A class handed in by the route is the truth for this visit (C5).
+    if (initialSchoolClass != null) SchoolClassCache.set(initialSchoolClass);
     subjects = splitBanglaSubjects(
       await booksService
           .subjectsAsync(cls, bn)
