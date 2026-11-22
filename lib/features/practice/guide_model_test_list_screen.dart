@@ -47,33 +47,66 @@ class _SetRow {
   final String setId;
   final int total, keyed;
   final GuideModelSet? cached;
-  const _SetRow(this.setId, this.total, this.keyed, this.cached);
+
+  /// Playable keyed-MCQ count (C13), known only when the set's rows
+  /// are already cached. [keyed] counts EVERY keyed row, including
+  /// creative/short rows an MCQ exam cannot play — that made the card
+  /// promise a startable set and then refuse to start.
+  final int? playable;
+  const _SetRow(
+    this.setId,
+    this.total,
+    this.keyed,
+    this.cached, {
+    this.playable,
+  });
   int get unkeyed => total - keyed;
+
+  /// False when we KNOW there is no playable question, or when the
+  /// ordinary keyed count is zero.
+  bool get startable => (playable ?? keyed) > 0;
 }
 
 /// Server metadata wins for counts; cached-only sets (server
 /// unreachable) fall back to their cached rows. Cached rows
 /// carry hasKey booleans only, so their keyed count uses
-/// serverHasKey, not the index-based keyedCount.
+/// serverHasKey, not the index-based keyedCount. One card per set
+/// (C14): a set that appears in both sources is listed once.
 List<_SetRow> _mergeRows(
   List<GuideModelSetInfo>? meta,
   List<GuideModelSet> cached,
+  String subject,
 ) {
   final byId = {for (final s in cached) s.setId: s};
+  int? playableOf(GuideModelSet? set) => set == null
+      ? null
+      : GuideQuizService.modelTestCandidates(set.questions, subject).length;
   final rows = <_SetRow>[];
+  final seen = <String>{};
   if (meta != null) {
     for (final m in meta) {
-      rows.add(_SetRow(m.setId, m.totalCount, m.keyedCount, byId[m.setId]));
+      if (!seen.add(m.setId)) continue;
+      final set = byId[m.setId];
+      rows.add(
+        _SetRow(
+          m.setId,
+          m.totalCount,
+          m.keyedCount,
+          set,
+          playable: playableOf(set),
+        ),
+      );
     }
   }
   for (final s in cached) {
-    if (meta == null || !meta.any((m) => m.setId == s.setId)) {
+    if (seen.add(s.setId)) {
       rows.add(
         _SetRow(
           s.setId,
           s.questions.length,
           s.questions.where((q) => q.serverHasKey).length,
           s,
+          playable: playableOf(s),
         ),
       );
     }
@@ -264,7 +297,7 @@ class _GuideModelTestListScreenState extends State<GuideModelTestListScreen> {
               }
               final loaded = snap.data![0] as _LoadedSets;
               final isPremium = snap.data![1] as bool;
-              final rows = _mergeRows(loaded.meta, loaded.cached);
+              final rows = _mergeRows(loaded.meta, loaded.cached, subject);
               if (loaded.meta == null && loaded.cached.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.all(20),
@@ -304,7 +337,7 @@ class _GuideModelTestListScreenState extends State<GuideModelTestListScreen> {
                       title: _displaySetId(row.setId, s),
                       subtitle:
                           '${numStr(row.total, bn)}${s['questionsSuffix']!} · ${numStr(row.keyed, bn)}${s['keyedSuffix']!}${row.unkeyed > 0 ? ' · ${numStr(row.unkeyed, bn)}${s['unkeyedExcludedSuffix']!}' : ''}',
-                      icon: row.keyed == 0 ? Icons.lock : Icons.assignment,
+                      icon: row.startable ? Icons.assignment : Icons.lock,
                       trailing: _startingSetId == row.setId
                           ? const SizedBox(
                               width: 18,
