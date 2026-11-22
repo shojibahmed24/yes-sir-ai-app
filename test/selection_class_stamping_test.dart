@@ -84,10 +84,15 @@ void main() {
     expect(src, contains('explicit last-resort fallback'));
   });
 
-  test('today lessons already stamp the saved class on open', () {
+  test('today lessons stamp the saved class on open', () {
     final src = _lib('features/home/today_lessons_screen.dart');
-    expect(src, contains('profileService.loadSchoolClass()'));
-    expect(src, contains('schoolClass: schoolClass'));
+    // Guide rows open through openLastStudy (which resolves the saved
+    // class via SchoolClassCache/resolveSchoolClass); textbook rows
+    // still stamp it through LessonSelectionHolder.
+    expect(src, contains('openLastStudy('));
+    expect(src, contains('LessonSelectionHolder.set('));
+    final helper = _lib('features/home/open_last_study.dart');
+    expect(helper, contains('resolveSchoolClass()'));
   });
 
   test('read-only screens already stamp the class (no edit needed)', () {

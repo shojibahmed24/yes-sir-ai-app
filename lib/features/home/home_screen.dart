@@ -27,6 +27,7 @@ import 'widgets/home_dashboard_extra.dart';
 import 'widgets/home_subject_grid.dart';
 import 'widgets/home_search_field.dart';
 import 'widgets/home_bottom_nav.dart';
+import 'open_last_study.dart';
 import '../../theme/themed_scaffold.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/staggered_list.dart';
@@ -236,19 +237,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           // (subject/class prefilled when known),
                           // never the old /lesson or /search
                           // screens that dead-end class 9.
-                          // C10: continue opens the study itself (the
-                          // exact chapter/lesson), not a bare picker.
+                          // C10/D6: resume the study itself — the
+                          // exact question, else that lesson's hub,
+                          // else the picker at that chapter.
                           onContinue: () {
                             if (study != null) {
-                              final cls =
-                                  study.schoolClass ?? data?.schoolClass;
-                              final lesson = study.lesson;
-                              context.go(
-                                '/search-flow?subject=${study.subject}'
-                                '&chapter=${study.chapter}'
-                                '${lesson == null ? '' : '&lesson=${Uri.encodeComponent(lesson)}'}'
-                                '${cls == null ? '' : '&class=$cls'}',
-                              );
+                              openLastStudy(context, study);
                               return;
                             }
                             context.go(homeContinueRoute(last));
@@ -374,20 +368,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           recentBooks: sum?.recentBooks ?? const [],
                           onOpenLesson: () {
                             if (last == null) return;
-                            // B14: a guide entry (page 0) opens the
-                            // new search flow at that chapter; a real
-                            // textbook entry keeps the lesson screen.
-                            if (last.page <= 0) {
-                              final cls = last.schoolClass;
-                              context.go(
-                                '/search-flow?subject=${last.subject}'
-                                '&chapter=${last.chapter}'
-                                '${cls == null ? '' : '&class=$cls'}',
-                              );
-                              return;
-                            }
-                            LessonSelectionHolder.set(last);
-                            context.go('/lesson');
+                            // Guide-only app (round 4): even an old
+                            // textbook entry now opens the guide flow
+                            // at that chapter — no book viewer.
+                            final cls = last.schoolClass;
+                            context.go(
+                              '/search-flow?subject=${last.subject}'
+                              '&chapter=${last.chapter}'
+                              '${cls == null ? '' : '&class=$cls'}',
+                            );
                           },
                           onOpenBook: (e) {
                             final parts = e.split('|');
@@ -407,18 +396,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return;
                               }
                             }
-                            // The recent entry carries the REAL
-                            // books_public id as its 4th part; the old
-                            // fabricated 'class6-…' id opened the wrong
-                            // (or no) book. No id = open the library,
-                            // never invent one.
-                            final id = target;
-                            if (id.isEmpty) {
-                              context.go('/books');
-                              return;
-                            }
-                            BookSelectionHolder.set(parts[0], id, 1);
-                            context.go('/books/viewer');
+                            // Anything else (an old textbook entry) has
+                            // no book viewer any more: the guide search
+                            // flow for that subject is the honest
+                            // destination.
+                            context.go(
+                              parts.isEmpty
+                                  ? '/search-flow'
+                                  : '/search-flow?subject=${parts[0]}',
+                            );
                           },
                           onSearch: () => context.go('/search-flow'),
                           onSeeSubjects: () => context.go('/home/subjects'),

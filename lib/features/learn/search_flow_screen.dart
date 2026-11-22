@@ -219,10 +219,6 @@ class _SearchFlowScreenState extends State<SearchFlowScreen> {
                           _c.applySubject(v);
                           _afterChange();
                         },
-                        onSource: (v) {
-                          _c.changeSource(v);
-                          _afterChange();
-                        },
                       ),
                       const SizedBox(height: 20),
                       SearchFlowGroupLabel(s['questionGroup']!),

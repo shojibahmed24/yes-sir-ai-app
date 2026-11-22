@@ -48,7 +48,10 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
       final schoolClass = await profileService.loadSchoolClass() ?? 6;
       final gen = await practiceService
           .generateDailyQuiz(
-              subject: subject, schoolClass: schoolClass, bangla: bangla)
+            subject: subject,
+            schoolClass: schoolClass,
+            bangla: bangla,
+          )
           .timeout(const Duration(seconds: 60));
       PracticeSession.selectedSubject = subject;
       PracticeSession.quizShortfall = gen.guideShortfall;
@@ -63,7 +66,10 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
         if (!context.mounted) return;
         if (!useBank) return;
         PracticeSession.quizItems = practiceService.dailyQuizFor(
-            subject, seedKey: gen.seedKey, count: 20);
+          subject,
+          seedKey: gen.seedKey,
+          count: 20,
+        );
         PracticeSession.quizSource = 'bankFallback';
         PracticeSession.quizShortfall = 0;
       } else {
@@ -76,15 +82,19 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
       context.go('/quiz');
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(s['dailyError']!),
-          action: SnackBarAction(
-            label: s['retry']!,
-            onPressed: () => _startDaily(context, subject, bangla, s),
-          ),
-        ),
-      );
+      // D1/D2: no snackbar at all. A hung/failed guide call starts the
+      // SAME subject's bank set immediately, so the quiz is never
+      // blocked and nothing follows the student to another screen.
+      if (mounted) setState(() => _startingDaily = false);
+      final items = practiceService.dailyQuizFor(subject, count: 20);
+      if (items.isEmpty) return;
+      PracticeSession.quizItems = items;
+      PracticeSession.quizSource = 'bankFallback';
+      PracticeSession.quizShortfall = 0;
+      PracticeSession.quizIsRevision = false;
+      PracticeSession.selectedSubject = subject;
+      navigated = true;
+      context.go('/quiz');
     } finally {
       if (mounted && !navigated) setState(() => _startingDaily = false);
     }
@@ -111,74 +121,191 @@ class _PracticeTabScreenState extends State<PracticeTabScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Locale>(valueListenable: languageNotifier, builder: (context, locale, _) {
-      final s = locale.languageCode == 'bn' ? practiceTabStringsBn : practiceTabStringsEn;
-      final bangla = locale.languageCode == 'bn';
-      return DefaultTabController(length: 3, child: ThemedScaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/practice'),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: languageNotifier,
+      builder: (context, locale, _) {
+        final s = locale.languageCode == 'bn'
+            ? practiceTabStringsBn
+            : practiceTabStringsEn;
+        final bangla = locale.languageCode == 'bn';
+        return DefaultTabController(
+          length: 3,
+          child: ThemedScaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.go('/practice'),
+              ),
+              title: Text(s['title']!),
+              bottom: TabBar(
+                isScrollable: true,
+                tabs: [
+                  Tab(text: s['tabQuiz']!),
+                  Tab(text: s['tabModel']!),
+                  Tab(text: s['tabProgress']!),
+                ],
+              ),
+            ),
+            body: FutureBuilder<ProgressSummary>(
+              future: progressService.summary(),
+              builder: (context, snap) {
+                final sum = snap.data ?? ProgressSummary.empty;
+                final recent = sum.attempts.reversed.take(5).toList();
+                final weakItems = sum.weakItems;
+                final weak = sum.weakChapters.isEmpty
+                    ? null
+                    : sum.weakChapters.first;
+                final countText = bangla
+                    ? '${weakItems.length}${s['wrongQuestions']!}'
+                    : '${weakItems.length} ${s['wrongQuestions']!}';
+                final weakSub = weakItems.isEmpty
+                    ? (weak == null ? s['weakNone']! : s['weakUnavailable']!)
+                    : (weak == null
+                          ? countText
+                          : '$countText · ${weak.label(bangla)}');
+                Widget recentList() => recent.isEmpty
+                    ? Text(
+                        s['noResults']!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      )
+                    : Column(
+                        children: [
+                          for (final a in recent)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: PracticeCard(
+                                title:
+                                    '${a.kind == 'model' ? s['modelTest']! : s['quiz']!} · ${a.correct}/${a.total}',
+                                subtitle: '${a.percent}%',
+                                icon: Icons.history,
+                              ),
+                            ),
+                        ],
+                      );
+                return TabBarView(
+                  children: [
+                    ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        PracticeCard(
+                          title: s['quiz']!,
+                          subtitle: '${s['dailyCount']!} · ${s['bankNote']!}',
+                          icon: Icons.timer,
+                          trailing: ElevatedButton(
+                            onPressed: _startingDaily
+                                ? null
+                                : () => _startDaily(
+                                    context,
+                                    PracticeSession.selectedSubject,
+                                    bangla,
+                                    s,
+                                  ),
+                            child: _startingDaily
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(s['start']!),
+                          ),
+                        ),
+                        // Progress text reuses practice_strings (this tab's
+                        // own string file gains no new key, per the brief).
+                        if (_startingDaily)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              bangla
+                                  ? practiceStringsBn['preparingGuide']!
+                                  : practiceStringsEn['preparingGuide']!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        PracticeCard(
+                          title: s['weak']!,
+                          subtitle: weakSub,
+                          icon: Icons.warning_amber,
+                          trailing: TextButton(
+                            onPressed: weakItems.isEmpty
+                                ? null
+                                : () => _startRevision(context, weakItems),
+                            child: Text(s['weakStart']!),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          s['recent']!,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: 8), recentList(),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: () => context.go('/quiz-results'),
+                          child: Text(s['results']!),
+                        ),
+                      ],
+                    ),
+                    ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        for (final t in modelTestService.modelTests()) ...[
+                          PracticeCard(
+                            title:
+                                '${s['modelTest']!} · ${t.subject == 'math' ? s['maths']! : (t.subject == 'science' ? s['science']! : s['english']!)}',
+                            subtitle:
+                                '${t.items.length} ${s['questions']!} · ${t.minutes} ${s['minutes']!}',
+                            icon: Icons.assignment,
+                            trailing: t.locked
+                                ? null
+                                : ElevatedButton(
+                                    onPressed: () => _startModel(context, t),
+                                    child: Text(s['start']!),
+                                  ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        OutlinedButton(
+                          onPressed: () => context.go('/model-tests'),
+                          child: Text(s['modelTest']!),
+                        ),
+                      ],
+                    ),
+                    ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        PracticeCard(
+                          title: '${sum.streakDays} ${s['streak']!}',
+                          subtitle: sum.goalMinutes == 0
+                              ? s['noGoal']!
+                              : '${s['goal']!}: ${sum.todayMinutes}/${sum.goalMinutes} ${s['minutes']!}',
+                          icon: Icons.local_fire_department,
+                        ),
+                        const SizedBox(height: 12),
+                        ProgressBar(value: sum.goalProgress),
+                        const SizedBox(height: 12),
+                        Text(
+                          s['recent']!,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        recentList(),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: () => context.go('/progress'),
+                          child: Text(s['tabProgress']!),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
-          title: Text(s['title']!), bottom: TabBar(isScrollable: true, tabs: [
-          Tab(text: s['tabQuiz']!), Tab(text: s['tabModel']!), Tab(text: s['tabProgress']!),
-        ])),
-        body: FutureBuilder<ProgressSummary>(future: progressService.summary(), builder: (context, snap) {
-          final sum = snap.data ?? ProgressSummary.empty;
-          final recent = sum.attempts.reversed.take(5).toList();
-          final weakItems = sum.weakItems;
-          final weak = sum.weakChapters.isEmpty ? null : sum.weakChapters.first;
-          final countText = bangla
-              ? '${weakItems.length}${s['wrongQuestions']!}'
-              : '${weakItems.length} ${s['wrongQuestions']!}';
-          final weakSub = weakItems.isEmpty
-              ? (weak == null ? s['weakNone']! : s['weakUnavailable']!)
-              : (weak == null ? countText : '$countText · ${weak.label(bangla)}');
-          Widget recentList() => recent.isEmpty
-              ? Text(s['noResults']!, style: Theme.of(context).textTheme.bodyMedium)
-              : Column(children: [for (final a in recent) Padding(padding: const EdgeInsets.only(bottom: 8),
-                  child: PracticeCard(title: '${a.kind == 'model' ? s['modelTest']! : s['quiz']!} · ${a.correct}/${a.total}', subtitle: '${a.percent}%', icon: Icons.history))]);
-          return TabBarView(children: [
-            ListView(padding: const EdgeInsets.all(16), children: [
-              PracticeCard(title: s['quiz']!, subtitle: '${s['dailyCount']!} · ${s['bankNote']!}', icon: Icons.timer,
-                  trailing: ElevatedButton(
-                      onPressed: _startingDaily ? null : () => _startDaily(context, PracticeSession.selectedSubject, bangla, s),
-                      child: _startingDaily
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(s['start']!))),
-              // Progress text reuses practice_strings (this tab's
-              // own string file gains no new key, per the brief).
-              if (_startingDaily) Padding(padding: const EdgeInsets.only(top: 8), child: Text(bangla ? practiceStringsBn['preparingGuide']! : practiceStringsEn['preparingGuide']!, style: Theme.of(context).textTheme.bodySmall)),
-              const SizedBox(height: 12),
-              PracticeCard(title: s['weak']!, subtitle: weakSub, icon: Icons.warning_amber,
-                  trailing: TextButton(onPressed: weakItems.isEmpty ? null : () => _startRevision(context, weakItems), child: Text(s['weakStart']!))),
-              const SizedBox(height: 12),
-              Text(s['recent']!, style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8), recentList(),
-              const SizedBox(height: 12),
-              OutlinedButton(onPressed: () => context.go('/quiz-results'), child: Text(s['results']!)),
-            ]),
-            ListView(padding: const EdgeInsets.all(16), children: [
-              for (final t in modelTestService.modelTests()) ...[
-                PracticeCard(title: '${s['modelTest']!} · ${t.subject == 'math' ? s['maths']! : (t.subject == 'science' ? s['science']! : s['english']!)}', subtitle: '${t.items.length} ${s['questions']!} · ${t.minutes} ${s['minutes']!}', icon: Icons.assignment,
-                    trailing: t.locked ? null : ElevatedButton(onPressed: () => _startModel(context, t), child: Text(s['start']!))),
-                const SizedBox(height: 12),
-              ],
-              OutlinedButton(onPressed: () => context.go('/model-tests'), child: Text(s['modelTest']!)),
-            ]),
-            ListView(padding: const EdgeInsets.all(16), children: [
-              PracticeCard(title: '${sum.streakDays} ${s['streak']!}', subtitle: sum.goalMinutes == 0 ? s['noGoal']! : '${s['goal']!}: ${sum.todayMinutes}/${sum.goalMinutes} ${s['minutes']!}', icon: Icons.local_fire_department),
-              const SizedBox(height: 12),
-              ProgressBar(value: sum.goalProgress),
-              const SizedBox(height: 12),
-              Text(s['recent']!, style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8), recentList(),
-              const SizedBox(height: 12),
-              OutlinedButton(onPressed: () => context.go('/progress'), child: Text(s['tabProgress']!)),
-            ]),
-          ]);
-        }),
-      ));
-    });
+        );
+      },
+    );
   }
 }

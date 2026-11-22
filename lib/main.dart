@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
@@ -15,6 +16,13 @@ Future<void> main() async {
   // logged — the error object only.
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
+  };
+  // A build error must never leave a grey rectangle. Show a calm,
+  // localized placeholder with a retry instead (release has no red
+  // error screen), and keep the technical detail in the console.
+  ErrorWidget.builder = (details) {
+    debugPrint('BUILD ERROR: ${details.exception}');
+    return _QuietErrorCard(message: '${details.exception}');
   };
   runZonedGuarded(
     () async {
@@ -42,4 +50,45 @@ Future<void> main() async {
       debugPrint('Uncaught error: $error');
     },
   );
+}
+
+/// Release-safe build-error placeholder: a neutral card instead of the
+/// framework's grey rectangle, so a widget bug never looks like a
+/// crashed app. No technical text is shown to the student.
+class _QuietErrorCard extends StatelessWidget {
+  const _QuietErrorCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFF7F8FC),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.build_circle_outlined, size: 40),
+              const SizedBox(height: 12),
+              const Text(
+                'এই অংশটি এখন দেখানো যাচ্ছে না — পেছনে গিয়ে আবার চেষ্টা করুন।',
+                textAlign: TextAlign.center,
+              ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  maxLines: 4,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

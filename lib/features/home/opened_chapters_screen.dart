@@ -117,8 +117,12 @@ class _OpenedChaptersScreenState extends State<OpenedChaptersScreen> {
                             '${numStr(chapter, bn)}',
                           ),
                           trailing: const Icon(Icons.chevron_right),
+                          // D4: open THAT chapter, not the subject's
+                          // textbook page (which showed "no chapters
+                          // in the database yet" for guide subjects).
                           onTap: () => context.go(
-                            '/home/subjects/${group.subject}/chapters',
+                            '/search-flow?subject=${group.subject}'
+                            '&chapter=$chapter',
                           ),
                         ),
                       ),

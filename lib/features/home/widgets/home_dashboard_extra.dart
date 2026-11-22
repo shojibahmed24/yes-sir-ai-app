@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../theme/app_theme.dart';
 import '../../../theme/app_tokens.dart';
+import '../open_last_study.dart';
 
 /// Last opened guide questions. Entries are
-/// 'subject|chapter|id|snippet'; the card shows the snippet and opens
-/// that subject+chapter in the search flow.
+/// 'subject|chapter|id|snippet'. Three are shown; tapping one opens
+/// THAT question's answer (D7) — a recent-question row that only
+/// opened a picker made the student search for it again.
 class HomeRecentQuestions extends StatelessWidget {
   const HomeRecentQuestions({
     super.key,
@@ -34,9 +36,6 @@ class HomeRecentQuestions extends StatelessWidget {
                 Builder(
                   builder: (context) {
                     final p = entries[i].split('|');
-                    final route = p.length >= 2
-                        ? '/search-flow?subject=${p[0]}&chapter=${p[1]}'
-                        : '/search-flow';
                     final snippet = p.length > 3 ? p[3] : entries[i];
                     return ListTile(
                       dense: true,
@@ -47,7 +46,7 @@ class HomeRecentQuestions extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       trailing: const Icon(Icons.chevron_right, size: 18),
-                      onTap: () => context.go(route),
+                      onTap: () => openRecentQuestion(context, entries[i]),
                     );
                   },
                 ),

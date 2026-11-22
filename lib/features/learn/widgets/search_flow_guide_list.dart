@@ -97,7 +97,7 @@ class SearchFlowGuideListView extends StatelessWidget {
       if (m == null) return null;
       sum += m;
     }
-    final parts = gs['groupParts']!.replaceAll('{n}', numStr(n, bn));
+    final parts = s['groupParts']!.replaceAll('{n}', numStr(n, bn));
     return '${numStr(sum, bn)} ${gs['marksWord']!} · $parts';
   }
 
@@ -167,8 +167,13 @@ class SearchFlowGuideListView extends StatelessWidget {
       },
       child: ListView(
         // PageStorageKey keeps the scroll offset when the student
-        // opens a question and comes back (B6).
-        key: const PageStorageKey<String>('search-flow-guide-list'),
+        // opens a question and comes back (B6). It is UNIQUE per list:
+        // a shared key restored one list's offset into another one,
+        // which painted an empty (blank) page after switching types.
+        key: PageStorageKey<String>(
+          'sf:$subjectId:$chapterNumber:${type.name}:'
+          '${rows.isEmpty ? '' : rows.first.id}',
+        ),
         padding: const EdgeInsets.all(20),
         children: [
           if (type == SearchFlowType.practiceWork)

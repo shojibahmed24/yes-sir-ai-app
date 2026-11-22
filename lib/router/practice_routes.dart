@@ -8,8 +8,6 @@ import '../features/practice/model_test_exam_screen.dart';
 import '../features/practice/model_test_results_screen.dart';
 import '../features/practice/test_review_screen.dart';
 import '../features/practice/widgets/review_filter_cards.dart';
-import '../features/books/book_library_screen.dart';
-import '../features/books/book_page_viewer_screen.dart';
 import '../features/progress/progress_screen.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/saved_questions_screen.dart';
@@ -63,16 +61,15 @@ final List<GoRoute> practiceRoutes = [
       );
     },
   ),
-  GoRoute(
-    path: '/books',
-    builder: (c, s) =>
-        BackScope(parent: '/home', child: const BookLibraryScreen()),
-  ),
-  GoRoute(
-    path: '/books/viewer',
-    builder: (c, s) =>
-        BackScope(parent: '/books', child: const BookPageViewerScreen()),
-  ),
+  // Guide-only app (round 4): the textbook library and page reader are
+  // unreachable. The files stay on disk (never delete); the routes
+  // send old links to the guide search flow.
+  GoRoute(path: '/books', redirect: (c, s) => '/search-flow'),
+  GoRoute(path: '/books/viewer', redirect: (c, s) => '/search-flow'),
+  // Back-compat for links built before the guide-only switch.
+  GoRoute(path: '/lesson', redirect: (c, s) => '/search-flow'),
+  GoRoute(path: '/chapters', redirect: (c, s) => '/search-flow'),
+  GoRoute(path: '/search', redirect: (c, s) => '/search-flow'),
   GoRoute(
     path: '/progress',
     builder: (c, s) =>

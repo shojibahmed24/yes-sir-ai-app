@@ -1,35 +1,62 @@
 // Route: /home/today-lessons — detail behind Home's first stat.
+//
 // Lists TODAY's lessons only, from LearnStore.lessonsTodayList().
-// Keys are 'subject|chapter|page|problem'. Malformed keys are
-// skipped silently, never shown as invented rows and never a
-// crash. Tap sets a page/problem LessonSelection with the saved
-// profile class (by-id resolution is impossible from a bare key);
-// if that grounding fails, LessonScreen's own honest no-match
-// path handles it — no lesson is ever guessed here.
+// Two key shapes are accepted:
+//   4 parts  'subject|chapter|page|problem'  (old textbook flow)
+//   3 parts  'subject|chapter|lesson'        (guide flow, D6)
+// The guide shape used to be skipped by the strict 4-part parser, so
+// Home said "2 lessons opened" while this screen said "none".
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/services/profile_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/home_strings.dart';
+import '../../theme/themed_scaffold.dart';
 import '../learn/learn_store.dart';
 import '../learn/lesson_selection.dart';
 import '../learn/widgets/digits.dart';
 import '../learn/widgets/mock_data.dart';
-import 'package:yes_sir_ai/theme/themed_scaffold.dart';
+import 'open_last_study.dart';
+import '../learn/last_study.dart';
 
-/// Strict parse: exactly 4 parts, non-empty subject, and positive
-/// chapter/page/problem. Anything else is malformed -> null
-/// (caller skips it). No ?? 1 fallbacks: a fallback would display
-/// a chapter/page/problem the user never opened.
-LessonSelection? parseTodayLessonKey(String key) {
+/// One row of today's lessons: a guide lesson or a textbook page.
+class TodayLesson {
+  const TodayLesson({
+    required this.subject,
+    required this.chapter,
+    this.lesson,
+    this.page,
+    this.problem,
+  });
+
+  final String subject;
+  final int chapter;
+  final String? lesson;
+  final int? page;
+  final int? problem;
+
+  bool get isGuide => page == null || page! < 1;
+}
+
+/// Parses both key shapes. Anything malformed -> null (skipped, never
+/// invented).
+TodayLesson? parseTodayLessonKey(String key) {
   final parts = key.split('|');
+  if (parts.length == 3 && parts[0].isNotEmpty) {
+    final chapter = int.tryParse(parts[1]);
+    if (chapter == null || chapter < 1) return null;
+    return TodayLesson(
+      subject: parts[0],
+      chapter: chapter,
+      lesson: parts[2].isEmpty ? null : parts[2],
+    );
+  }
   if (parts.length != 4 || parts[0].isEmpty) return null;
   final chapter = int.tryParse(parts[1]);
   final page = int.tryParse(parts[2]);
   final problem = int.tryParse(parts[3]);
   if (chapter == null || page == null || problem == null) return null;
   if (chapter < 1 || page < 1 || problem < 1) return null;
-  return LessonSelection(
+  return TodayLesson(
     subject: parts[0],
     chapter: chapter,
     page: page,
@@ -44,39 +71,48 @@ class TodayLessonsScreen extends StatefulWidget {
 }
 
 class _TodayLessonsScreenState extends State<TodayLessonsScreen> {
-  late final Future<List<LessonSelection>> _future;
+  late final Future<List<TodayLesson>> _future;
 
   @override
   void initState() {
     super.initState();
     _future = LearnStore.lessonsTodayList().then(
-      (keys) => keys
-          .map(parseTodayLessonKey)
-          .whereType<LessonSelection>()
-          .toList(),
+      (keys) => keys.map(parseTodayLessonKey).whereType<TodayLesson>().toList(),
     );
   }
 
-  String _rowText(LessonSelection lesson, bool bn) {
+  String _rowText(TodayLesson l, bool bn) {
     final chapterWord = bn ? 'অধ্যায়' : 'Chapter';
-    final pageWord = bn ? 'পৃষ্ঠা' : 'Page';
-    final questionWord = bn ? 'প্রশ্ন' : 'Question';
-    return '${subjectNameFor(lesson.subject, bn)} · $chapterWord '
-        '${numStr(lesson.chapter, bn)} · $pageWord '
-        '${numStr(lesson.page, bn)} · $questionWord '
-        '${numStr(lesson.problem, bn)}';
+    final head =
+        '${subjectNameFor(l.subject, bn)} · $chapterWord ${numStr(l.chapter, bn)}';
+    if (l.lesson != null && l.lesson!.isNotEmpty) {
+      return '$head · ${l.lesson}';
+    }
+    if (l.page != null && l.problem != null) {
+      final pageWord = bn ? 'পৃষ্ঠা' : 'Page';
+      final questionWord = bn ? 'প্রশ্ন' : 'Question';
+      return '$head · $pageWord ${numStr(l.page!, bn)} · '
+          '$questionWord ${numStr(l.problem!, bn)}';
+    }
+    return head;
   }
 
-  Future<void> _open(LessonSelection lesson) async {
-    final schoolClass = await profileService.loadSchoolClass();
-    if (!mounted) return;
-    LessonSelectionHolder.set(LessonSelection(
-      subject: lesson.subject,
-      chapter: lesson.chapter,
-      page: lesson.page,
-      problem: lesson.problem,
-      schoolClass: schoolClass,
-    ));
+  Future<void> _open(TodayLesson l) async {
+    if (l.isGuide) {
+      await openLastStudy(
+        context,
+        LastStudy(subject: l.subject, chapter: l.chapter, lesson: l.lesson),
+      );
+      return;
+    }
+    LessonSelectionHolder.set(
+      LessonSelection(
+        subject: l.subject,
+        chapter: l.chapter,
+        page: l.page!,
+        problem: l.problem!,
+      ),
+    );
     context.go('/lesson');
   }
 
@@ -95,7 +131,7 @@ class _TodayLessonsScreenState extends State<TodayLessonsScreen> {
             ),
             title: Text(s['todayLessonsTitle']!),
           ),
-          body: FutureBuilder<List<LessonSelection>>(
+          body: FutureBuilder<List<TodayLesson>>(
             future: _future,
             builder: (context, snap) {
               if (snap.connectionState == ConnectionState.waiting) {
@@ -106,11 +142,13 @@ class _TodayLessonsScreenState extends State<TodayLessonsScreen> {
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(s['todayLessonsEmpty']!,
-                        style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      s['todayLessonsEmpty']!,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => context.go('/search'),
+                      onPressed: () => context.go('/search-flow'),
                       child: Text(s['startFromSearch']!),
                     ),
                   ],

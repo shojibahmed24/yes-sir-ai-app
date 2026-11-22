@@ -188,13 +188,12 @@ void prefetchFirstSubjectPickerData(
       final first = c.subjects.first;
       if (first.id == c.subjectId) return;
       if (!await isWifiOnlyPrefetchAllowed()) return;
-      final src = first.locked ? 'guide' : 'textbook';
+      // Guide-only app: prefetch always reads the guide chapters.
+      const src = 'guide';
       final subj = banglaPaperSubject(first.id);
       final cls = banglaPaperClass(first.id, src, c.schoolClass);
       final lang = c.bangla ? 'bn' : 'en';
-      final kind = src == 'guide'
-          ? pickerCacheKindGuideChapters
-          : pickerCacheKindTextbookChapters;
+      const kind = pickerCacheKindGuideChapters;
       final key = pickerCacheKey(cls, subj, lang, kind);
       if (!await pickerCacheService.isFresh(key)) {
         final tuples = await pickerCacheService

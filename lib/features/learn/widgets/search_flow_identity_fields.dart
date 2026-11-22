@@ -1,7 +1,10 @@
-// Identity fields for the search screen: class, subject, source
-// dropdowns. Split out so the screen stays under the 250-line
-// cap. The widget only renders; the screen owns refreshes and
-// the English host update behind the callbacks.
+// Identity fields for the search screen: class + subject pickers.
+//
+// Guide-only app (round 4): the "source" (textbook/guide) dropdown is
+// gone everywhere. Every question comes from the supplied guide, so a
+// source choice would only be a second way to reach the same rows.
+// Split out so the screen stays under the 250-line cap; the widget
+// only renders and the screen owns refreshes.
 import 'package:flutter/material.dart';
 
 import '../class_choices.dart';
@@ -16,14 +19,12 @@ class SearchFlowIdentityFields extends StatelessWidget {
     required this.bn,
     required this.onClass,
     required this.onSubject,
-    required this.onSource,
   });
   final SearchFlowController controller;
   final Map<String, String> s;
   final bool bn;
   final void Function(int value) onClass;
   final void Function(String value) onSubject;
-  final void Function(String value) onSource;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +51,6 @@ class SearchFlowIdentityFields extends StatelessWidget {
           value: controller.subjects.any((x) => x.id == controller.subjectId)
               ? controller.subjectId
               : null,
-          hint: s['subjectLabel']!,
           items: controller.subjects
               .map(
                 (x) => SearchFlowDropdownItem(value: x.id, label: x.name(bn)),
@@ -58,22 +58,6 @@ class SearchFlowIdentityFields extends StatelessWidget {
               .toList(),
           onChanged: (v) {
             if (v != null) onSubject(v);
-          },
-        ),
-        gap,
-        SearchFlowDropdownField<String>(
-          label: s['sourceLabel']!,
-          icon: Icons.source,
-          value: controller.source,
-          items: [
-            SearchFlowDropdownItem(
-              value: 'textbook',
-              label: s['sourceTextbook']!,
-            ),
-            SearchFlowDropdownItem(value: 'guide', label: s['sourceGuide']!),
-          ],
-          onChanged: (v) {
-            if (v != null) onSource(v);
           },
         ),
       ],

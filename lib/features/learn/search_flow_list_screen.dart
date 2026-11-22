@@ -95,7 +95,9 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
   int _visible = 10;
   bool _isPremium = false;
 
-  bool get _guide => widget.source == 'guide';
+  /// Guide-only app (round 4): every list is a guide list. The getter
+  /// stays so the book branch below is simply never taken.
+  bool get _guide => true;
 
   @override
   void initState() {

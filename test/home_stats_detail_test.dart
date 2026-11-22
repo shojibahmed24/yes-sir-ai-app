@@ -18,40 +18,57 @@ String _todayStr() {
   return '${n.year}-${n.month}-${n.day}';
 }
 
-GoRouter _router(String start) => GoRouter(initialLocation: start, routes: [
-      GoRoute(
-        path: '/home',
-        builder: (c, s) => const Scaffold(
-          body: HomeStatsRow(
-            todayLabel: 'TODAY-LBL',
-            chaptersLabel: 'CHAPTERS-LBL',
-            savedLabel: 'SAVED-LBL',
-            values: [2, 3, 4],
-            bangla: false,
-          ),
+GoRouter _router(String start) => GoRouter(
+  initialLocation: start,
+  routes: [
+    GoRoute(
+      path: '/home',
+      builder: (c, s) => const Scaffold(
+        body: HomeStatsRow(
+          todayLabel: 'TODAY-LBL',
+          chaptersLabel: 'CHAPTERS-LBL',
+          savedLabel: 'SAVED-LBL',
+          values: [2, 3, 4],
+          bangla: false,
         ),
       ),
-      GoRoute(
-        path: '/home/today-lessons',
-        builder: (c, s) => const TodayLessonsScreen(),
-      ),
-      GoRoute(
-        path: '/home/opened-chapters',
-        builder: (c, s) => const OpenedChaptersScreen(),
-      ),
-      GoRoute(
-        path: '/home/subjects/:subjectId/chapters',
-        builder: (c, s) => Scaffold(
-          body: Text('CHAPTERS ${s.pathParameters['subjectId']}'),
+    ),
+    GoRoute(
+      path: '/home/today-lessons',
+      builder: (c, s) => const TodayLessonsScreen(),
+    ),
+    GoRoute(
+      path: '/home/opened-chapters',
+      builder: (c, s) => const OpenedChaptersScreen(),
+    ),
+    GoRoute(
+      path: '/search-flow',
+      builder: (c, s) => Scaffold(
+        body: Text(
+          'SEARCH ${s.uri.queryParameters['subject']} '
+          '${s.uri.queryParameters['chapter']}',
         ),
       ),
-      GoRoute(path: '/saved',
-          builder: (c, s) => const Scaffold(body: Text('SAVED'))),
-      GoRoute(path: '/search',
-          builder: (c, s) => const Scaffold(body: Text('SEARCH'))),
-      GoRoute(path: '/lesson',
-          builder: (c, s) => const Scaffold(body: Text('LESSON'))),
-    ]);
+    ),
+    GoRoute(
+      path: '/home/subjects/:subjectId/chapters',
+      builder: (c, s) =>
+          Scaffold(body: Text('CHAPTERS ${s.pathParameters['subjectId']}')),
+    ),
+    GoRoute(
+      path: '/saved',
+      builder: (c, s) => const Scaffold(body: Text('SAVED')),
+    ),
+    GoRoute(
+      path: '/search',
+      builder: (c, s) => const Scaffold(body: Text('SEARCH')),
+    ),
+    GoRoute(
+      path: '/lesson',
+      builder: (c, s) => const Scaffold(body: Text('LESSON')),
+    ),
+  ],
+);
 
 void main() {
   group('parseTodayLessonKey', () {
@@ -64,7 +81,6 @@ void main() {
     });
 
     test('malformed keys are null, never guessed values', () {
-      expect(parseTodayLessonKey('math|3|45'), isNull); // too few
       expect(parseTodayLessonKey('math|3|45|5|x'), isNull); // too many
       expect(parseTodayLessonKey('math|x|45|5'), isNull); // non-numeric
       expect(parseTodayLessonKey('math|3|45|'), isNull); // empty problem
@@ -73,6 +89,19 @@ void main() {
       expect(parseTodayLessonKey('math|3|45|-1'), isNull); // negative
       expect(parseTodayLessonKey('not-a-key'), isNull);
       expect(parseTodayLessonKey(''), isNull);
+    });
+
+    test('guide lesson keys (3 parts) are accepted, not skipped', () {
+      // D6: Home counted these but the detail screen dropped them.
+      final guide = parseTodayLessonKey('math|3|3.1');
+      expect(guide, isNotNull);
+      expect(guide!.isGuide, isTrue);
+      expect(guide.chapter, 3);
+      expect(guide.lesson, '3.1');
+      final noLesson = parseTodayLessonKey('math|3|');
+      expect(noLesson, isNotNull);
+      expect(noLesson!.lesson, isNull);
+      expect(parseTodayLessonKey('math|x|'), isNull);
     });
   });
 
@@ -115,8 +144,10 @@ void main() {
         'area2_today': _todayStr(),
         'area2_lessons_today_ids': ['math|3|45|5', 'science|2|10|1'],
       });
-      expect(await LearnStore.lessonsTodayList(),
-          ['math|3|45|5', 'science|2|10|1']);
+      expect(await LearnStore.lessonsTodayList(), [
+        'math|3|45|5',
+        'science|2|10|1',
+      ]);
     });
 
     test('stale day yields empty, never yesterday lessons', () async {
@@ -165,26 +196,26 @@ void main() {
   });
 
   group('detail screens', () {
-    testWidgets('today screen: empty state is honest, no rows',
-        (t) async {
+    testWidgets('today screen: empty state is honest, no rows', (t) async {
       SharedPreferences.setMockInitialValues({});
       languageNotifier.value = const Locale('bn');
       await t.pumpWidget(
-          MaterialApp.router(routerConfig: _router('/home/today-lessons')));
+        MaterialApp.router(routerConfig: _router('/home/today-lessons')),
+      );
       await t.pumpAndSettle();
       expect(find.text('আজ এখনো কোনো লেসন খোলা হয়নি'), findsOneWidget);
       expect(find.byType(ListTile), findsNothing);
     });
 
-    testWidgets('today row tap sets selection + goes /lesson',
-        (t) async {
+    testWidgets('today row tap sets selection + goes /lesson', (t) async {
       SharedPreferences.setMockInitialValues({
         'area2_today': _todayStr(),
         'area2_lessons_today_ids': ['math|3|45|5', 'bad-key'],
       });
       languageNotifier.value = const Locale('bn');
       await t.pumpWidget(
-          MaterialApp.router(routerConfig: _router('/home/today-lessons')));
+        MaterialApp.router(routerConfig: _router('/home/today-lessons')),
+      );
       await t.pumpAndSettle();
       // The malformed 'bad-key' is skipped: exactly one row.
       expect(find.byType(ListTile), findsOneWidget);
@@ -199,26 +230,29 @@ void main() {
     testWidgets('opened chapters: empty state is honest', (t) async {
       SharedPreferences.setMockInitialValues({});
       languageNotifier.value = const Locale('bn');
-      await t.pumpWidget(MaterialApp.router(
-          routerConfig: _router('/home/opened-chapters')));
+      await t.pumpWidget(
+        MaterialApp.router(routerConfig: _router('/home/opened-chapters')),
+      );
       await t.pumpAndSettle();
       expect(find.text('এখনো কোনো অধ্যায় খোলা হয়নি'), findsOneWidget);
       expect(find.byType(ListTile), findsNothing);
     });
 
-    testWidgets('opened chapters: empty state + row goes to chapters',
-        (t) async {
+    testWidgets('opened chapters: row opens that chapter in the search flow', (
+      t,
+    ) async {
       SharedPreferences.setMockInitialValues({
         'area2_chapters': ['science|2'],
       });
       languageNotifier.value = const Locale('bn');
-      await t.pumpWidget(MaterialApp.router(
-          routerConfig: _router('/home/opened-chapters')));
+      await t.pumpWidget(
+        MaterialApp.router(routerConfig: _router('/home/opened-chapters')),
+      );
       await t.pumpAndSettle();
       expect(find.text('বিজ্ঞান'), findsOneWidget);
       await t.tap(find.text('অধ্যায় ২'));
       await t.pumpAndSettle();
-      expect(find.text('CHAPTERS science'), findsOneWidget);
+      expect(find.text('SEARCH science 2'), findsOneWidget);
     });
   });
 }

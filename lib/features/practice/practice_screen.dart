@@ -61,7 +61,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
             schoolClass: schoolClass,
             bangla: bangla,
           )
-          .timeout(const Duration(seconds: 6));
+          .timeout(const Duration(seconds: 12));
       PracticeSession.selectedSubject = subject;
       PracticeSession.quizShortfall = gen.guideShortfall;
       PracticeSession.quizSeedKey = gen.seedKey;
@@ -144,7 +144,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
             schoolClass: schoolClass,
             bangla: bangla,
           )
-          .timeout(const Duration(seconds: 6));
+          .timeout(const Duration(seconds: 12));
       PracticeSession.selectedSubject = subject;
       PracticeSession.quizShortfall = gen.guideShortfall;
       PracticeSession.quizSeedKey = gen.seedKey;

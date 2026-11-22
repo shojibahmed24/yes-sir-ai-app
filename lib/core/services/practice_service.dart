@@ -123,31 +123,27 @@ class PracticeService {
     required bool bangla,
     String? day,
     Duration bookProbeTimeout = const Duration(seconds: 1),
-    Duration guideTimeout = const Duration(seconds: 5),
+    Duration guideTimeout = const Duration(seconds: 4),
   }) async {
     final d = day ?? PracticeSession.today();
     final seedKey = questionGeneration.dailySeedKey(schoolClass, subject, d);
-    List<BookQuestion>? book;
-    try {
-      book = await fetchBookProbe(
-        subject: subject,
-        schoolClass: schoolClass,
-        bangla: bangla,
-      ).timeout(bookProbeTimeout);
-    } catch (_) {
-      book = null;
-    }
-    List<QuizItem> guideItems;
-    try {
-      guideItems = await fetchGuideDaily(
-        subject: subject,
-        schoolClass: schoolClass,
-        bangla: bangla,
-        day: d,
-      ).timeout(guideTimeout);
-    } catch (_) {
-      guideItems = [];
-    }
+    // Book probe and guide fetch run TOGETHER (D1): sequentially they
+    // could consume the screen's whole budget and look like a failure
+    // even when the guide answered. Awaiting them one by one (after
+    // both started) keeps the parallelism without a cast.
+    final bookFuture = fetchBookProbe(
+      subject: subject,
+      schoolClass: schoolClass,
+      bangla: bangla,
+    ).timeout(bookProbeTimeout).catchError((_) => <BookQuestion>[]);
+    final guideFuture = fetchGuideDaily(
+      subject: subject,
+      schoolClass: schoolClass,
+      bangla: bangla,
+      day: d,
+    ).timeout(guideTimeout).catchError((_) => <QuizItem>[]);
+    final book = (await bookFuture) ?? const <BookQuestion>[];
+    final guideItems = await guideFuture;
     // Quiz registry: a short guide set is topped up from the SAME
     // subject's bank (never another subject's), so every subject's
     // MCQs are reachable from its own quiz. Dedupe by id.
@@ -167,7 +163,7 @@ class PracticeService {
       items: pool.items,
       source: QuestionSource.guide,
       seedKey: seedKey,
-      bookQuestionsIndexed: book?.length ?? 0,
+      bookQuestionsIndexed: book.length,
       guideShortfall: GuideQuizService.quizLimit - pool.items.length,
     );
   }

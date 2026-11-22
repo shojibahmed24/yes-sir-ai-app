@@ -11,7 +11,6 @@ import '../../core/services/picker_cache_service.dart';
 import '../../core/services/profile_service.dart';
 import 'search_flow_bangla_papers.dart';
 import 'search_flow_chapter_fetch.dart';
-import 'search_flow_list_query.dart';
 import 'search_flow_memory.dart';
 import 'search_flow_types.dart';
 import '../../core/services/school_class_cache.dart';
@@ -43,7 +42,10 @@ class SearchFlowController {
   bool bangla = true;
   List<SubjectInfo> subjects = [];
   String subjectId = 'math';
-  String source = 'textbook';
+
+  /// Guide-only app (round 4): kept as a constant string so older
+  /// call sites keep compiling, but nothing can switch it.
+  String source = 'guide';
   List<(int, String)> chapters = [];
   bool chaptersLoading = true;
   int _chaptersGeneration = 0;
@@ -113,13 +115,12 @@ class SearchFlowController {
         ? initial
         : (subjects.isNotEmpty ? subjects.first.id : 'math');
     applySubject(subjectId);
-    final wanted = initialSource;
-    if (wanted != null && wanted != source) changeSource(wanted);
+    // Guide-only app: a source can never be chosen.
+    source = 'guide';
     // B10: no route params (e.g. back into the screen) -> reopen the
-    // subject/source/chapter the student was last working in.
+    // subject/chapter the student was last working in.
     final fromMemory =
         initialSubjectId == 'math' &&
-        initialSource == null &&
         initialChapter == null &&
         SearchFlowMemory.hasPicks &&
         SearchFlowMemory.schoolClass == cls;
@@ -127,8 +128,6 @@ class SearchFlowController {
       final memSubject = normalizeBanglaSubject(SearchFlowMemory.subject!);
       if (subjects.any((s) => s.id == memSubject)) {
         subjectId = memSubject;
-        final memSource = SearchFlowMemory.source;
-        if (memSource != null && memSource != source) changeSource(memSource);
         _notify();
         loadChapters();
       }
@@ -145,7 +144,8 @@ class SearchFlowController {
 
   void applySubject(String id) {
     subjectId = id;
-    source = (subject?.locked ?? false) ? 'guide' : 'textbook';
+    // Guide-only app: every subject is served from its guide book.
+    source = 'guide';
     chapter = null;
     lesson = null;
     section = null;
@@ -172,14 +172,11 @@ class SearchFlowController {
     );
   }
 
+  /// Guide-only: a source change can no longer happen. Kept so older
+  /// callers compile; it can never switch away from the guide.
   void changeSource(String value) {
-    source = value;
-    chapter = null;
-    lesson = null;
-    section = null;
-    banglaSection = null;
+    source = 'guide';
     _notify();
-    loadChapters();
   }
 
   /// Cache-first (stale-while-revalidate): saved chapters
