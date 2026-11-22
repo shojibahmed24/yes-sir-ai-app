@@ -137,60 +137,116 @@ class _GlobalPickerState extends State<GlobalPicker> {
             message: widget.s['pickerEmpty']!,
           )
         else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: visible.length,
-            itemBuilder: (context, i) {
-              final node = visible[i];
-              final selected = node.id == widget.selectedId;
-              final cs = Theme.of(context).colorScheme;
-              // Same box as the identity dropdowns (search_flow_
-              // field): filled soft card, radius 13, outline
-              // border, primary border when selected. Rows are
-              // boxes now; drill-down behavior is unchanged.
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: InkWell(
-                  onTap: () => _onTap(node),
-                  borderRadius: BorderRadius.circular(13),
-                  child: Container(
-                    constraints: const BoxConstraints(minHeight: 56),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cs.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(13),
-                      border: Border.all(
-                        color: selected ? cs.primary : cs.outlineVariant,
-                        width: selected ? 2 : 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(node.title),
-                              if (node.subtitle != null) Text(node.subtitle!),
-                            ],
-                          ),
-                        ),
-                        if (node.hasChildren)
-                          const Icon(Icons.chevron_right, size: 20)
-                        else if (selected)
-                          Icon(Icons.check, size: 20, color: cs.primary),
-                      ],
-                    ),
+          // C6: one grouped card with hairline dividers instead of five
+          // separate outlined boxes. Each row keeps a clear hierarchy:
+          // index/type badge, bold title, one-line subtitle, chevron;
+          // the selected row is tinted with a check.
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < visible.length; i++) ...[
+                  if (i > 0) const Divider(height: 1, thickness: 1),
+                  _PickerRow(
+                    node: visible[i],
+                    index: i,
+                    selected: visible[i].id == widget.selectedId,
+                    onTap: () => _onTap(visible[i]),
                   ),
-                ),
-              );
-            },
+                ],
+              ],
+            ),
           ),
       ],
+    );
+  }
+}
+
+/// One row of the grouped picker list (C6).
+class _PickerRow extends StatelessWidget {
+  const _PickerRow({
+    required this.node,
+    required this.index,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final GlobalPickerNode node;
+  final int index;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: selected ? cs.primary.withValues(alpha: 0.08) : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? cs.primary
+                      : cs.primary.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: node.hasChildren
+                    ? Icon(
+                        Icons.folder_outlined,
+                        size: 17,
+                        color: selected ? cs.onPrimary : cs.primary,
+                      )
+                    : Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: selected ? cs.onPrimary : cs.primary,
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      node.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    if (node.subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        node.subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                node.hasChildren
+                    ? Icons.chevron_right
+                    : (selected ? Icons.check : Icons.chevron_right),
+                size: 20,
+                color: selected ? cs.primary : cs.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

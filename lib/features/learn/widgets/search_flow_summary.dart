@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_tokens.dart';
+import '../../home/home_design.dart';
 import '../search_flow_controller.dart';
 import '../search_flow_types.dart';
 import 'digits.dart';
@@ -24,9 +25,16 @@ class SearchFlowSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // C7: never print a raw subject id. Localized name first, then
+    // the paper-aware name, then an honest generic label.
+    final rawName = subjectNameFor(c.subjectId, bn);
+    final named = paperSubjectName(c.subjectId, rawName, bn, c.effectiveClass);
+    final subjectName = named == c.subjectId
+        ? (s['subjectLabel'] ?? (bn ? 'বিষয়' : 'Subject'))
+        : named;
     final parts = <String>[
       '${s['classLabel']!} ${numStr(c.effectiveClass, bn)}',
-      subjectNameFor(c.subjectId, bn),
+      subjectName,
       if (c.chapter != null) '${s['chapterLabel']!} ${numStr(c.chapter!, bn)}',
       if (c.type != null) searchFlowTypeLabel(c.type!, s),
     ];

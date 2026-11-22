@@ -44,7 +44,8 @@ IconData subjectIconFor(String id) => switch (id) {
 /// decides the paper label; any other class or subject falls
 /// back to the server name untouched.
 String paperSubjectName(String id, String fallback, bool bn, int? schoolClass) {
-  if (id == 'bangla') {
+  if (id == 'bangla' || id == 'bangla-1st') {
+    if (id == 'bangla-1st') return bn ? 'বাংলা ১ম পত্র' : 'Bangla 1st Paper';
     if (schoolClass == 10) {
       return bn ? 'বাংলা ২য় পত্র' : 'Bangla 2nd Paper';
     }
@@ -52,6 +53,9 @@ String paperSubjectName(String id, String fallback, bool bn, int? schoolClass) {
       return bn ? 'বাংলা ১ম পত্র' : 'Bangla 1st Paper';
     }
     return fallback;
+  }
+  if (id == 'bangla-2nd') {
+    return bn ? 'বাংলা ২য় পত্র' : 'Bangla 2nd Paper';
   }
   if (id == 'english') {
     if (schoolClass == 9 || schoolClass == 10) {
