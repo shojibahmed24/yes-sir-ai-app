@@ -42,6 +42,8 @@ class SearchFlowListScreen extends StatefulWidget {
     this.setId,
     this.chapterless = false,
     this.board = false,
+    this.boardName,
+    this.boardYear,
     this.premiumCheck,
     this.listService,
     this.backTo,
@@ -69,6 +71,11 @@ class SearchFlowListScreen extends StatefulWidget {
 
   /// Chapterless: bank rows, chapter_number NULL. Board (018): flagged board rows only.
   final bool chapterless, board;
+
+  /// Board search (round 4): the selected board + year when the list
+  /// was opened from the Board filters. Null = all boards/years.
+  final String? boardName;
+  final int? boardYear;
 
   /// Test seams only; production passes null (= live globals).
   final Future<bool> Function()? premiumCheck;
@@ -138,6 +145,8 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
                   subject: widget.subjectId,
                   schoolClass: widget.schoolClass,
                   section: widget.section,
+                  boardName: widget.boardName,
+                  boardYear: widget.boardYear,
                 )
               : await fetchChapterlessLessonPage(
                   subject: widget.subjectId,
@@ -245,6 +254,8 @@ class _SearchFlowListScreenState extends State<SearchFlowListScreen> {
               subject: widget.subjectId,
               schoolClass: widget.schoolClass,
               section: widget.section,
+              boardName: widget.boardName,
+              boardYear: widget.boardYear,
               offset: _guideRows.length,
             )
           : await fetchChapterlessLessonPage(

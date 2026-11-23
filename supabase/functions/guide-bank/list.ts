@@ -451,6 +451,15 @@ export function shapeListRow(
     // Boolean only: true iff a solution is stored (non-null and
     // non-empty). Null on pre-migration servers (unknown).
     hasSolution: pilotFieldsKnown ? sol !== null && sol !== "" : null,
+    // Board metadata (round 4): printed board + year for a board row,
+    // null elsewhere and on pre-migration servers. The client labels
+    // rows from these, never from a guessed set id.
+    boardName: pilotFieldsKnown
+      ? (r.board_name as string | null) ?? null
+      : null,
+    boardYear: pilotFieldsKnown
+      ? (r.board_year as number | null) ?? null
+      : null,
   };
 }
 
@@ -499,6 +508,14 @@ export function shapeSlimListRow(
       ? (r.linked_directive_ids as string[] | null) ?? null
       : null,
     hasSolution: pilotFieldsKnown ? sol !== null && sol !== "" : null,
+    // Board metadata travels with slim rows too: the board list shows
+    // "ঢাকা বোর্ড ২০২৩" without a second call (round 4).
+    boardName: pilotFieldsKnown
+      ? (r.board_name as string | null) ?? null
+      : null,
+    boardYear: pilotFieldsKnown
+      ? (r.board_year as number | null) ?? null
+      : null,
     slim: true,
   };
 }

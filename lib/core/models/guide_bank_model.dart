@@ -32,6 +32,10 @@ class GuideBankQuestion {
   final String? stimulusRef;
   // Pilot (013): flag_note — print note, verbatim; null = none.
   final String? flagNote;
+  // Board metadata (round 4): the printed board + year of a board row,
+  // null for every other row. Used only for labels/filters.
+  final String? boardName;
+  final int? boardYear;
   // Pilot (2026-10-31): hasSolution = Q+solution chunked as ONE pair; null = unknown.
   final bool? hasSolution;
   // Guide-native chapter number (migration 011); null = server did not say.
@@ -73,7 +77,10 @@ class GuideBankQuestion {
     this.mcqGroup,
     this.stimulusId,
     this.stimulusText,
-    this.stimulusRef, this.flagNote,
+    this.stimulusRef,
+    this.flagNote,
+    this.boardName,
+    this.boardYear,
     this.hasSolution,
     this.chapterNumber,
     this.modelQuestionId,
@@ -115,6 +122,8 @@ class GuideBankQuestion {
     'stimulusText': stimulusText,
     'stimulusRef': stimulusRef,
     'flagNote': flagNote,
+    'boardName': boardName,
+    'boardYear': boardYear,
     'hasSolution': hasSolution,
     'chapterNumber': chapterNumber,
     'modelQuestionId': modelQuestionId,
@@ -148,6 +157,8 @@ class GuideBankQuestion {
       stimulusText: j['stimulusText'] as String?,
       stimulusRef: j['stimulusRef'] as String?,
       flagNote: j['flagNote'] as String?,
+      boardName: j['boardName'] as String?,
+      boardYear: (j['boardYear'] as num?)?.toInt(),
       hasSolution: j['hasSolution'] is bool ? j['hasSolution'] as bool : null,
       chapterNumber: (j['chapterNumber'] as num?)?.toInt(),
       modelQuestionId: j['modelQuestionId'] as String?,
@@ -182,6 +193,8 @@ class GuideBankQuestion {
       stimulusText: j['stimulusText'] as String?,
       stimulusRef: j['stimulusRef'] as String?,
       flagNote: j['flagNote'] as String?,
+      boardName: j['boardName'] as String?,
+      boardYear: (j['boardYear'] as num?)?.toInt(),
       hasSolution: j['hasSolution'] is bool ? j['hasSolution'] as bool : null,
       chapterNumber: (j['chapterNumber'] as num?)?.toInt(),
       modelQuestionId: j['modelQuestionId'] as String?,
@@ -202,7 +215,8 @@ class GuideModelSetInfo {
   final String setId;
   final int totalCount;
   final int keyedCount;
-  final Map<String, List<int>>? gradeBands; // Phase 3: printed bands, null = none.
+  final Map<String, List<int>>?
+  gradeBands; // Phase 3: printed bands, null = none.
   const GuideModelSetInfo({
     required this.setId,
     required this.totalCount,
@@ -224,9 +238,12 @@ class GuideModelSetInfo {
         setId: j['setId'] as String? ?? '',
         totalCount: (j['totalCount'] as num?)?.toInt() ?? 0,
         keyedCount: (j['keyedCount'] as num?)?.toInt() ?? 0,
-        gradeBands: (j['gradeBands'] as Map?)?.map((k, v) => MapEntry(
+        gradeBands: (j['gradeBands'] as Map?)?.map(
+          (k, v) => MapEntry(
             k.toString(),
-            (v as List).map((e) => (e as num).toInt()).toList())),
+            (v as List).map((e) => (e as num).toInt()).toList(),
+          ),
+        ),
       );
 }
 

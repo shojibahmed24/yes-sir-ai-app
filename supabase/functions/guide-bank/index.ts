@@ -222,6 +222,21 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 };
 
+/// Board ids the app can filter by (matches the imported board_name
+/// values and the app's board chips). "all" = the combined-board set.
+const BOARD_NAMES = new Set([
+  'dhaka',
+  'rajshahi',
+  'chattogram',
+  'cumilla',
+  'jessore',
+  'barishal',
+  'sylhet',
+  'dinajpur',
+  'mymensingh',
+  'all',
+]);
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -298,7 +313,8 @@ Deno.serve(async (req) => {
   if (action !== 'list' && action !== 'sets' &&
       action !== 'guideChapters' && action !== 'guideLessons' &&
       action !== 'search' && action !== 'get' &&
-      action !== 'guideFlags' && action !== 'pageText') {
+      action !== 'guideFlags' && action !== 'pageText' &&
+      action !== 'boardFacets') {
     return json({ error: 'bad-request' }, 400);
   }
   const supabase = createClient(supabaseUrl, serviceKey);
@@ -833,6 +849,49 @@ Deno.serve(async (req) => {
     });
   }
 
+  if (action === 'boardFacets') {
+    // Board search chips (round 4): real (board, year) pairs with
+    // counts for this subject's flagged board rows. Aggregated here
+    // because supabase-js has no GROUP BY; fetched in pages so the
+    // server's row clamp never truncates a facet.
+    const facets = new Map<string, { board: string; year: number; mcq: number; creative: number }>();
+    let fromRow = 0;
+    const pageSize = 1000;
+    for (;;) {
+      const res = await supabase
+        .from('guide_questions')
+        .select('board_name, board_year, section')
+        .in('book_id', bookIds)
+        .eq('out_of_syllabus', true)
+        .in('section', ['board-mcq', 'board-creative'])
+        .order('id')
+        .range(fromRow, fromRow + pageSize - 1);
+      if (res.error) {
+        return json({ found: false, action: 'boardFacets', error: 'query-failed' }, 500);
+      }
+      const rows = (res.data ?? []) as Record<string, unknown>[];
+      for (const row of rows) {
+        const board = row.board_name as string | null;
+        const year = row.board_year as number | null;
+        if (!board || !year) continue;
+        const key = `${board}|${year}`;
+        const cur = facets.get(key) ?? { board, year, mcq: 0, creative: 0 };
+        if (row.section === 'board-mcq') cur.mcq++;
+        else cur.creative++;
+        facets.set(key, cur);
+      }
+      if (rows.length < pageSize) break;
+      fromRow += pageSize;
+    }
+    return json({
+      found: true,
+      action: 'boardFacets',
+      facets: [...facets.values()].sort(
+        (a, b) => b.year - a.year || a.board.localeCompare(b.board),
+      ),
+    });
+  }
+
   if (action === 'sets') {
     // Subject-wide by book_id: set rows carry chapter_id NULL
     // by design, so a chapter filter would hide them entirely.
@@ -986,6 +1045,39 @@ Deno.serve(async (req) => {
     return json({ error: 'bad-request' }, 400);
   }
   const filteredRequest = isFilteredListRequest(lesson, section);
+  // Board search (round 4): a year and/or a board narrows the Board  // scope. Both are validated strictly and echoed back; a filter is
+  // never silently dropped.
+  const boardNameRaw = body.boardName;
+  let boardName: string | null = null;
+  if (boardNameRaw !== null && boardNameRaw !== undefined) {
+    if (
+      typeof boardNameRaw !== 'string' ||
+      !BOARD_NAMES.has(boardNameRaw)
+    ) {
+      return json({ error: 'bad-request' }, 400);
+    }
+    if (boardNameRaw !== '') boardName = boardNameRaw;
+  }
+  const boardYearRaw = body.boardYear;
+  let boardYear: number | null = null;
+  if (boardYearRaw !== null && boardYearRaw !== undefined) {
+    if (
+      typeof boardYearRaw !== 'number' ||
+      !Number.isInteger(boardYearRaw) ||
+      boardYearRaw < 2000 ||
+      boardYearRaw > 2100
+    ) {
+      return json({ error: 'bad-request' }, 400);
+    }
+    boardYear = boardYearRaw;
+  }
+  const boardFiltered = boardName !== null || boardYear !== null;
+  if (boardFiltered && !boardScope) {
+    // A board filter only means something inside the Board scope.
+    return json({ error: 'bad-request' }, 400);
+  }
+  // A board-filtered request must never degrade to an unfiltered retry.
+  const filteredOrBoard = filteredRequest || boardFiltered;
   // Quick-load: bulk (one call for a whole scope) and slim
   // (small rows for list screens). Bulk forces offset 0 and a
   // 2000-row cap; the remainder loop below covers PostgREST's
@@ -1051,7 +1143,8 @@ Deno.serve(async (req) => {
               'stimulus_id, stimulus_text, stimulus_ref, flag_note, ' +
               'guide_solution, model_question_id, mcq_group, marks_parts, ' +
               'suggestion_kind, suggestion_star, suggestion_poricched, ' +
-              'suggestion_shironam, linked_directive_ids'
+              'suggestion_shironam, linked_directive_ids, ' +
+              'board_name, board_year'
             : ''),
         { count: 'exact' },
       )
@@ -1135,6 +1228,11 @@ Deno.serve(async (req) => {
         const raw = expandListSection(section) as string[];
         q = raw.length === 1 ? q.eq('section', raw[0]) : q.in('section', raw);
       }
+      // Board year/board filters (round 4): exact equality on the
+      // printed metadata. Applied only inside the Board scope (checked
+      // above), so a normal list can never be narrowed by them.
+      if (boardName !== null) q = q.eq('board_name', boardName);
+      if (boardYear !== null) q = q.eq('board_year', boardYear);
     }
     return q;
   };
@@ -1167,7 +1265,7 @@ Deno.serve(async (req) => {
     // chapter_id alone would return rows that DO carry a
     // guide-native chapter number.
     if (
-      listPreMigrationOutcome(filteredRequest) === 'pilot-columns-missing' ||
+      listPreMigrationOutcome(filteredOrBoard) === 'pilot-columns-missing' ||
       listScope === 'chapterless' ||
       listScope === 'board'
     ) {
@@ -1238,6 +1336,9 @@ Deno.serve(async (req) => {
     lesson,
     section,
     board: listScope === 'board',
+    // Echoed so the client can trust the filter (round 4).
+    board_name: boardName,
+    board_year: boardYear,
     bulk,
     questions,
   });

@@ -1764,6 +1764,5 @@ on conflict (id) do update set
   stimulus_text = excluded.stimulus_text,
   board_name = excluded.board_name,
   board_year = excluded.board_year,
-  diagram_note = excluded.diagram_note,
-  board_name = excluded.board_name;
+  diagram_note = excluded.diagram_note;
 commit;

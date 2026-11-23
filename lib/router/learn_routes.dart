@@ -151,6 +151,8 @@ final List<GoRoute> learnRoutes = [
           setId: q['setId'],
           chapterless: q['chapterless'] == 'true',
           board: q['board'] == 'true',
+          boardName: q['boardName'],
+          boardYear: int.tryParse(q['boardYear'] ?? ''),
           backTo: q['returnTo'],
         ),
       );

@@ -13,6 +13,7 @@
 // explicit bank button, never a silent substitution.
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/learn/search_flow_board.dart';
 import '../models/backend_models.dart';
 import '../models/guide_bank_model.dart';
 import 'guide_key_bulk_service.dart';
@@ -57,16 +58,20 @@ class GuideQuizService {
         final key = bulkKeys[c.question.id] ?? '';
         if (key.isEmpty) continue;
         final accepted = acceptedOptionIndices(
-            parseAcceptedAnswerKeys(key), c.question.options);
+          parseAcceptedAnswerKeys(key),
+          c.question.options,
+        );
         if (accepted.isEmpty) continue;
-        bulkItems.add(QuizItem(
-          id: c.question.id,
-          questionBn: c.question.questionText,
-          questionEn: c.question.questionText,
-          options: c.question.options,
-          correctIndex: accepted.first,
-          correctIndices: accepted,
-        ));
+        bulkItems.add(
+          QuizItem(
+            id: c.question.id,
+            questionBn: c.question.questionText,
+            questionEn: c.question.questionText,
+            options: c.question.options,
+            correctIndex: accepted.first,
+            correctIndices: accepted,
+          ),
+        );
       }
       return bulkItems;
     }
@@ -75,38 +80,42 @@ class GuideQuizService {
     while (items.length < limit && at < candidates.length) {
       final batch = candidates.skip(at).take(5).toList();
       at += batch.length;
-      final resolved = await Future.wait(batch.map((c) async {
-        // Scoring-side exclusion (Phase 2 gap plan): bank rows
-        // carry no solution by owner decision, so they are
-        // never scored even if a caller passes unfiltered
-        // candidates. The pool filter already excludes them;
-        // this guard holds for direct resolveKeys callers too
-        // (model-test list screen). Keyless rows are dropped
-        // below via the empty-key check, unchanged.
-        if (c.question.section == 'bank') return null;
-        final grounding = await structuredExplanationService.resolveGuide(
-          guideQuestionId: c.question.id,
-          subject: subject,
-          schoolClass: schoolClass,
-          bangla: bangla,
-        );
-        final key = grounding.context?.answerKey ?? '';
-        if (!grounding.found || key.isEmpty) return null;
-        // Multi-key (Phase 2 gap plan): a JSON-list key maps to
-        // every accepted option; a single key maps to one index,
-        // exactly as before. Empty = no accepted option, dropped.
-        final accepted = acceptedOptionIndices(
-            parseAcceptedAnswerKeys(key), c.question.options);
-        if (accepted.isEmpty) return null;
-        return QuizItem(
-          id: c.question.id,
-          questionBn: c.question.questionText,
-          questionEn: c.question.questionText,
-          options: c.question.options,
-          correctIndex: accepted.first,
-          correctIndices: accepted,
-        );
-      }));
+      final resolved = await Future.wait(
+        batch.map((c) async {
+          // Scoring-side exclusion (Phase 2 gap plan): bank rows
+          // carry no solution by owner decision, so they are
+          // never scored even if a caller passes unfiltered
+          // candidates. The pool filter already excludes them;
+          // this guard holds for direct resolveKeys callers too
+          // (model-test list screen). Keyless rows are dropped
+          // below via the empty-key check, unchanged.
+          if (c.question.section == 'bank') return null;
+          final grounding = await structuredExplanationService.resolveGuide(
+            guideQuestionId: c.question.id,
+            subject: subject,
+            schoolClass: schoolClass,
+            bangla: bangla,
+          );
+          final key = grounding.context?.answerKey ?? '';
+          if (!grounding.found || key.isEmpty) return null;
+          // Multi-key (Phase 2 gap plan): a JSON-list key maps to
+          // every accepted option; a single key maps to one index,
+          // exactly as before. Empty = no accepted option, dropped.
+          final accepted = acceptedOptionIndices(
+            parseAcceptedAnswerKeys(key),
+            c.question.options,
+          );
+          if (accepted.isEmpty) return null;
+          return QuizItem(
+            id: c.question.id,
+            questionBn: c.question.questionText,
+            questionEn: c.question.questionText,
+            options: c.question.options,
+            correctIndex: accepted.first,
+            correctIndices: accepted,
+          );
+        }),
+      );
       for (final item in resolved) {
         if (item != null && items.length < limit) items.add(item);
       }
@@ -120,14 +129,17 @@ class GuideQuizService {
   /// without options are excluded up front (they could never
   /// become a QuizItem — resolveKeys drops them).
   static List<GuideQuizCandidate> modelTestCandidates(
-      List<GuideBankQuestion> rows, String subject) {
+    List<GuideBankQuestion> rows,
+    String subject,
+  ) {
     final isPaper2 = subject == 'english-2nd';
     return rows
-        .where((q) =>
-            q.serverHasKey &&
-            !q.guideError &&
-            (q.questionType == 'mcq' ||
-                (isPaper2 && q.options.isNotEmpty)))
+        .where(
+          (q) =>
+              q.serverHasKey &&
+              !q.guideError &&
+              (q.questionType == 'mcq' || (isPaper2 && q.options.isNotEmpty)),
+        )
         .map((q) => GuideQuizCandidate(q, 0))
         .toList();
   }
@@ -136,6 +148,40 @@ class GuideQuizService {
   /// by the sampler's proportional allocation (same day + same
   /// data = same set). Returns up to 20 resolved items; fewer
   /// is the caller's shortfall case, never a bank fallback.
+  /// Board MCQ quiz (round 4): the subject's flagged board MCQs,
+  /// optionally narrowed to one board and/or year, resolved into
+  /// scorable items. Subject-wise by design — a board quiz never mixes
+  /// subjects. Keyless rows are dropped by resolveKeys, never guessed.
+  Future<List<QuizItem>> boardMcqQuiz({
+    required String subject,
+    required int schoolClass,
+    required bool bangla,
+    int limit = 10,
+    String? boardName,
+    int? boardYear,
+  }) async {
+    final page = await fetchBoardPage(
+      subject: subject,
+      schoolClass: schoolClass,
+      section: 'board-mcq',
+      boardName: boardName,
+      boardYear: boardYear,
+    );
+    if (page.rows.isEmpty) return const [];
+    final candidates = [
+      for (final q in page.rows)
+        if (q.serverHasKey) GuideQuizCandidate(q, q.chapterNumber ?? 0),
+    ];
+    if (candidates.isEmpty) return const [];
+    return resolveKeys(
+      candidates,
+      subject: subject,
+      schoolClass: schoolClass,
+      bangla: bangla,
+      limit: limit,
+    );
+  }
+
   Future<List<QuizItem>> dailyGuideQuiz({
     required String subject,
     required int schoolClass,
@@ -149,9 +195,13 @@ class GuideQuizService {
       seedKey: questionGeneration.dailySeedKey(schoolClass, subject, day),
     );
     if (candidates.isEmpty) return const [];
-    return resolveKeys(candidates,
-        subject: subject, schoolClass: schoolClass,
-        bangla: bangla, limit: quizLimit);
+    return resolveKeys(
+      candidates,
+      subject: subject,
+      schoolClass: schoolClass,
+      bangla: bangla,
+      limit: quizLimit,
+    );
   }
 
   /// Practice guide set: random, seen-set excluded (refills
@@ -170,9 +220,13 @@ class GuideQuizService {
       seenIds: seen,
     );
     if (candidates.isEmpty) return const [];
-    final items = await resolveKeys(candidates,
-        subject: subject, schoolClass: schoolClass,
-        bangla: bangla, limit: quizLimit);
+    final items = await resolveKeys(
+      candidates,
+      subject: subject,
+      schoolClass: schoolClass,
+      bangla: bangla,
+      limit: quizLimit,
+    );
     await _saveSeen({...seen, ...items.map((q) => q.id)});
     return items;
   }
