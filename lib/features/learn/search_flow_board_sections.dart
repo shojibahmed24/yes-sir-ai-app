@@ -17,28 +17,10 @@ import '../../l10n/pages/search_flow_strings.dart';
 import '../../theme/app_tokens.dart';
 import '../practice/practice_store.dart';
 import 'search_flow_types.dart';
+import 'widgets/board_filter_chips.dart';
 import 'widgets/digits.dart';
 import 'widgets/search_flow_message.dart';
 import 'package:yes_sir_ai/theme/themed_scaffold.dart';
-
-const _boardLabels = <String, (String, String)>{
-  'dhaka': ('ঢাকা', 'Dhaka'),
-  'rajshahi': ('রাজশাহী', 'Rajshahi'),
-  'chattogram': ('চট্টগ্রাম', 'Chattogram'),
-  'cumilla': ('কুমিল্লা', 'Cumilla'),
-  'jessore': ('যশোর', 'Jashore'),
-  'barishal': ('বরিশাল', 'Barishal'),
-  'sylhet': ('সিলেট', 'Sylhet'),
-  'dinajpur': ('দিনাজপুর', 'Dinajpur'),
-  'mymensingh': ('ময়মনসিংহ', 'Mymensingh'),
-  'all': ('সকল বোর্ড', 'All boards'),
-};
-
-String boardLabel(String id, bool bn) {
-  final pair = _boardLabels[id];
-  if (pair == null) return id;
-  return bn ? pair.$1 : pair.$2;
-}
 
 class SearchFlowBoardSectionsScreen extends StatefulWidget {
   const SearchFlowBoardSectionsScreen({
@@ -150,14 +132,22 @@ class _SearchFlowBoardSectionsScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _FacetChips(
+                    FutureBuilder<List<BoardFacet>?>(
                       future: _facets,
-                      bn: bn,
-                      s: s,
-                      board: _board,
-                      year: _year,
-                      onBoard: (v) => setState(() => _board = v),
-                      onYear: (v) => setState(() => _year = v),
+                      builder: (context, facetSnap) {
+                        final facets = facetSnap.data;
+                        if (facets == null || facets.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return BoardFilterChips(
+                          facets: facets,
+                          bn: bn,
+                          board: _board,
+                          year: _year,
+                          onBoard: (v) => setState(() => _board = v),
+                          onYear: (v) => setState(() => _year = v),
+                        );
+                      },
                     ),
                     const SizedBox(height: Sp.md),
                     if (board.mcq > 0)
@@ -222,94 +212,6 @@ class _SearchFlowBoardSectionsScreenState
               );
             },
           ),
-        );
-      },
-    );
-  }
-}
-
-/// Year + board chips from the server facets. Unknown facets (null)
-/// show no chips at all — never a fake list — and the list stays
-/// available unfiltered.
-class _FacetChips extends StatelessWidget {
-  const _FacetChips({
-    required this.future,
-    required this.bn,
-    required this.s,
-    required this.board,
-    required this.year,
-    required this.onBoard,
-    required this.onYear,
-  });
-
-  final Future<List<BoardFacet>?> future;
-  final bool bn;
-  final Map<String, String> s;
-  final String? board;
-  final int? year;
-  final void Function(String?) onBoard;
-  final void Function(int?) onYear;
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<BoardFacet>?>(
-      future: future,
-      builder: (context, snap) {
-        final facets = snap.data;
-        if (facets == null || facets.isEmpty) return const SizedBox.shrink();
-        final years = facets.map((f) => f.year).toSet().toList()
-          ..sort((a, b) => b.compareTo(a));
-        final boards = facets.map((f) => f.board).toSet().toList()..sort();
-        final allLabel = bn ? 'সব' : 'All';
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              bn ? 'বছর' : 'Year',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            const SizedBox(height: Sp.xs),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ChoiceChip(
-                  label: Text(allLabel),
-                  selected: year == null,
-                  onSelected: (_) => onYear(null),
-                ),
-                for (final y in years)
-                  ChoiceChip(
-                    label: Text(numStr(y, bn)),
-                    selected: year == y,
-                    onSelected: (_) => onYear(y),
-                  ),
-              ],
-            ),
-            const SizedBox(height: Sp.md),
-            Text(
-              bn ? 'বোর্ড' : 'Board',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            const SizedBox(height: Sp.xs),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ChoiceChip(
-                  label: Text(allLabel),
-                  selected: board == null,
-                  onSelected: (_) => onBoard(null),
-                ),
-                for (final b in boards)
-                  ChoiceChip(
-                    label: Text(boardLabel(b, bn)),
-                    selected: board == b,
-                    onSelected: (_) => onBoard(b),
-                  ),
-              ],
-            ),
-          ],
         );
       },
     );
