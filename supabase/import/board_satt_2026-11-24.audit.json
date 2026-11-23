@@ -1,0 +1,29 @@
+{
+  "chemistry-board-satt": {
+    "files": 22,
+    "read": 1037,
+    "unique": 464
+  },
+  "general-science-board-satt": {
+    "files": 56,
+    "read": 6152,
+    "unique": 1469
+  },
+  "higher-math-board-satt": {
+    "files": 20,
+    "read": 948,
+    "unique": 450
+  },
+  "ict-board-satt": {
+    "files": 33,
+    "read": 1606,
+    "unique": 769
+  },
+  "physics-board-satt": {
+    "files": 64,
+    "read": 3144,
+    "unique": 1536
+  },
+  "unique": 4688,
+  "duplicates": 8162
+}
