@@ -1,0 +1,10 @@
+{
+  "math": 539,
+  "bangla": 1050,
+  "skipped": [
+    "math:math-board-satt/questions-board-satt-2023-2024.json:math-board-chattogram-2024-mcq-024",
+    "math:math-board-satt/questions-board-satt-2024-2023-part-b.json:math-board-chattogram-2024-mcq-024"
+  ],
+  "total": 1589,
+  "duplicatesDropped": 539
+}
