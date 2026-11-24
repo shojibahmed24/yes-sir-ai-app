@@ -1,0 +1,19 @@
+{
+  "kept": {
+    "ictChapterMcq": 474,
+    "ictSaq": 70,
+    "ictModelMcq": 390,
+    "careerMcq": 372,
+    "total": 1306
+  },
+  "quarantined": {
+    "board": 260,
+    "cq": 89,
+    "notes": 73,
+    "mcq": 6122,
+    "saq": 248,
+    "careerMcq": 807
+  },
+  "sourceIds": 8905,
+  "quarantineTotal": 7599
+}

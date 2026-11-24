@@ -1,0 +1,16 @@
+{
+  "ictChapterMcq": 634,
+  "ictModelMcq": 448,
+  "ictSaq": 99,
+  "careerMcq": 951,
+  "dropped": {
+    "mcq": 6132,
+    "saq": 219,
+    "cq": 89,
+    "board": 260,
+    "notes": 73,
+    "homeScience": 322
+  },
+  "unique": 2132,
+  "duplicateIds": 0
+}
