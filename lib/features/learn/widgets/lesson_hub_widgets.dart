@@ -38,11 +38,54 @@ class LessonHubTypeStyle {
           subKey: 'creativeSub',
           accent: AppTheme.secondary,
         );
-      default:
+      case SearchFlowType.short:
         return const LessonHubTypeStyle(
           icon: Icons.short_text_rounded,
           titleKey: 'short',
           subKey: 'shortSub',
+          accent: AppTheme.success,
+        );
+      // Extra printed forms (Higher Math / Science). They keep their
+      // own labels: folding them into MCQ/CQ/SQ would mislabel them.
+      case SearchFlowType.exercise:
+        return const LessonHubTypeStyle(
+          icon: Icons.menu_book_outlined,
+          titleKey: 'exercise',
+          subKey: 'exerciseSub',
+          accent: AppTheme.primaryDark,
+        );
+      case SearchFlowType.activity:
+        return const LessonHubTypeStyle(
+          icon: Icons.science_outlined,
+          titleKey: 'activity',
+          subKey: 'activitySub',
+          accent: AppTheme.amber,
+        );
+      case SearchFlowType.exerciseMcq:
+        return const LessonHubTypeStyle(
+          icon: Icons.checklist_rounded,
+          titleKey: 'exerciseMcq',
+          subKey: 'exerciseMcqSub',
+          accent: AppTheme.primary,
+        );
+      case SearchFlowType.conceptualCreative:
+        return const LessonHubTypeStyle(
+          icon: Icons.lightbulb_outline,
+          titleKey: 'conceptualCreative',
+          subKey: 'conceptualCreativeSub',
+          accent: AppTheme.secondary,
+        );
+      case SearchFlowType.practiceWork:
+      case SearchFlowType.textbookExercise:
+      case SearchFlowType.oneWord:
+      case SearchFlowType.knowledge:
+      case SearchFlowType.comprehension:
+      case SearchFlowType.mathProblem:
+      case SearchFlowType.otherPractice:
+        return const LessonHubTypeStyle(
+          icon: Icons.category_outlined,
+          titleKey: 'otherForms',
+          subKey: 'otherFormsSub',
           accent: AppTheme.success,
         );
     }

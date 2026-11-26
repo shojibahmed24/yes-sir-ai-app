@@ -12,7 +12,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/services/guide_bank_service.dart';
 import '../../core/services/guide_flow_count_service.dart';
+import '../../core/services/model_test_set_service.dart';
 import '../../l10n/language_provider.dart';
 import '../../l10n/pages/lesson_hub_strings.dart';
 import '../../theme/app_theme.dart';
@@ -48,13 +50,34 @@ class LessonHubScreen extends StatefulWidget {
 class _LessonHubScreenState extends State<LessonHubScreen> {
   Map<SearchFlowType, int?>? _counts;
 
-  /// Question-type cards this hub can offer; model test and board
-  /// are separate flows below.
-  static const _types = [
-    SearchFlowType.mcq,
-    SearchFlowType.creative,
-    SearchFlowType.short,
-  ];
+  /// Subject-wide tails (round 7): board rows and model sets carry no
+  /// lesson tag, so they are offered only when the subject has them.
+  bool _hasBoard = false;
+  bool _hasModel = false;
+
+  /// Question-form cards, in the IA's order: CQ (creative), MCQ, SQ,
+  /// then any extra forms this subject's guide actually prints
+  /// (exercise / activity / exercise-MCQ). Board and Model Test stay
+  /// subject-wide below.
+  List<SearchFlowType> get _types {
+    final offered = searchFlowTypesFor(
+      guide: true,
+      subject: widget.subjectId,
+      schoolClass: widget.schoolClass,
+    );
+    const preferred = [
+      SearchFlowType.creative,
+      SearchFlowType.mcq,
+      SearchFlowType.short,
+    ];
+    final out = <SearchFlowType>[
+      for (final t in preferred)
+        if (offered.contains(t)) t,
+      for (final t in offered)
+        if (!preferred.contains(t)) t,
+    ];
+    return out.isEmpty ? preferred : out;
+  }
 
   @override
   void initState() {
@@ -71,6 +94,21 @@ class _LessonHubScreenState extends State<LessonHubScreen> {
         lesson: widget.lesson,
         types: _types,
       );
+      // Subject-wide tails need their own existence check.
+      final board = await guideBankService
+          .fetchGuideBoard(widget.subjectId, schoolClass: widget.schoolClass)
+          .catchError((_) => null);
+      final sets = await modelTestSetService
+          .fetchSetsFromServer(
+            widget.subjectId,
+            schoolClass: widget.schoolClass,
+          )
+          .catchError((_) => null);
+      if (!mounted) return;
+      setState(() {
+        _hasBoard = (board?.total ?? 0) > 0;
+        _hasModel = (sets?.isNotEmpty ?? false);
+      });
       if (!mounted) return;
       setState(() => _counts = out);
     } catch (_) {
@@ -178,23 +216,28 @@ class _LessonHubScreenState extends State<LessonHubScreen> {
                     ),
                   ),
               ],
-              LessonHubCard(
-                icon: Icons.assignment_outlined,
-                title: s['model']!,
-                subtitle: s['modelSub']!,
-                accent: AppTheme.amber,
-                onTap: () {
-                  PracticeSession.selectedSubject = widget.subjectId;
-                  context.go('/guide-model-tests');
-                },
-              ),
-              LessonHubCard(
-                icon: Icons.verified_outlined,
-                title: s['board']!,
-                subtitle: s['boardSub']!,
-                accent: AppTheme.primaryDark,
-                onTap: () => context.go(_boardUrl),
-              ),
+              // Tail cards (round 7): both are subject-wide, so they
+              // are shown only when the data exists and are labelled
+              // as the whole subject.
+              if (_hasModel)
+                LessonHubCard(
+                  icon: Icons.assignment_outlined,
+                  title: s['model']!,
+                  subtitle: s['modelWholeSubject'] ?? s['modelSub']!,
+                  accent: AppTheme.amber,
+                  onTap: () {
+                    PracticeSession.selectedSubject = widget.subjectId;
+                    context.go('/guide-model-tests');
+                  },
+                ),
+              if (_hasBoard)
+                LessonHubCard(
+                  icon: Icons.verified_outlined,
+                  title: s['board']!,
+                  subtitle: s['boardWholeSubject'] ?? s['boardSub']!,
+                  accent: AppTheme.primaryDark,
+                  onTap: () => context.go(_boardUrl),
+                ),
               const SizedBox(height: Sp.lg),
               Text(s['note']!, style: Theme.of(context).textTheme.bodySmall),
             ],

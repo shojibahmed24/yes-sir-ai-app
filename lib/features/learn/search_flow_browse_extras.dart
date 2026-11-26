@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import '../../core/models/guide_bank_model.dart';
 import '../../core/services/app_config.dart';
 import '../../core/services/edge_post.dart';
+import '../../core/services/guide_bank_service.dart';
 import '../../core/services/model_test_set_service.dart';
 import '../../core/services/picker_cache_service.dart';
 import 'search_flow_lesson_counts.dart';
@@ -31,6 +32,10 @@ class SearchFlowBrowseExtras {
   /// unreachable, never "no sets" — the picker hides either way.
   List<GuideModelSetInfo> sets = const [];
   bool setsLoading = false;
+
+  /// Subject-wide board question total (0 = none/unknown). The Board
+  /// step lives at subject level now, after the lesson list.
+  int boardTotal = 0;
 
   /// Server lesson values (lesson -> totalCount) for the current
   /// guide subject, Bangla only. Empty when none / unreachable /
@@ -98,6 +103,7 @@ class SearchFlowBrowseExtras {
     paper2Sections.clear();
     sets = const [];
     serverLessons = const {};
+    boardTotal = 0;
     setsLoading = true;
     serverLessonsLoading = subjectId == 'bangla';
     _notify();
@@ -143,6 +149,15 @@ class SearchFlowBrowseExtras {
       serverLessonsLoading = false;
     }
     if (showedSetsCache || showedLessonsCache) _notify();
+    // Subject-wide board count (round 7): the Board step is offered
+    // once per subject, never per lesson, because board rows carry no
+    // chapter/lesson tag.
+    final board = await guideBankService
+        .fetchGuideBoard(subjectId, schoolClass: schoolClass)
+        .catchError((_) => null);
+    if (gen != _generation) return;
+    boardTotal = board?.total ?? 0;
+    _notify();
     final loadedSets = await pickerCacheService
         .dedupe(
           'fetch:$setsKey',

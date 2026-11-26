@@ -51,6 +51,19 @@ GlobalPickerTree buildGlobalPickerTree({
     hasChildren: true,
   );
 
+  /// Board entry (subject-wide). Opens the board screen that owns the
+  /// year/board chips.
+  GlobalPickerNode boardNode() => GlobalPickerNode(
+    id: 'board-group',
+    title: s['boardQuestions']!,
+    subtitle: numStr(extras.boardTotal, bn),
+    kind: GlobalPickerNodeKind.setsGroup,
+    hasChildren: false,
+    pick: GlobalPickerPick.route(
+      '/search-flow-board?subject=${c.subjectId}&class=${c.effectiveClass}',
+    ),
+  );
+
   List<GlobalPickerNode> roots;
   bool loading;
   if (secondMode) {
@@ -93,10 +106,12 @@ GlobalPickerTree buildGlobalPickerTree({
       );
     }
     if (extras.sets.isNotEmpty) roots.add(setsGroupNode());
+    if (extras.boardTotal > 0) roots.add(boardNode());
     loading = false;
   } else if (paper2Mode) {
     roots = paper2SectionNodes(extras: extras, s: s, bn: bn);
     if (extras.sets.isNotEmpty) roots.add(setsGroupNode());
+    if (extras.boardTotal > 0) roots.add(boardNode());
     loading = false;
   } else {
     roots = [
@@ -129,6 +144,11 @@ GlobalPickerTree buildGlobalPickerTree({
           pick: GlobalPickerPick.chapter(ch.$1),
         ),
     ];
+    // Subject-level tails (round 7): Board first, then Model Test.
+    // Board rows carry no chapter/lesson tag, so a per-lesson Board
+    // card could only ever show the whole subject; both live here,
+    // after the lessons, exactly where the IA asks for them.
+    if (guide && extras.boardTotal > 0) roots.add(boardNode());
     if (guide && extras.sets.isNotEmpty) roots.add(setsGroupNode());
     loading = c.chaptersLoading;
   }
