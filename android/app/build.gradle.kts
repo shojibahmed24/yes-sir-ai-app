@@ -48,7 +48,17 @@ android {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
+                // Resolve relative paths from android/ (where
+                // key.properties lives), not from android/app/: the
+                // previous file() lookup turned a plain
+                // 'upload-keystore.jks' into android/app/... and the
+                // release build failed with "Keystore file not found".
+                val store = keystoreProperties["storeFile"] as String
+                storeFile = if (File(store).isAbsolute) {
+                    File(store)
+                } else {
+                    rootProject.file(store)
+                }
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }

@@ -25,3 +25,24 @@
 
 # AndroidX security / secure storage
 -keep class androidx.security.crypto.** { *; }
+
+# Flutter deferred components (Play Core) are not used by this app;
+# R8 only sees references from the Flutter embedding.
+-dontwarn com.google.android.play.core.**
+# google_sign_in / Play services reflection
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+
+
+# flutter_local_notifications reschedules via Gson TypeToken; R8
+# must keep the plugin + Gson generic signatures (release crashed
+# with 'Missing type parameter' on the boot receiver).
+-keep class com.dexterous.flutterlocalnotifications.** { *; }
+-keep class com.google.gson.** { *; }
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keepattributes Signature
+-keepattributes *Annotation*
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
